@@ -20,7 +20,8 @@ logging.basicConfig(level=logging.INFO)
 # Initialize bot and dispatcher
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
-db = Database()
+
+Database.create_tables()
 
 
 # Создаем класс состояний для конечного автомата
@@ -58,13 +59,14 @@ async def ua_welcome(message: types.Message):
 
 @dp.message_handler(commands=["reg"])
 async def reg_welcome(message: types.Message):
-    tg_user: User = db.get_user(message.from_user.id)
-    if tg_user is None:
+
+    if User.get(tg_id=message.from_user.id) is None:
         await message.reply(
             "Фиксирую. Вводи email \n________________________ \nИли жми /EXIT"
         )
         await Form.email.set()
         return
+
     await message.reply("Ты уже регистрировался")
     await message.answer(f"↓↓↓ Чекай доступные команды")
     return
@@ -125,7 +127,7 @@ async def process_password(message: types.Message, state: FSMContext):
 
     # Если данные были верные, то записываем в базу пользователя
     user = User(message.from_user.id, user_email, user_password)
-    db.add_user(user)
+    user.save()
 
     await message.answer(
         "Спасибо за регистрацию, ищи себя в прошмандовках севтелекома."
@@ -161,7 +163,7 @@ async def process_password(message: types.Message, state: FSMContext):
 
 @dp.message_handler(commands=["delete"])
 async def delete(message: types.Message):
-    db.delete_user(message.from_user.id)
+    User.delete(tg_id=message.from_user.id)
     await message.answer("уволен \n↓↓↓ Чекай доступные команды")
 
 
