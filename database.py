@@ -17,7 +17,7 @@ class Database:
                             (tg_id INTEGER PRIMARY KEY NOT NULL,
                             email TEXT NOT NULL,
                             password TEXT NOT NULL);"""
-                    )
+        )
         self.cursor.execute(
             """CREATE TABLE IF NOT EXISTS graph_data
                             (tg_id INTEGER PRIMARY KEY NOT NULL,
@@ -47,3 +47,4 @@ class Database:
     def delete_user(self, tg_id):
         self.cursor.execute(f"DELETE FROM users WHERE tg_id='{tg_id}'")
         self.conn.commit()
+        print(f"User {tg_id} removed successfully!")
