@@ -33,6 +33,11 @@ class Form(StatesGroup):
     password = State()  # состояние для ввода пароля
 
 
+class DeleteForm(StatesGroup):
+    confirm_delete = State()  # состояние для ввода имени пользователя
+    confirm_delete2 = State()
+
+
 @dp.message_handler(commands=["start"])
 async def hello_welcome(message: types.Message):
     """
@@ -119,8 +124,6 @@ async def process_password(message: types.Message, state: FSMContext):
         total = file_opener(file_name)
         DataCoin.init_new_user(message.from_user.id, total)
 
-
-
     # Перехватываем ошибку
     except AuthFail:
         # Если данные неверные, то просим его ввести их снова
@@ -146,22 +149,55 @@ async def process_password(message: types.Message, state: FSMContext):
 
 @dp.message_handler(commands=["summ"])
 async def summ(message: types.Message):
+    if User.get(tg_id=message.from_user.id) is None:
+        await message.answer("Иди нахуй, ты кто такой?")
+        return
     coin_st = DataCoin.get_for_user(message.from_user.id)
     await message.answer(f"Стоимость всех монет {coin_st[-1][3]}")
 
 
 @dp.message_handler(commands=["grafik"])
 async def grafik(message: types.Message):
+    if User.get(tg_id=message.from_user.id) is None:
+        await message.answer("Иди нахуй, ты кто такой?")
+        return
     graph_name = get_graph(message.from_user.id)
     photo = InputFile(graph_name)
     await bot.send_photo(chat_id=message.from_user.id, photo=photo)
     os.remove(graph_name)
 
-@dp.message_handler(commands=["delete"])
-async def delete(message: types.Message):
-    User.delete(tg_id=message.from_user.id)
-    await message.answer("уволен \n↓↓↓ Чекай доступные команды")
 
+@dp.message_handler(commands=["delete"])
+async def delete1(message: types.Message):
+    await DeleteForm.confirm_delete.set()
+    await message.answer("Точно удалить? \nпиши   да   или   нет   и не выёбуйся")
+
+
+@dp.message_handler(state=DeleteForm.confirm_delete)
+async def delete2(message: types.Message, state: FSMContext):
+    if message.text.lower() == "да":
+        await DeleteForm.confirm_delete2.set()
+        await message.answer("Последний раз спрашиваю, чмо \nещё раз   да   своё ебаное натыкай")
+    else:
+        await message.answer("Ну и ди нахуй, мозгу мне не еби")
+        await state.finish()  # Завершаем текущий state
+
+
+@dp.message_handler(state=DeleteForm.confirm_delete2)
+async def delete2(message: types.Message, state: FSMContext):
+    if message.text.lower() == "да":
+        User.delete(tg_id=message.from_user.id)
+        DataCoin.delete_user_data(tg_id=message.from_user.id)
+        await message.answer("уволен \n↓↓↓ Чекай доступные команды")
+
+    else:
+        await message.answer("Ебать ты придурок братишка, оставайся")
+
+    await state.finish()  # Завершаем текущий state
+
+@dp.message_handler()
+async def unknown(message: types.Message):
+    await message.answer("Чего блять?")
 
 # Запускаем бота
 if __name__ == "__main__":

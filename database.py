@@ -86,6 +86,12 @@ class DataCoin:
         )
         db.conn.commit()
 
+    @staticmethod
+    def delete_user_data(tg_id):
+        db = Database()
+        db.cursor.execute(f"DELETE FROM graph_data WHERE tg_id='{tg_id}'")
+        db.conn.commit()
+        print(f"User {tg_id} removed successfully!")
 
 class User:
     def __init__(self, telegram_id, email, password):

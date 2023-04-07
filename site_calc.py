@@ -40,7 +40,7 @@ def get_graph(telegram_id):
 
     graph_date = []
     graph_sum = []
-    step = 6
+    step = -6
 
     for sublist in graph_coin_data:
         graph_date.append(sublist[2])
@@ -49,6 +49,7 @@ def get_graph(telegram_id):
     plt.clf()
     plt.plot(graph_date, graph_sum)
     plt.xticks(graph_date[::step], graph_date[::step])
+    plt.title('Стоимость коллекции')
     plt.grid(True)
     plt.savefig(f"{telegram_id}_plot.png")
     return f"{telegram_id}_plot.png"
