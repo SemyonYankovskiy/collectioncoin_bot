@@ -1,8 +1,11 @@
 import logging
+import os
+from aiogram.types import InputFile
+
 from threading import Thread
 
 from gather import gather_manager
-from site_calc import authorize, AuthFail
+from site_calc import authorize, AuthFail, get_graph, download, file_opener
 
 
 from aiogram import Bot, Dispatcher, executor, types
@@ -10,7 +13,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
-from database import Database, User
+from database import Database, User, DataCoin
 
 API_TOKEN = "6101263183:AAGuzsxAGNO1PlgxaKKI31NIg_I6kXIxzYo"
 
@@ -31,7 +34,7 @@ class Form(StatesGroup):
 
 
 @dp.message_handler(commands=["start"])
-async def reg_welcome(message: types.Message):
+async def hello_welcome(message: types.Message):
     """
     This handler will be called when user sends `/start` or `/help` command
     """
@@ -59,7 +62,6 @@ async def ua_welcome(message: types.Message):
 
 @dp.message_handler(commands=["reg"])
 async def reg_welcome(message: types.Message):
-
     if User.get(tg_id=message.from_user.id) is None:
         await message.reply(
             "Фиксирую. Вводи email \n________________________ \nИли жми /EXIT"
@@ -112,7 +114,12 @@ async def process_password(message: types.Message, state: FSMContext):
 
     try:
         # Пытаемся по введенным данным от пользователя зайти на сайт
-        authorize(user_email, user_password)
+        user_coin_id, session = authorize(user_email, user_password)
+        file_name = download(user_coin_id, session)
+        total = file_opener(file_name)
+        DataCoin.init_new_user(message.from_user.id, total)
+
+
 
     # Перехватываем ошибку
     except AuthFail:
@@ -132,34 +139,23 @@ async def process_password(message: types.Message, state: FSMContext):
     await message.answer(
         "Спасибо за регистрацию, ищи себя в прошмандовках севтелекома."
     )
+
+    await message.answer(f"↓↓↓ Чекай доступные команды")
     await state.finish()
 
 
-# # @dp.message_handler(commands=["summ"])
-# async def summ(message: types.Message):
-#     tg_user: User = db.get_user(message.from_user.id)
-#     if tg_user is None:
-#         await message.answer(f"ты еблан {message.from_user.full_name}")
-#         return
-#     # file_name = authorize(tg_user.email, tg_user.password)
-#     file_name = '32693_DATE.xlsx'
-#     total = file_opener(file_name)
-#
-#     await message.answer(total)
+@dp.message_handler(commands=["summ"])
+async def summ(message: types.Message):
+    coin_st = DataCoin.get_for_user(message.from_user.id)
+    await message.answer(f"Стоимость всех монет {coin_st[-1][3]}")
 
 
-# async def send_massage(dp: Dispatcher):
-#     await dp.bot.send_message("ебучий питон")
-#
-#
-# def schedule_jobs():
-#     scheduler.add_job(send_massage, "interval", seconds=10, args=(dp,))
-#
-#
-# async def on_startup():
-#     schedule_jobs()
-#
-
+@dp.message_handler(commands=["grafik"])
+async def grafik(message: types.Message):
+    graph_name = get_graph(message.from_user.id)
+    photo = InputFile(graph_name)
+    await bot.send_photo(chat_id=message.from_user.id, photo=photo)
+    os.remove(graph_name)
 
 @dp.message_handler(commands=["delete"])
 async def delete(message: types.Message):

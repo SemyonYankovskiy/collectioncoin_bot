@@ -1,17 +1,24 @@
 # # Создаем функцию, которая будет выполняться каждый день в 20:00
 import time
 import schedule
-
+from database import User, DataCoin
 from site_calc import authorize, download, file_opener
 
 
 def gather_graph_data(*args, **kwargs):
-    print("Работает")
+    users_list = User.get_all()
+    DataCoin.clear_old_data()
+
+    for user in users_list:
+        user_coin_id, session = authorize(user.email, user.password)
+        file_name = download(user_coin_id, session)
+        total = file_opener(file_name)
+        DataCoin(user.telegram_id, total).save()
 
 
 def gather_manager(*args):
     print("Start")
-    schedule.every().day.at("18:00").do(gather_graph_data)
+    schedule.every().day.at("21:55").do(gather_graph_data)
     while True:
         schedule.run_pending()
         time.sleep(1)

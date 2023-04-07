@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime, date, timedelta
 
 
 class Database:
@@ -18,11 +19,72 @@ class Database:
         )
         cursor.execute(
             """CREATE TABLE IF NOT EXISTS graph_data
-                            (tg_id INTEGER PRIMARY KEY NOT NULL,
-                            datetime REAL NOT NULL,
+                            (id INTEGER PRIMARY KEY NOT NULL,
+                            tg_id INTEGER NOT NULL,
+                            datetime TEXT NOT NULL,
                             totla_sum REAL NOT NULL);"""
         )
         conn.commit()
+
+
+class DataCoin:
+    def __init__(self, telegram_id, totla_sum, datetime_=datetime.now()):
+        self.telegram_id = telegram_id
+        self.totla_sum = totla_sum
+        self.datetime = datetime_
+
+    def save(self):
+        db = Database()
+        try:
+            db.cursor.execute(
+                f"INSERT INTO graph_data (tg_id, datetime, totla_sum) "
+                f"VALUES ('{self.telegram_id}', '{self.datetime.strftime('%Y.%m.%d')}', '{self.totla_sum}')"
+            )
+            db.conn.commit()
+            print(f"{self.totla_sum} added successfully!")
+        except sqlite3.IntegrityError:
+            print(f"Already exists in the database.")
+
+    @staticmethod
+    def init_new_user(tg_id: int, totla_sum: float):
+        db = Database()
+        query = ""
+        day_increment = date.today()
+        for _ in range(30):
+            query += f"({tg_id}, '{day_increment.strftime('%Y.%m.%d')}', {totla_sum}),"
+            day_increment -= timedelta(days=1)
+
+        try:
+            db.cursor.execute(
+                f"INSERT INTO graph_data (tg_id, datetime, totla_sum) "
+                f"VALUES {query[0:-1]}"
+            )
+            db.conn.commit()
+            print(f"all days added successfully!")
+        except sqlite3.IntegrityError:
+            print(f"Already exists in the database.")
+
+    @staticmethod
+    def get_for_user(tg_id):
+        db = Database()
+        db.cursor.execute(
+            f"SELECT * FROM graph_data WHERE tg_id='{tg_id}' ORDER BY datetime"
+        )
+        coin_data = db.cursor.fetchall()
+        # print(coin_data)
+        return coin_data
+
+    @staticmethod
+    def clear_old_data():
+        db = Database()
+        # Вычисляем дату 30 дней назад
+        thirty_days_ago = date.today() - timedelta(days=30)
+
+        # Удаляем данные старше 30 дней
+        db.cursor.execute(
+            f"DELETE FROM graph_data WHERE datetime <= '{thirty_days_ago.strftime('%Y.%m.%d')}'"
+        )
+        db.conn.commit()
 
 
 class User:
@@ -52,6 +114,14 @@ class User:
         if user_data:
             return User(*user_data)
         return None
+
+    @staticmethod
+    def get_all():
+        db = Database()
+        db.cursor.execute(f"SELECT * FROM users")
+        all_users_data = db.cursor.fetchall()
+
+        return [User(*user) for user in all_users_data]
 
     @staticmethod
     def delete(tg_id):

@@ -1,5 +1,8 @@
+import os
 import requests
 import openpyxl
+import matplotlib.pyplot as plt
+from database import DataCoin
 
 
 # класс ошибок
@@ -31,6 +34,26 @@ def authorize(username, password):
         return user_coin_id, session
 
 
+def get_graph(telegram_id):
+    graph_coin_data = DataCoin.get_for_user(telegram_id)
+    print(len(graph_coin_data))
+
+    graph_date = []
+    graph_sum = []
+    step = 6
+
+    for sublist in graph_coin_data:
+        graph_date.append(sublist[2])
+        graph_sum.append(sublist[3])
+
+    plt.clf()
+    plt.plot(graph_date, graph_sum)
+    plt.xticks(graph_date[::step], graph_date[::step])
+    plt.grid(True)
+    plt.savefig(f"{telegram_id}_plot.png")
+    return f"{telegram_id}_plot.png"
+
+
 def download(user_coin_id: str, session: requests.Session):
     # Скачиваем файл
     response = session.get(
@@ -55,12 +78,30 @@ def file_opener(file_name):
     ws = wb.active
 
     # Удаляем первую строку
-    ws.delete_rows(1)
+    # ws.delete_rows(1)
 
     # Находим сумму значений в заданном столбце
+
+    # Инициализируем переменную для хранения суммы
     total = 0
-    for cell in ws[column]:
-        if cell.value is not None:
-            total += cell.value
+
+    # Проходимся по строкам и суммируем значения в столбце G
+    for row in ws.iter_rows(min_row=2, max_col=9):
+        print(row[6].value)
+        if not row[6].value:
+            continue
+
+        if row[8].value != "Метка 13":
+            total += row[6].value
+
+
+
+    # Выводим результат
+    print("Сумма значений в столбце G:", total)
+    os.remove(file_name)
+    # total = 0
+    # for cell in ws[column]:
+    #     if cell.value is not None:
+    #         total += cell.value
 
     return round(total, 2)
