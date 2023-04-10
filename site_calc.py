@@ -96,14 +96,16 @@ def more_info(file_name):
 
 
 def countries(file_name):
-    df = pd.read_excel('RutoEng.xlsx', header=None)  # assuming no header
-    mydict = df.set_index(0)[1].to_dict()  # setting first column as index and second column as values
+    #df = pd.read_excel('RutoEng.xlsx', header=None)  # assuming no header
+    #mydict = df.set_index(0)[1].to_dict()  # setting first column as index and second column as values
+    df = pd.read_excel("RutoCode.xlsx", header=None)  # assuming no header
+    mydict1 = df.set_index(0)[1].to_dict()
     df = pd.read_excel(file_name)
     result = ""
     grouped = df.groupby("Страна").size()
     for country, count in grouped.items():
-        result += f"{str(count)}     {country} \n       /{mydict[country]}\n"
-        print(result)
+        result += f"{mydict1[country]}      {str(count):<5}       {country}\n"
+
     return result
 
 

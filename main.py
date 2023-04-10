@@ -2,6 +2,7 @@ import logging
 import os
 import emoji
 
+
 from aiogram.types import InputFile
 from threading import Thread
 
@@ -115,6 +116,7 @@ async def process_email(message: types.Message, state: FSMContext):
         await message.answer("Почта ворованная, пёс")
         return
 
+
 # Создаем обработчик сообщений в состоянии password
 @dp.message_handler(state=Form.password)
 async def process_password(message: types.Message, state: FSMContext):
@@ -173,9 +175,8 @@ async def summ(message: types.Message):
     await message.answer(
         f"Количество монет {lot} \n"
         f"Количество стран {count} \n"
-        f"Стоимость всех монет {coin_st[-1][3]} руб.\n"
-        f"Просмотр стран и кол-ва монет в них /countries"
-
+        f"Общая стоимость {coin_st[-1][3]} руб.\n \n"
+        f"Просмотр количества монет по странам /countries"
     )
 
 
@@ -186,7 +187,34 @@ async def countries1(message: types.Message):
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
     strani = countries(f"{coin_st[-1][4]}_.xlsx")
-    await message.answer(f"{strani} ")
+    await message.answer('Кол-во монет | Страна')
+    await message.answer(strani)
+
+
+# @dp.message_handler(commands=["countries"])
+# async def countries1(message: types.Message):
+#     if User.get(tg_id=message.from_user.id) is None:
+#         await message.answer("Доступно после регистрации в боте")
+#         return
+#     else:
+#         df = pd.read_excel("RutoEng.xlsx", header=None)  # assuming no header
+#         mydict = df.set_index(0)[1].to_dict()
+#         df = pd.read_excel("RutoCode.xlsx", header=None)  # assuming no header
+#         mydict1 = df.set_index(0)[1].to_dict()
+#         coin_st = DataCoin.get_for_user(
+#             message.from_user.id
+#         )  # setting first column as index and second column as values
+#         df = pd.read_excel(f"{coin_st[-1][4]}_.xlsx")
+#         result = ""
+#         grouped = df.groupby("Страна").size()
+#         for country, count in grouped.items():
+#
+#             #await message.answer(f":flag_{mydict1[country]}:")
+#             #await message.answer(f'{mydict1[country]}  {str(count)}     {country}')
+#             result += f"{mydict1[country]}   {str(count)}     {country}\n"
+#             print(result)
+#
+#         await message.answer(result)
 
 
 @dp.message_handler(commands=["grafik"])
