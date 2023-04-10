@@ -3,6 +3,7 @@ import requests
 import openpyxl
 import matplotlib.pyplot as plt
 from database import DataCoin
+import pandas as pd
 
 
 # класс ошибок
@@ -27,10 +28,9 @@ def authorize(username, password):
         )
         if resp.status_code != 302:
             raise AuthFail("неверные данные авторизации")
-
-        print(resp.headers.get("Location"))
+        # print(resp.headers.get("Location"))
         user_coin_id = "".join(filter(str.isdigit, resp.headers.get("Location")))
-        print(user_coin_id)
+        print(user_coin_id, "Connected")
         return user_coin_id, session
 
 
@@ -40,17 +40,34 @@ def get_graph(telegram_id):
 
     graph_date = []
     graph_sum = []
-    step = -6
+    step = -7
 
     for sublist in graph_coin_data:
         graph_date.append(sublist[2])
         graph_sum.append(sublist[3])
 
     plt.clf()
-    plt.plot(graph_date, graph_sum)
+    plt.plot(graph_date, graph_sum, marker="o", markersize=4)
     plt.xticks(graph_date[::step], graph_date[::step])
-    plt.title('Стоимость коллекции')
-    plt.grid(True)
+
+    plt.title("Стоимость коллекции, руб")
+
+    #  Прежде чем рисовать вспомогательные линии
+    #  необходимо включить второстепенные деления
+    #  осей:
+    plt.minorticks_on()
+
+    #  Определяем внешний вид линий основной сетки:
+    plt.grid(which="major")
+
+    #  Определяем внешний вид линий вспомогательной
+    #  сетки:
+    plt.grid(
+        # axis="y",
+        which="minor",
+        linestyle=":",
+    )
+
     plt.savefig(f"{telegram_id}_plot.png")
     return f"{telegram_id}_plot.png"
 
@@ -64,10 +81,30 @@ def download(user_coin_id: str, session: requests.Session):
     )
 
     # Имя файла, в который нужно сохранить содержимое
-    file_name = f"{user_coin_id}_DATE.xlsx"
+    file_name = f"{user_coin_id}_.xlsx"
+    os.remove(file_name)
     with open(file_name, "wb") as f:
         f.write(response.content)
     return file_name
+
+
+def more_info(file_name):
+    df = pd.read_excel(file_name)
+    countryroad = df[df.columns[0]].unique()  # эта переменная считает кол-во стран
+
+    return len(df), len(countryroad)
+
+
+def countries(file_name):
+    df = pd.read_excel('RutoEng.xlsx', header=None)  # assuming no header
+    mydict = df.set_index(0)[1].to_dict()  # setting first column as index and second column as values
+    df = pd.read_excel(file_name)
+    result = ""
+    grouped = df.groupby("Страна").size()
+    for country, count in grouped.items():
+        result += f"{str(count)}     {country} \n       /{mydict[country]}\n"
+        print(result)
+    return result
 
 
 def file_opener(file_name):
@@ -88,18 +125,16 @@ def file_opener(file_name):
 
     # Проходимся по строкам и суммируем значения в столбце G
     for row in ws.iter_rows(min_row=2, max_col=9):
-        print(row[6].value)
+        # print(row[6].value)
         if not row[6].value:
             continue
 
         if row[8].value != "Метка 13":
             total += row[6].value
 
-
-
     # Выводим результат
-    print("Сумма значений в столбце G:", total)
-    os.remove(file_name)
+    # print("Сумма значений в столбце G:", total)
+    # os.remove(file_name)
     # total = 0
     # for cell in ws[column]:
     #     if cell.value is not None:

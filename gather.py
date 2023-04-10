@@ -13,12 +13,13 @@ def gather_graph_data(*args, **kwargs):
         user_coin_id, session = authorize(user.email, user.password)
         file_name = download(user_coin_id, session)
         total = file_opener(file_name)
-        DataCoin(user.telegram_id, total).save()
+        DataCoin(user.telegram_id, total, user_coin_id).save()
 
 
 def gather_manager(*args):
     print("Start")
-    schedule.every().day.at("07:50").do(gather_graph_data)
+    schedule.every().day.at("10:25").do(gather_graph_data)
     while True:
         schedule.run_pending()
         time.sleep(1)
+

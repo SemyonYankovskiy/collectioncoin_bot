@@ -22,45 +22,48 @@ class Database:
                             (id INTEGER PRIMARY KEY NOT NULL,
                             tg_id INTEGER NOT NULL,
                             datetime TEXT NOT NULL,
-                            totla_sum REAL NOT NULL);"""
+                            totla_sum REAL NOT NULL,
+                            user_coin_id TEXT NOT NULL);"""
         )
         conn.commit()
 
 
 class DataCoin:
-    def __init__(self, telegram_id, totla_sum, datetime_=datetime.now()):
+    def __init__(self, telegram_id, user_coin_id, totla_sum, datetime_=datetime.now()):
         self.telegram_id = telegram_id
         self.totla_sum = totla_sum
         self.datetime = datetime_
+        self.user_coin_id = user_coin_id
 
     def save(self):
         db = Database()
         try:
             db.cursor.execute(
-                f"INSERT INTO graph_data (tg_id, datetime, totla_sum) "
-                f"VALUES ('{self.telegram_id}', '{self.datetime.strftime('%Y.%m.%d')}', '{self.totla_sum}')"
+                f"INSERT INTO graph_data (tg_id, datetime, totla_sum, user_coin_id) "
+                f"VALUES ('{self.telegram_id}', '{self.datetime.strftime('%Y.%m.%d')}', "
+                f"'{self.totla_sum}', '{self.user_coin_id}')"
             )
             db.conn.commit()
-            print(f"{self.totla_sum} added successfully!")
+            print(f"{self.user_coin_id} added successfully!")
         except sqlite3.IntegrityError:
             print(f"Already exists in the database.")
 
     @staticmethod
-    def init_new_user(tg_id: int, totla_sum: float):
+    def init_new_user(tg_id: int, totla_sum: float, user_coin_id):
         db = Database()
         query = ""
         day_increment = date.today()
         for _ in range(30):
-            query += f"({tg_id}, '{day_increment.strftime('%Y.%m.%d')}', {totla_sum}),"
+            query += f"({tg_id}, '{day_increment.strftime('%Y.%m.%d')}', {totla_sum}, {user_coin_id}),"
             day_increment -= timedelta(days=1)
 
         try:
             db.cursor.execute(
-                f"INSERT INTO graph_data (tg_id, datetime, totla_sum) "
+                f"INSERT INTO graph_data (tg_id, datetime, totla_sum, user_coin_id) "
                 f"VALUES {query[0:-1]}"
             )
             db.conn.commit()
-            print(f"all days added successfully!")
+            print(f"INIT_NEW_USER___all days added successfully!")
         except sqlite3.IntegrityError:
             print(f"Already exists in the database.")
 
@@ -93,6 +96,7 @@ class DataCoin:
         db.conn.commit()
         print(f"User {tg_id} removed successfully!")
 
+
 class User:
     def __init__(self, telegram_id, email, password):
         self.telegram_id = telegram_id
@@ -115,6 +119,16 @@ class User:
     def get(tg_id):
         db = Database()
         db.cursor.execute(f"SELECT * FROM users WHERE tg_id='{tg_id}'")
+        user_data = db.cursor.fetchone()
+
+        if user_data:
+            return User(*user_data)
+        return None
+
+    @staticmethod
+    def check_email(email):
+        db = Database()
+        db.cursor.execute(f"SELECT * FROM users WHERE email='{email}'")
         user_data = db.cursor.fetchone()
 
         if user_data:
