@@ -29,7 +29,7 @@ class Database:
 
 
 class DataCoin:
-    def __init__(self, telegram_id, user_coin_id, totla_sum, datetime_=datetime.now()):
+    def __init__(self, telegram_id, totla_sum, user_coin_id, datetime_=datetime.now()):
         self.telegram_id = telegram_id
         self.totla_sum = totla_sum
         self.datetime = datetime_
@@ -39,9 +39,9 @@ class DataCoin:
         db = Database()
         try:
             db.cursor.execute(
-                f"INSERT INTO graph_data (tg_id, datetime, totla_sum, user_coin_id) "
+                f"INSERT INTO graph_data (tg_id, datetime, user_coin_id,totla_sum) "
                 f"VALUES ('{self.telegram_id}', '{self.datetime.strftime('%Y.%m.%d')}', "
-                f"'{self.totla_sum}', '{self.user_coin_id}')"
+                f"'{self.user_coin_id}', '{self.totla_sum}')"
             )
             db.conn.commit()
             print(f"{self.user_coin_id} added successfully!")

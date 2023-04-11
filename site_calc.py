@@ -4,6 +4,7 @@ import openpyxl
 import matplotlib.pyplot as plt
 from database import DataCoin
 import pandas as pd
+import sys
 
 
 # класс ошибок
@@ -72,6 +73,22 @@ def get_graph(telegram_id):
     return f"{telegram_id}_plot.png"
 
 
+def download_ft(user_coin_id: str, session: requests.Session):
+    # Скачиваем файл
+    response = session.get(
+        # URL файла, который нужно скачать
+        url=f"https://ru.ucoin.net/uid{user_coin_id}?export=xls",
+        headers=HEADERS,
+    )
+
+    # Имя файла, в который нужно сохранить содержимое
+    file_name = f"{user_coin_id}_.xlsx"
+    # os.remove(file_name)
+    with open(file_name, "wb") as f:
+        f.write(response.content)
+    return file_name
+
+
 def download(user_coin_id: str, session: requests.Session):
     # Скачиваем файл
     response = session.get(
@@ -96,17 +113,64 @@ def more_info(file_name):
 
 
 def countries(file_name):
-    #df = pd.read_excel('RutoEng.xlsx', header=None)  # assuming no header
-    #mydict = df.set_index(0)[1].to_dict()  # setting first column as index and second column as values
+    df = pd.read_excel("RutoEng.xlsx", header=None)  # assuming no header
+    mydict = df.set_index(0)[
+        1
+    ].to_dict()  # setting first column as index and second column as values
     df = pd.read_excel("RutoCode.xlsx", header=None)  # assuming no header
     mydict1 = df.set_index(0)[1].to_dict()
     df = pd.read_excel(file_name)
     result = ""
     grouped = df.groupby("Страна").size()
     for country, count in grouped.items():
-        result += f"{mydict1[country]}      {str(count):<5}       {country}\n"
+        result += f"{mydict1[country]} {str(count):<5}{country}\n           /{mydict[country]}\n"
 
     return result
+
+
+def strana(file_name, text_in):
+    # Импортируем модули для работы с Excel и ввода данных
+    df = pd.read_excel("RutoCode.xlsx", header=None)  # assuming no header
+    mydict1 = df.set_index(0)[1].to_dict()
+    # Открываем файл Excel с именем data.xlsx
+    # Выбираем первый лист в файле
+    wb = openpyxl.load_workbook(file_name)
+    ws = wb.active
+
+    # Вводим текст для сравнения
+    text = text_in
+    print(text_in)
+    string_without_first_char = text[1:]
+    print(string_without_first_char)
+    df = pd.read_excel("EngtoRu.xlsx", header=None)  # assuming no header
+    mydict = df.set_index(0)[
+        1
+    ].to_dict()  # setting first column as index and second column as values
+    text2 = mydict[string_without_first_char]
+    print(text2)
+
+    arr = []
+
+    # Проходимся по строкам и суммируем значения в столбце G
+    for row in ws.iter_rows(min_row=1, max_col=7):
+        if row[0].value == text2:
+            print(row[0].value)
+            print(row[1].value)
+            print(row[2].value)
+            print(row[3].value)
+            print(row[4].value)
+            print(row[5].value)
+            print(row[6].value)
+
+            arr.append(
+                [
+                   # mydict1[row[0].value], row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value
+                    mydict1[row[0].value], row[1].value, row[2].value, row[3].value, row[4].value, row[6].value
+                ]
+            )
+            print(arr)
+
+    return arr
 
 
 def file_opener(file_name):
