@@ -11,12 +11,12 @@ from site_calc import (
     authorize,
     AuthFail,
     get_graph,
-#    download,
-    download_ft,
+    download,
     file_opener,
     more_info,
     countries,
     strana,
+    func_swap
 )
 
 
@@ -67,11 +67,14 @@ async def ua_welcome(message: types.Message):
     This handler will be called when user sends `/start` or `/help` command
     """
     await message.answer(
-        "💬 Этот бот берет данные из вашего аккаунта на сайте Ucoin \n/profile, для этого необходимо зарегистрироваться в "
-        "боте /reg \n \n💬 После регистрации бот будет каждый день собирать данные о вашей коллекции,"
-        "считать суммарную стоимость монет \n/summ, показывать количество монет по странам /countries, "
+        "💬 Этот бот берет данные из вашего аккаунта на сайте Ucoin \n/profile, для этого необходимо "
+        "зарегистрироваться в"
+        "боте /reg \n \n💬 После регистрации бот будет каждый день собирать данные о вашей коллекции,списке обмена\n"
+        "/swap_list, "
+        "считать суммарную стоимость монет /summ, показывать количество монет по странам /countries,  "
         "а также строить график изменения стоимости монет за последний месяц /grafik\n \n"
-        "💬 Вы можете удалить свои данные из бота /delete. При удалении данных стираются также значения стоимости монет, "
+        "💬 Вы можете удалить свои данные из бота /delete. При удалении данных стираются также значения стоимости "
+        "монет,"
         "график обнуляется \n \n"
         "💬 Если у вас есть монеты, стоимость которых не нужно учитывать, выберите (на сайте Ucoin) для монеты желтую "
         "метку (см.рис. ниже)"
@@ -79,7 +82,7 @@ async def ua_welcome(message: types.Message):
 
     photo = InputFile("help.png")
     await bot.send_photo(chat_id=message.from_user.id, photo=photo)
-    # await message.answer("⚙️ Поддержка @M0IIC")
+    await message.answer("⚙️ Поддержка @M0IIC")
     await message.answer("⬇️ Доступные команды")
 
 
@@ -144,7 +147,7 @@ async def process_password(message: types.Message, state: FSMContext):
     try:
         # Пытаемся по введенным данным от пользователя зайти на сайт
         user_coin_id, session = authorize(user_email, user_password)
-        file_name = download_ft(user_coin_id, session)
+        file_name = download(user_coin_id, session)
         total = file_opener(file_name)
         DataCoin.init_new_user(message.from_user.id, total, user_coin_id)
 
@@ -470,19 +473,33 @@ async def countries2(message: types.Message):
     coin_st = DataCoin.get_for_user(message.from_user.id)
 
     australia = strana(f"{coin_st[-1][4]}_.xlsx", message.text)
-    array = [["- " if x is None else x for x in row] for row in australia]
-    array_str = "\n".join([" ".join(map(str, row)) for row in array])
+    # array = [[" " if x is None else x for x in row] for row in australia]
+    array_str = "\n\n".join(["  ".join(map(str, row)) for row in australia])
+    # array_str = "\n\n".join(["  ".join(["{:<8}".format(element) for element in row]) for row in array])
 
     # Replace None with space using list comprehension
 
-    await message.answer(
-        "Формат:\n Страна   Номинал   Год \n Информация   Цена\n__________________________ \n"
-    )
     if len(array_str) > 4096:
         for x in range(0, len(array_str), 4007):
-            await message.answer(array_str[x : x + 4007])
+            await message.answer(array_str[x: x + 4007])
     else:
         await message.answer(array_str)
+
+
+@dp.message_handler(commands=["swap_list"])
+async def swap(message: types.Message):
+    if User.get(tg_id=message.from_user.id) is None:
+        await message.answer("Доступно после регистрации в боте")
+        return
+    coin_st = DataCoin.get_for_user(message.from_user.id)
+    swap_list = func_swap(f"{coin_st[-1][4]}_SWAP.xlsx")
+    array_str = "\n\n".join(["  ".join(map(str, row)) for row in swap_list])
+    if len(array_str) > 4096:
+        for x in range(0, len(array_str), 4045):
+            await message.answer(array_str[x: x + 4045])
+    else:
+        await message.answer(array_str)
+
 
 
 @dp.message_handler(commands=["profile"])
@@ -491,38 +508,11 @@ async def profile(message: types.Message):
     This handler will be called when user sends `/start` or `/help` command
     """
     coin_st = DataCoin.get_for_user(message.from_user.id)
-    site = countries(f"{coin_st[-1][4]}_.xlsx")
 
     await message.answer(
         f'<a href="https://ru.ucoin.net/uid{coin_st[-1][4]}?v=home">Я ссылка, ЖМИ!</a>',
         parse_mode="HTML",
     )
-
-
-# @dp.message_handler(commands=["countries"])
-# async def countries1(message: types.Message):
-#     if User.get(tg_id=message.from_user.id) is None:
-#         await message.answer("Доступно после регистрации в боте")
-#         return
-#     else:
-#         df = pd.read_excel("RutoEng.xlsx", header=None)  # assuming no header
-#         mydict = df.set_index(0)[1].to_dict()
-#         df = pd.read_excel("RutoCode.xlsx", header=None)  # assuming no header
-#         mydict1 = df.set_index(0)[1].to_dict()
-#         coin_st = DataCoin.get_for_user(
-#             message.from_user.id
-#         )  # setting first column as index and second column as values
-#         df = pd.read_excel(f"{coin_st[-1][4]}_.xlsx")
-#         result = ""
-#         grouped = df.groupby("Страна").size()
-#         for country, count in grouped.items():
-#
-#             #await message.answer(f":flag_{mydict1[country]}:")
-#             #await message.answer(f'{mydict1[country]}  {str(count)}     {country}')
-#             result += f"{mydict1[country]}   {str(count)}     {country}\n"
-#             print(result)
-#
-#         await message.answer(result)
 
 
 @dp.message_handler(commands=["grafik"])
