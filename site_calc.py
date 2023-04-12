@@ -72,22 +72,6 @@ def get_graph(telegram_id):
     return f"{telegram_id}_plot.png"
 
 
-# def download_ft(user_coin_id: str, session: requests.Session):
-#     # Скачиваем файл
-#     response = session.get(
-#         # URL файла, который нужно скачать
-#         url=f"https://ru.ucoin.net/uid{user_coin_id}?export=xls",
-#         headers=HEADERS,
-#     )
-#
-#     # Имя файла, в который нужно сохранить содержимое
-#     file_name = f"{user_coin_id}_.xlsx"
-#     # os.remove(file_name)
-#     with open(file_name, "wb") as f:
-#         f.write(response.content)
-#     return file_name
-
-
 def download(user_coin_id: str, session: requests.Session):
     # Скачиваем файл
     response = session.get(
@@ -97,7 +81,7 @@ def download(user_coin_id: str, session: requests.Session):
     )
 
     # Имя файла, в который нужно сохранить содержимое
-    file_name = f"{user_coin_id}_.xlsx"
+    file_name = f"./users_files/{user_coin_id}_.xlsx"
     with open(file_name, "wb") as f:
         f.write(response.content)
 
@@ -107,7 +91,7 @@ def download(user_coin_id: str, session: requests.Session):
         headers=HEADERS,
     )
     # Имя файла, в который нужно сохранить содержимое
-    file_name2 = f"{user_coin_id}_SWAP.xlsx"
+    file_name2 = f"./users_files/{user_coin_id}_SWAP.xlsx"
     with open(file_name2, "wb") as f:
         f.write(response2.content)
 
@@ -122,11 +106,11 @@ def more_info(file_name):
 
 
 def countries(file_name):
-    df = pd.read_excel("RutoEng.xlsx", header=None)  # assuming no header
+    df = pd.read_excel("./config/RutoEng.xlsx", header=None)  # assuming no header
     mydict = df.set_index(0)[
         1
     ].to_dict()  # setting first column as index and second column as values
-    df = pd.read_excel("RutoCode.xlsx", header=None)  # assuming no header
+    df = pd.read_excel("./config/RutoCode.xlsx", header=None)  # assuming no header
     mydict1 = df.set_index(0)[1].to_dict()
 
     df = pd.read_excel(file_name)
@@ -164,7 +148,7 @@ def countries(file_name):
 
 
 def euro(file_name):
-    df = pd.read_excel("RutoCode.xlsx", header=None)  # assuming no header
+    df = pd.read_excel("./config/RutoCode.xlsx", header=None)  # assuming no header
     mydict1 = df.set_index(0)[1].to_dict()
 
     wb = openpyxl.load_workbook(file_name)
@@ -192,7 +176,7 @@ def euro(file_name):
 
 def strana(file_name, text_in):
     # Импортируем модули для работы с Excel и ввода данных
-    df = pd.read_excel("RutoCode.xlsx", header=None)  # assuming no header
+    df = pd.read_excel("./config/RutoCode.xlsx", header=None)  # assuming no header
     mydict1 = df.set_index(0)[1].to_dict()
     # Открываем файл Excel с именем data.xlsx
     # Выбираем первый лист в файле
@@ -204,7 +188,7 @@ def strana(file_name, text_in):
     print(text_in)
     string_without_first_char = text[1:]
     print(string_without_first_char)
-    df = pd.read_excel("EngtoRu.xlsx", header=None)  # assuming no header
+    df = pd.read_excel("./config/EngtoRu.xlsx", header=None)  # assuming no header
     mydict = df.set_index(0)[
         1
     ].to_dict()  # setting first column as index and second column as values
@@ -234,7 +218,7 @@ def strana(file_name, text_in):
 
 def func_swap(file_name):
     # Импортируем модули для работы с Excel и ввода данных
-    df = pd.read_excel("RutoCode.xlsx", header=None)  # assuming no header
+    df = pd.read_excel("./config/RutoCode.xlsx", header=None)  # assuming no header
     mydict1 = df.set_index(0)[1].to_dict()
     # Открываем файл Excel с именем data.xlsx
     # Выбираем первый лист в файле

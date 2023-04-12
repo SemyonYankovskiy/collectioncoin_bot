@@ -29,7 +29,7 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 from database import Database, User, DataCoin
 
 
-API_TOKEN = "6101263183:AAGuzsxAGNO1PlgxaKKI31NIg_I6kXIxzYo"
+API_TOKEN = os.getenv('TG_TOKEN')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -81,7 +81,7 @@ async def ua_welcome(message: types.Message):
         "метку (см.рис. ниже)"
     )
 
-    photo = InputFile("help.png")
+    photo = InputFile("img/help.png")
     await bot.send_photo(chat_id=message.from_user.id, photo=photo)
     await message.answer("⚙️ Поддержка @M0IIC")
     await message.answer("⬇️ Доступные команды")
@@ -179,7 +179,7 @@ async def summ(message: types.Message):
         return
 
     coin_st = DataCoin.get_for_user(message.from_user.id)
-    lot, count = more_info(f"{coin_st[-1][4]}_.xlsx")
+    lot, count = more_info(f"./users_files/{coin_st[-1][4]}_.xlsx")
     # await message.answer(f"Стоимость всех монет {coin_st[-1][3]} руб.")
     await message.answer(emoji.emojize(":coin:"))
     await message.answer(
@@ -195,7 +195,7 @@ async def output_counties(message: types.Message):
         await message.answer("Доступно после регистрации в боте")
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
-    strani = countries(f"{coin_st[-1][4]}_.xlsx")
+    strani = countries(f"./users_files/{coin_st[-1][4]}_.xlsx")
 
     data_length = 0
     output = ""
@@ -237,7 +237,7 @@ async def output_eurocoin(message: types.Message):
         await message.answer("Доступно после регистрации в боте")
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
-    euro1 = euro(f"{coin_st[-1][4]}_.xlsx")
+    euro1 = euro(f"./users_files/{coin_st[-1][4]}_.xlsx")
     await vyvod_monet(message, euro1)
 
 
@@ -513,7 +513,7 @@ async def output_coin(message: types.Message):
         await message.answer("Доступно после регистрации в боте")
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
-    strani = strana(f"{coin_st[-1][4]}_.xlsx", message.text)
+    strani = strana(f"./users_files/{coin_st[-1][4]}_.xlsx", message.text)
     await vyvod_monet(message, strani)
 
 
@@ -523,7 +523,7 @@ async def swap(message: types.Message):
         await message.answer("Доступно после регистрации в боте")
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
-    swap_list = func_swap(f"{coin_st[-1][4]}_SWAP.xlsx")
+    swap_list = func_swap(f"./users_files/{coin_st[-1][4]}_SWAP.xlsx")
     data_length = 0
     output = ""
 
