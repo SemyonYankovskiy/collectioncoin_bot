@@ -16,7 +16,8 @@ from site_calc import (
     more_info,
     countries,
     strana,
-    func_swap
+    func_swap,
+    euro
 )
 
 
@@ -68,7 +69,7 @@ async def ua_welcome(message: types.Message):
     """
     await message.answer(
         "💬 Этот бот берет данные из вашего аккаунта на сайте Ucoin \n/profile, для этого необходимо "
-        "зарегистрироваться в"
+        "зарегистрироваться в "
         "боте /reg \n \n💬 После регистрации бот будет каждый день собирать данные о вашей коллекции,списке обмена\n"
         "/swap_list, "
         "считать суммарную стоимость монет /summ, показывать количество монет по странам /countries,  "
@@ -195,8 +196,33 @@ async def countries1(message: types.Message):
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
     strani = countries(f"{coin_st[-1][4]}_.xlsx")
-    await message.answer("Кол-во монет | Страна")
-    await message.answer(strani)
+    if len(strani) > 4096:
+        for x in range(0, len(strani), 4087):
+            await message.answer(strani[x: x + 4087])
+    else:
+        await message.answer(strani)
+    #await message.answer(strani)
+    #await message.answer(f'🇪🇺  {count_euro}   Евросоюз \n             /Europe ')
+
+
+@dp.message_handler(commands=["europe"])
+async def countries1(message: types.Message):
+    if User.get(tg_id=message.from_user.id) is None:
+        await message.answer("Доступно после регистрации в боте")
+        return
+    coin_st = DataCoin.get_for_user(message.from_user.id)
+    euro1, count_euro = euro(f"{coin_st[-1][4]}_.xlsx")
+
+    array_str = "\n\n".join([" ".join(map(str, row)) for row in euro1])
+    # array_str = "\n\n".join(["  ".join(["{:<8}".format(element) for element in row]) for row in array])
+
+    # Replace None with space using list comprehension
+
+    if len(array_str) > 4096:
+        for x in range(0, len(array_str), 4007):
+            await message.answer(array_str[x: x + 4007])
+    else:
+        await message.answer(array_str)
 
 
 @dp.message_handler(
@@ -471,13 +497,8 @@ async def countries2(message: types.Message):
         await message.answer("Доступно после регистрации в боте")
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
-
-    australia = strana(f"{coin_st[-1][4]}_.xlsx", message.text)
-    # array = [[" " if x is None else x for x in row] for row in australia]
-    array_str = "\n\n".join(["  ".join(map(str, row)) for row in australia])
-    # array_str = "\n\n".join(["  ".join(["{:<8}".format(element) for element in row]) for row in array])
-
-    # Replace None with space using list comprehension
+    strani = strana(f"{coin_st[-1][4]}_.xlsx", message.text)
+    array_str = "\n\n".join(["  ".join(map(str, row)) for row in strani])
 
     if len(array_str) > 4096:
         for x in range(0, len(array_str), 4007):
@@ -499,7 +520,6 @@ async def swap(message: types.Message):
             await message.answer(array_str[x: x + 4045])
     else:
         await message.answer(array_str)
-
 
 
 @dp.message_handler(commands=["profile"])
