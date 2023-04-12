@@ -166,7 +166,7 @@ async def process_password(message: types.Message, state: FSMContext):
     # Если данные были верные, то записываем в базу пользователя
     user = User(message.from_user.id, user_email, user_password)
     user.save()
-    # await message.answer(emoji.emojize(":handshake:"))
+
     await message.answer("Регистрация успешна\n" "Данные добавлены в базу")
 
     await state.finish()
@@ -190,39 +190,55 @@ async def summ(message: types.Message):
 
 
 @dp.message_handler(commands=["countries"])
-async def countries1(message: types.Message):
+async def output_counties(message: types.Message):
     if User.get(tg_id=message.from_user.id) is None:
         await message.answer("Доступно после регистрации в боте")
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
     strani = countries(f"{coin_st[-1][4]}_.xlsx")
-    if len(strani) > 4096:
-        for x in range(0, len(strani), 4087):
-            await message.answer(strani[x: x + 4087])
-    else:
-        await message.answer(strani)
-    #await message.answer(strani)
-    #await message.answer(f'🇪🇺  {count_euro}   Евросоюз \n             /Europe ')
+
+    data_length = 0
+    output = ""
+    for flag, count, name, cmd in strani:
+        part = f"{flag} {count:<5}{name}\n           /{cmd}\n"
+        part_len = len(part)
+        data_length += part_len
+        if data_length > 4096:
+            await message.answer(output)  # Отправляем пользователю output.
+            output = part
+            data_length = part_len
+        else:
+
+            output += part
+    await message.answer(output)
+
+
+async def vyvod_monet(message: types.Message, input_list):
+
+    data_length = 0
+    output = ""
+    for flag, nominal, year, cena, md, name in input_list:
+        part = f"{flag} {nominal} {year} {cena} {md} {name}\n\n"
+        part_len = len(part)
+        data_length += part_len
+        if data_length > 4096:
+            await message.answer(output)  # Отправляем пользователю output.
+            output = part
+            data_length = part_len
+        else:
+
+            output += part
+    await message.answer(output)
 
 
 @dp.message_handler(commands=["europe"])
-async def countries1(message: types.Message):
+async def output_eurocoin(message: types.Message):
     if User.get(tg_id=message.from_user.id) is None:
         await message.answer("Доступно после регистрации в боте")
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
-    euro1, count_euro = euro(f"{coin_st[-1][4]}_.xlsx")
-
-    array_str = "\n\n".join([" ".join(map(str, row)) for row in euro1])
-    # array_str = "\n\n".join(["  ".join(["{:<8}".format(element) for element in row]) for row in array])
-
-    # Replace None with space using list comprehension
-
-    if len(array_str) > 4096:
-        for x in range(0, len(array_str), 4007):
-            await message.answer(array_str[x: x + 4007])
-    else:
-        await message.answer(array_str)
+    euro1 = euro(f"{coin_st[-1][4]}_.xlsx")
+    await vyvod_monet(message, euro1)
 
 
 @dp.message_handler(
@@ -492,19 +508,13 @@ async def countries1(message: types.Message):
         ]
     )
 )
-async def countries2(message: types.Message):
+async def output_coin(message: types.Message):
     if User.get(tg_id=message.from_user.id) is None:
         await message.answer("Доступно после регистрации в боте")
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
     strani = strana(f"{coin_st[-1][4]}_.xlsx", message.text)
-    array_str = "\n\n".join(["  ".join(map(str, row)) for row in strani])
-
-    if len(array_str) > 4096:
-        for x in range(0, len(array_str), 4007):
-            await message.answer(array_str[x: x + 4007])
-    else:
-        await message.answer(array_str)
+    await vyvod_monet(message, strani)
 
 
 @dp.message_handler(commands=["swap_list"])
@@ -514,12 +524,21 @@ async def swap(message: types.Message):
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
     swap_list = func_swap(f"{coin_st[-1][4]}_SWAP.xlsx")
-    array_str = "\n\n".join(["  ".join(map(str, row)) for row in swap_list])
-    if len(array_str) > 4096:
-        for x in range(0, len(array_str), 4045):
-            await message.answer(array_str[x: x + 4045])
-    else:
-        await message.answer(array_str)
+    data_length = 0
+    output = ""
+
+    for flag, nominal, year, cena, count, md, name, comment in swap_list:
+        part = f"{flag} {nominal} {year} {cena} {count} {md} {name} {comment} \n\n"
+        part_len = len(part)
+        data_length += part_len
+        if data_length > 4096:
+            await message.answer(output)  # Отправляем пользователю output.
+            output = part
+            data_length = part_len
+        else:
+
+            output += part
+    await message.answer(output)
 
 
 @dp.message_handler(commands=["profile"])

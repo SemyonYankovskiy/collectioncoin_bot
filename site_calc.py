@@ -1,4 +1,3 @@
-
 import requests
 import openpyxl
 import matplotlib.pyplot as plt
@@ -13,7 +12,7 @@ class AuthFail(Exception):
 
 HEADERS = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 "
-    "YaBrowser/23.3.0.2246 Yowser/2.5 Safari/537.36"
+                  "YaBrowser/23.3.0.2246 Yowser/2.5 Safari/537.36"
 }
 
 
@@ -131,11 +130,19 @@ def countries(file_name):
     mydict1 = df.set_index(0)[1].to_dict()
 
     df = pd.read_excel(file_name)
-    result = ""
+    result = []
     grouped = df.groupby("Страна").size()
     for country, count in grouped.items():
-        result += f"{mydict1[country]} {str(count):<5}{country}\n            /{mydict[country]}\n"
+        # result += f"{mydict1[country]} {str(count):<5}{country}\n            /{mydict[country]}\n"
+        result.append(
+            [
+                mydict1[country],  # Страна
+                count,  # номинал
+                country,  # ГОД
+                mydict[country],
 
+            ]
+        )
     wb = openpyxl.load_workbook(file_name)
     ws = wb.active
 
@@ -144,22 +151,28 @@ def countries(file_name):
         if "евро" in row[1].value:
             count_euro += 1
 
-    result += f'🇪🇺  {count_euro}   Евросоюз\n             /Europe '
+    # result += f'🇪🇺  {count_euro}   Евросоюз\n             /Europe'
+    result.append(
+        [
+            f'🇪🇺',
+            count_euro,
+            f'Евросоюз',
+            f'Europe',
+        ]
+    )
     return result
 
 
 def euro(file_name):
-
     df = pd.read_excel("RutoCode.xlsx", header=None)  # assuming no header
     mydict1 = df.set_index(0)[1].to_dict()
 
     wb = openpyxl.load_workbook(file_name)
     ws = wb.active
     euros = []
-    count_euro = 0
+
     for row in ws.iter_rows(min_row=1, max_col=7):
         if "евро" in row[1].value:
-            count_euro += 1
             des3 = (f"\nМонетный двор: {row[3].value}" if row[3].value else "")  # монетный двор
             des4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
 
@@ -174,7 +187,7 @@ def euro(file_name):
                 ]
             )
 
-    return euros, count_euro
+    return euros
 
 
 def strana(file_name, text_in):
@@ -203,9 +216,7 @@ def strana(file_name, text_in):
     # Проходимся по строкам и суммируем значения в столбце G
     for row in ws.iter_rows(min_row=1, max_col=7):
         if row[0].value == text2:
-            desc3 = (
-                f"\nМонетный двор: {row[3].value}" if row[3].value else ""
-            )  # монетный двор
+            desc3 = (f"\nМонетный двор: {row[3].value}" if row[3].value else "")  # монетный двор
             desc4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
             arr.append(
                 [
@@ -236,19 +247,17 @@ def func_swap(file_name):
     for row in ws.iter_rows(min_row=2, max_col=11):
         desc4 = f"{row[4].value}" if row[4].value else ""  # Наименование
         desc3 = f"{row[3].value}" if row[3].value else ""  # монетный двор
-        desc10 = (
-            f"\nКомментарий: {row[10].value}" if row[10].value else ""
-        )  # комментарий
+        desc10 = (f"\nКомментарий: {row[10].value}" if row[10].value else "")  # комментарий
         arr.append(
             [
-                mydict1[row[0].value],
-                row[1].value,
-                row[2].value,
-                f" {row[6].value} ₽",
-                f"\nКол-во: {row[7].value}",
-                desc3,
-                desc4,
-                desc10,
+                mydict1[row[0].value],  # Флаг
+                row[1].value,  # Номинал
+                row[2].value,  # Год
+                f" {row[6].value} ₽",  # Цена
+                f"\nКол-во: {row[7].value}",  # Кол-во
+                desc3,  # монетный двор
+                desc4,  # Наименование
+                desc10,  # комментарий
             ]
         )
     return arr
