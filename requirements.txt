@@ -1,0 +1,7 @@
+aiogram
+emoji
+schedule
+requests
+openpyxl
+matplotlib
+pandas
