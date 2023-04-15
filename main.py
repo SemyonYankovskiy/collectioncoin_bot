@@ -6,7 +6,7 @@ from aiogram.dispatcher.filters import Command
 from aiogram.types import InputFile
 from threading import Thread
 
-from gather import gather_manager
+from gather import gather_manager, gather_graph_data, GatherFail
 from site_calc import (
     authorize,
     AuthFail,
@@ -48,18 +48,26 @@ class Form(StatesGroup):
 
 
 class DeleteForm(StatesGroup):
-    confirm_delete = State()  # состояние для ввода имени пользователя
-    confirm_delete2 = State()
+    confirm_delete = State()  # 1 состояние для удаления данных из бота
+    confirm_delete2 = State()   # 2 состояние для удаления данных из бота
 
 
 @dp.message_handler(commands=["start"])
 async def hello_welcome(message: types.Message):
-    """
-    This handler will be called when user sends `/start` or `/help` command
-    """
     await message.answer(emoji.emojize(":robot:"))
     await message.answer(f"Здарова, {message.from_user.full_name}")
     await message.answer("⬇️ Доступные команды")
+
+
+# Временная функция принудительного обновления
+@dp.message_handler(commands=["refresh"])
+async def refresh_data(message: types.Message):
+    try:
+        gather_graph_data(message.from_user.id)
+        await message.answer('База данных успешно обновлена')
+    except GatherFail:
+        await message.answer('Данные актуальны')
+        return
 
 
 @dp.message_handler(commands=["help"])
@@ -80,7 +88,6 @@ async def ua_welcome(message: types.Message):
         "💬 Если у вас есть монеты, стоимость которых не нужно учитывать, выберите (на сайте Ucoin) для монеты желтую "
         "метку (см.рис. ниже)"
     )
-
     photo = InputFile("img/help.png")
     await bot.send_photo(chat_id=message.from_user.id, photo=photo)
     await message.answer("⚙️ Поддержка @M0IIC")
@@ -538,7 +545,10 @@ async def swap(message: types.Message):
         else:
 
             output += part
-    await message.answer(output)
+    if not output:
+        await message.answer('Список обмена пуст')
+    else:
+        await message.answer(output)
 
 
 @dp.message_handler(commands=["profile"])

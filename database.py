@@ -2,6 +2,10 @@ import sqlite3
 from datetime import datetime, date, timedelta
 
 
+class DBFail(Exception):
+    pass
+
+
 class Database:
     def __init__(self):
         self.conn = sqlite3.connect("users.db")
@@ -82,12 +86,18 @@ class DataCoin:
         db = Database()
         # Вычисляем дату 30 дней назад
         thirty_days_ago = date.today() - timedelta(days=30)
-
         # Удаляем данные старше 30 дней
         db.cursor.execute(
             f"DELETE FROM graph_data WHERE datetime <= '{thirty_days_ago.strftime('%Y.%m.%d')}'"
         )
         db.conn.commit()
+        db.cursor.execute("SELECT tg_id, COUNT(*) FROM graph_data GROUP BY tg_id")
+        # Для каждого пользователя в результате запроса
+        for row in db.cursor:
+            if row[1] >= 30:
+                raise DBFail("Больше 30 значений")
+            else:
+                continue
 
     @staticmethod
     def delete_user_data(tg_id):
