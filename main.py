@@ -63,8 +63,10 @@ async def hello_welcome(message: types.Message):
 @dp.message_handler(commands=["refresh"])
 async def refresh_data(message: types.Message):
     try:
-        gather_graph_data(message.from_user.id)
-        await message.answer('База данных успешно обновлена')
+        # вызываем функцию обновления БД
+        gather_graph_data()
+        await message.answer('База данных успешно обновлена ')
+    # ловим ошибку от обновления БД
     except GatherFail:
         await message.answer('Данные актуальны')
         return
@@ -72,9 +74,6 @@ async def refresh_data(message: types.Message):
 
 @dp.message_handler(commands=["help"])
 async def ua_welcome(message: types.Message):
-    """
-    This handler will be called when user sends `/start` or `/help` command
-    """
     await message.answer(
         "💬 Этот бот берет данные из вашего аккаунта на сайте Ucoin \n/profile, для этого необходимо "
         "зарегистрироваться в "
@@ -88,14 +87,15 @@ async def ua_welcome(message: types.Message):
         "💬 Если у вас есть монеты, стоимость которых не нужно учитывать, выберите (на сайте Ucoin) для монеты желтую "
         "метку (см.рис. ниже)"
     )
-    photo = InputFile("img/help.png")
-    await bot.send_photo(chat_id=message.from_user.id, photo=photo)
+    await bot.send_photo(chat_id=message.from_user.id, photo=InputFile("img/help.png"))
     await message.answer("⚙️ Поддержка @M0IIC")
     await message.answer("⬇️ Доступные команды")
 
 
 @dp.message_handler(commands=["reg"])
 async def reg_welcome(message: types.Message):
+    # Проверка пользователя в БД, чтобы исключить регистрацию с 1 аккаунта телеграм, если всё ок, устанавливаем
+    # конечный автомат в состояние email чтобы попасть в функцию process_email
     if User.get(tg_id=message.from_user.id) is None:
         await message.reply(
             "Фиксирую. Вводи email \n________________________ \nИли жми /EXIT"
@@ -103,13 +103,12 @@ async def reg_welcome(message: types.Message):
         await message.answer(emoji.emojize(":monkey_face:"))
         await Form.email.set()
         return
+    else:
+        await message.reply("Ты уже регистрировался")
+        return
 
-    await message.reply("Ты уже регистрировался")
 
-    return
-
-
-# Создаем обработчик сообщений в состоянии name
+# Создаем обработчик сообщений в состоянии email
 @dp.message_handler(state=Form.email)
 async def process_email(message: types.Message, state: FSMContext):
     # Обработка кнопки EXIT
@@ -117,7 +116,8 @@ async def process_email(message: types.Message, state: FSMContext):
         await state.finish()  # Завершаем текущий state
         await message.answer("⬇️ Доступные команды")
         return
-
+    # Проверка пользователя в БД, чтобы исключить регистрацию такой же почты, если совпадения нет, то переводим
+    # конечный автомат в следующее состояние password
     if User.check_email(email=message.text) is None:
         # Получаем имя пользователя из сообщения и сохраняем его во временном хранилище
         await state.update_data(user_Email=message.text)
@@ -129,7 +129,7 @@ async def process_email(message: types.Message, state: FSMContext):
         await message.answer(emoji.emojize("\U0001F648"))
         await Form.next()
     else:
-        await state.finish()  # Завершаем текущий state
+        await state.finish()  # Сбрасываем состояние конечного автомата
         await message.answer("Почта ворованная, пёс")
         return
 
@@ -137,7 +137,6 @@ async def process_email(message: types.Message, state: FSMContext):
 # Создаем обработчик сообщений в состоянии password
 @dp.message_handler(state=Form.password)
 async def process_password(message: types.Message, state: FSMContext):
-    # Получаем пароль пользователя из сообщения и сохраняем его во временном хранилище
 
     # Обработка кнопки EXIT
     if message.text.lower() == "/exit":
@@ -145,12 +144,13 @@ async def process_password(message: types.Message, state: FSMContext):
         await message.answer("⬇️ Доступные команды")
         return
 
+    # Получаем пароль пользователя из сообщения и сохраняем его во временном хранилище
     await state.update_data(user_password=message.text)
 
     # Получаем данные из хранилища и формируем ответ
-    hueta = await state.get_data()
-    user_email = hueta.get("user_Email")
-    user_password = hueta.get("user_password")
+    temp = await state.get_data()
+    user_email = temp.get("user_Email")
+    user_password = temp.get("user_password")
 
     try:
         # Пытаемся по введенным данным от пользователя зайти на сайт
@@ -175,19 +175,21 @@ async def process_password(message: types.Message, state: FSMContext):
     user.save()
 
     await message.answer("Регистрация успешна\n" "Данные добавлены в базу")
-
+    # сбрасываем состояние автомата
     await state.finish()
 
 
 @dp.message_handler(commands=["summ"])
 async def summ(message: types.Message):
+    # Проверка наличия пользователя в базе
     if User.get(tg_id=message.from_user.id) is None:
         await message.answer("Доступно после регистрации в боте")
         return
-
+    # обращаемся к БД, через функцию get_for_user, в переменную записываем массив значений для пользователя
     coin_st = DataCoin.get_for_user(message.from_user.id)
+    # обращаемся к функции more info, передаем в эту функциию значение переменной (значение из 4 столбца массива)
     lot, count = more_info(f"./users_files/{coin_st[-1][4]}_.xlsx")
-    # await message.answer(f"Стоимость всех монет {coin_st[-1][3]} руб.")
+
     await message.answer(emoji.emojize(":coin:"))
     await message.answer(
         f"Количество монет {lot} \n"
@@ -198,20 +200,29 @@ async def summ(message: types.Message):
 
 @dp.message_handler(commands=["countries"])
 async def output_counties(message: types.Message):
+    # Проверка наличия пользователя в базе
     if User.get(tg_id=message.from_user.id) is None:
         await message.answer("Доступно после регистрации в боте")
         return
+    # обращаемся к БД, через функцию get_for_user, в переменную записываем массив значений для пользователя
     coin_st = DataCoin.get_for_user(message.from_user.id)
+    # обращаемся к функции countries, передаем в эту функциию значение переменной coin_st(значение из 4 столбца массива)
+    # функция возвращает массив strani
     strani = countries(f"./users_files/{coin_st[-1][4]}_.xlsx")
 
+    # Условие построчного переноса, при превышении длинны сообщения более 4096 символов
     data_length = 0
     output = ""
+    # Записываем элементы массива как строку
     for flag, count, name, cmd in strani:
         part = f"{flag} {count:<5}{name}\n           /{cmd}\n"
+        # определяем длинну строки
         part_len = len(part)
+        # суммируем длинны всех строк
         data_length += part_len
+        # при превышении длинны всех строк больше чем 4096 символов
         if data_length > 4096:
-            await message.answer(output)  # Отправляем пользователю output.
+            await message.answer(output)  # Отправляем пользователю output, на данный момент
             output = part
             data_length = part_len
         else:
