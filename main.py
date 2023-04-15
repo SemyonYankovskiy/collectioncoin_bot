@@ -5,8 +5,9 @@ import emoji
 from aiogram.dispatcher.filters import Command
 from aiogram.types import InputFile
 from threading import Thread
+from limiter import rate_limit
 
-from gather import gather_manager, gather_graph_data, GatherFail
+from gather import gather_manager
 from site_calc import (
     authorize,
     AuthFail,
@@ -17,7 +18,8 @@ from site_calc import (
     countries,
     strana,
     func_swap,
-    euro
+    euro,
+    refresh
 )
 
 
@@ -61,15 +63,13 @@ async def hello_welcome(message: types.Message):
 
 # Временная функция принудительного обновления
 @dp.message_handler(commands=["refresh"])
+@rate_limit(600)
 async def refresh_data(message: types.Message):
-    try:
-        # вызываем функцию обновления БД
-        gather_graph_data()
-        await message.answer('База данных успешно обновлена ')
-    # ловим ошибку от обновления БД
-    except GatherFail:
-        await message.answer('Данные актуальны')
+    if User.get(tg_id=message.from_user.id) is None:
+        await message.answer("Доступно после регистрации в боте")
         return
+    refresh(message.from_user.id)
+    await message.answer("База данных успешно обновлена")
 
 
 @dp.message_handler(commands=["help"])

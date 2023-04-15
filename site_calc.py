@@ -1,7 +1,7 @@
 import requests
 import openpyxl
 import matplotlib.pyplot as plt
-from database import DataCoin
+from database import DataCoin, User
 import pandas as pd
 
 
@@ -70,6 +70,15 @@ def get_graph(telegram_id):
 
     plt.savefig(f"{telegram_id}_plot.png")
     return f"{telegram_id}_plot.png"
+
+
+def refresh(telegram_id):
+
+    user = User.get(telegram_id)
+    user_coin_id, session = authorize(user.email, user.password)
+    file_name = download(user_coin_id, session)
+    total = file_opener(file_name)
+    DataCoin(user.telegram_id, total, user_coin_id).save()
 
 
 def download(user_coin_id: str, session: requests.Session):
