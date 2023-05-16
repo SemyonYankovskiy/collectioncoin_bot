@@ -74,10 +74,12 @@ def get_graph(telegram_id):
 
 def refresh(telegram_id):
 
+    DataCoin.clear_old_data()
     user = User.get(telegram_id)
     user_coin_id, session = authorize(user.email, user.password)
     file_name = download(user_coin_id, session)
     total = file_opener(file_name)
+    DataCoin(user.telegram_id, total, user_coin_id).debug()
     DataCoin(user.telegram_id, total, user_coin_id).save()
 
 
@@ -273,3 +275,5 @@ def file_opener(file_name):
             total += row[6].value
 
     return round(total, 2)
+
+

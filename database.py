@@ -40,6 +40,7 @@ class DataCoin:
 
     def save(self):
         db = Database()
+
         try:
             db.cursor.execute(f"DELETE FROM graph_data WHERE tg_id='{self.telegram_id}' and datetime='{self.datetime.strftime('%Y.%m.%d')}'")
             db.cursor.execute(
@@ -51,6 +52,45 @@ class DataCoin:
             print(f"{self.user_coin_id} added successfully!")
         except sqlite3.IntegrityError:
             print(f"Already exists in the database.")
+
+    def debug(self):
+        db = Database()
+        db.cursor.execute("SELECT tg_id, COUNT(*) FROM graph_data GROUP BY tg_id")
+        # Для каждого пользователя в результате запроса
+        for row in db.cursor:
+            if row[1] < 30:
+
+                date1 = date.today()
+                print(date1)
+
+                db.cursor.execute(
+                    f"SELECT datetime FROM graph_data ORDER BY id LIMIT 1;"
+                )
+                date2 = db.cursor.fetchone()
+                date21 = date2[0]
+                date22 = datetime.strptime(date21, "%Y.%m.%d")
+                date23 = date22.date()
+
+                delta = date1 - date23
+                #
+                print(delta.days)
+
+                query = ""
+                day_increment = date.today()
+                for _ in range(delta.days):
+                    query += f"({self.telegram_id}, '{day_increment.strftime('%Y.%m.%d')}', {self.totla_sum}, {self.user_coin_id}),"
+                    day_increment -= timedelta(days=1)
+
+                try:
+                    db.cursor.execute(
+                        f"INSERT INTO graph_data (tg_id, datetime, totla_sum, user_coin_id) "
+                        f"VALUES {query[0:-1]}"
+                    )
+                    db.conn.commit()
+                except sqlite3.IntegrityError:
+                    print(f"ГРОБ ГРОБ КЛАДБИЩЕ МОГИЛА СМЕРТЬ ГАВНО")
+            else:
+                continue
 
     @staticmethod
     def init_new_user(tg_id: int, totla_sum: float, user_coin_id):
@@ -159,3 +199,26 @@ class User:
         db.cursor.execute(f"DELETE FROM users WHERE tg_id='{tg_id}'")
         db.conn.commit()
         print(f"User {tg_id} removed successfully!")
+
+    # @staticmethod
+    # def test():
+    #     db = Database()
+    #
+    #     date1 = date.today()
+    #     print(date1)
+    #
+    #     db.cursor.execute(
+    #         f"SELECT datetime FROM graph_data ORDER BY id LIMIT 1;"
+    #     )
+    #     date2 = db.cursor.fetchone()
+    #
+    #     date21 = date2[0]
+    #
+    #     date22 = datetime.strptime(date21, "%Y.%m.%d")
+    #
+    #     date23 = date22.date()
+    #
+    #     delta = date1 - date23
+    #     #
+    #     print(delta.days)
+    #
