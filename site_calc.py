@@ -276,4 +276,3 @@ def file_opener(file_name):
 
     return round(total, 2)
 
-

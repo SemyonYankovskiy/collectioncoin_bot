@@ -200,25 +200,3 @@ class User:
         db.conn.commit()
         print(f"User {tg_id} removed successfully!")
 
-    # @staticmethod
-    # def test():
-    #     db = Database()
-    #
-    #     date1 = date.today()
-    #     print(date1)
-    #
-    #     db.cursor.execute(
-    #         f"SELECT datetime FROM graph_data ORDER BY id LIMIT 1;"
-    #     )
-    #     date2 = db.cursor.fetchone()
-    #
-    #     date21 = date2[0]
-    #
-    #     date22 = datetime.strptime(date21, "%Y.%m.%d")
-    #
-    #     date23 = date22.date()
-    #
-    #     delta = date1 - date23
-    #     #
-    #     print(delta.days)
-    #
