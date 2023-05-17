@@ -58,18 +58,22 @@ class DataCoin:
         db.cursor.execute("SELECT tg_id, COUNT(*) FROM graph_data GROUP BY tg_id")
         # Для каждого пользователя в результате запроса
         for row in db.cursor:
+            print("Количество строк")
+            print(row)
             if row[1] < 30:
+
 
                 date1 = date.today()
                 print(date1)
 
                 db.cursor.execute(
-                    f"SELECT datetime FROM graph_data ORDER BY id LIMIT 1;"
+                    f"SELECT datetime FROM graph_data ORDER BY datetime DESC LIMIT 1;"
                 )
                 date2 = db.cursor.fetchone()
                 date21 = date2[0]
                 date22 = datetime.strptime(date21, "%Y.%m.%d")
                 date23 = date22.date()
+                print(date23)
 
                 delta = date1 - date23
                 #
