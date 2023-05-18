@@ -5,3 +5,4 @@ requests
 openpyxl
 matplotlib
 pandas
+beautifulsoup4
