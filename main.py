@@ -568,9 +568,12 @@ async def profile(message: types.Message):
     This handler will be called when user sends `/start` or `/help` command
     """
     coin_st = DataCoin.get_for_user(message.from_user.id)
-
+    user = User.get(message.from_user.id)
+    message_status = f'✉️' if user.new_messages == 0 else f'📩'
+    swap_status = f'❕' if user.new_swap == 0 else f'❗️'
     await message.answer(
-        f'<a href="https://ru.ucoin.net/uid{coin_st[-1][4]}?v=home">Я ссылка, ЖМИ!</a>',
+        f'<a href="https://ru.ucoin.net/uid{coin_st[-1][4]}?v=home">👤 Профиль</a>\n'
+        f'{message_status} Новые сообщения {user.new_messages} \n{swap_status} Предложения обмена {user.new_swap}',
         parse_mode="HTML",
     )
 

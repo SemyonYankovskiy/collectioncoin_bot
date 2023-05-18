@@ -5,6 +5,9 @@ from database import DataCoin, User
 import pandas as pd
 
 
+from bs4 import BeautifulSoup
+
+
 # класс ошибок
 class AuthFail(Exception):
     pass
@@ -12,7 +15,7 @@ class AuthFail(Exception):
 
 HEADERS = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 "
-                  "YaBrowser/23.3.0.2246 Yowser/2.5 Safari/537.36"
+    "YaBrowser/23.3.0.2246 Yowser/2.5 Safari/537.36"
 }
 
 
@@ -73,7 +76,6 @@ def get_graph(telegram_id):
 
 
 def refresh(telegram_id):
-
     DataCoin.clear_old_data()
     user = User.get(telegram_id)
     user_coin_id, session = authorize(user.email, user.password)
@@ -81,6 +83,30 @@ def refresh(telegram_id):
     total = file_opener(file_name)
     DataCoin(user.telegram_id, total, user_coin_id).debug()
     DataCoin(user.telegram_id, total, user_coin_id).save()
+    parsing(session, user, user_coin_id)
+
+
+def parsing(session, user, user_coin_id):
+    response = session.get(
+        url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
+        headers=HEADERS,
+    )
+    print(response)
+    soup = BeautifulSoup(response.content, "html.parser")
+    results = soup.find(id="notify-popup")
+
+    tag_messages = results.select("a:nth-child(4) div")
+    tag_swap = results.select("a:nth-child(5) div")
+
+    new_messages_count = tag_messages[1].text if len(tag_messages) == 2 else '0'
+    new_swap_count = tag_swap[1].text if len(tag_swap) == 2 else '0'
+    if new_messages_count.isdigit() and new_swap_count.isdigit():
+        user.new_messages = int(new_messages_count)
+        user.new_swap = int(new_swap_count)
+        user.save()
+        print('работает')
+    else:
+        print('Эта хуйня tag_messages tag_swap хотела быть числом')
 
 
 def download(user_coin_id: str, session: requests.Session):
@@ -135,7 +161,6 @@ def countries(file_name):
                 count,  # номинал
                 country,  # ГОД
                 mydict[country],
-
             ]
         )
     wb = openpyxl.load_workbook(file_name)
@@ -149,10 +174,10 @@ def countries(file_name):
     # result += f'🇪🇺  {count_euro}   Евросоюз\n             /Europe'
     result.append(
         [
-            f'🇪🇺',
+            f"🇪🇺",
             count_euro,
-            f'Евросоюз',
-            f'Europe',
+            f"Евросоюз",
+            f"Europe",
         ]
     )
     return result
@@ -168,7 +193,9 @@ def euro(file_name):
 
     for row in ws.iter_rows(min_row=1, max_col=7):
         if "евро" in row[1].value:
-            des3 = (f"\nМонетный двор: {row[3].value}" if row[3].value else "")  # монетный двор
+            des3 = (
+                f"\nМонетный двор: {row[3].value}" if row[3].value else ""
+            )  # монетный двор
             des4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
 
             euros.append(
@@ -211,7 +238,9 @@ def strana(file_name, text_in):
     # Проходимся по строкам и суммируем значения в столбце G
     for row in ws.iter_rows(min_row=1, max_col=7):
         if row[0].value == text2:
-            desc3 = (f"\nМонетный двор: {row[3].value}" if row[3].value else "")  # монетный двор
+            desc3 = (
+                f"\nМонетный двор: {row[3].value}" if row[3].value else ""
+            )  # монетный двор
             desc4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
             arr.append(
                 [
@@ -242,7 +271,9 @@ def func_swap(file_name):
     for row in ws.iter_rows(min_row=2, max_col=11):
         desc4 = f"{row[4].value}" if row[4].value else ""  # Наименование
         desc3 = f"{row[3].value}" if row[3].value else ""  # монетный двор
-        desc10 = (f"\nКомментарий: {row[10].value}" if row[10].value else "")  # комментарий
+        desc10 = (
+            f"\nКомментарий: {row[10].value}" if row[10].value else ""
+        )  # комментарий
         arr.append(
             [
                 mydict1[row[0].value],  # Флаг
@@ -275,4 +306,3 @@ def file_opener(file_name):
             total += row[6].value
 
     return round(total, 2)
-

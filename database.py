@@ -18,7 +18,9 @@ class Database:
             """CREATE TABLE IF NOT EXISTS users
                             (tg_id INTEGER PRIMARY KEY NOT NULL,
                             email TEXT NOT NULL,
-                            password TEXT NOT NULL);"""
+                            password TEXT NOT NULL,
+                            new_messages INTEGER DEFAULT NULL,
+                            new_swap INTEGER DEFAULT NULL);"""
         )
         cursor.execute(
             """CREATE TABLE IF NOT EXISTS graph_data
@@ -152,22 +154,33 @@ class DataCoin:
 
 
 class User:
-    def __init__(self, telegram_id, email, password):
+    def __init__(self, telegram_id, email, password, new_messages=None, new_swap=None):
         self.telegram_id = telegram_id
         self.email = email
         self.password = password
+        self.new_messages = new_messages
+        self.new_swap = new_swap
 
     def save(self):
         db = Database()
         try:
             db.cursor.execute(
-                f"INSERT INTO users (tg_id, email, password) "
-                f"VALUES ('{self.telegram_id}', '{self.email}', '{self.password}')"
+                f"INSERT INTO users (tg_id, email, password, new_messages, new_swap ) "
+                f"VALUES ('{self.telegram_id}', '{self.email}', '{self.password}', {self.new_messages}, {self.new_swap})"
             )
             db.conn.commit()
             print(f"User {self.email} added successfully!")
         except sqlite3.IntegrityError:
-            print(f"User {self.email} already exists in the database.")
+            print(f"User {self.email} UPDATE in the database.")
+            db.cursor.execute(
+
+                f"UPDATE  users SET (email, password, new_messages, new_swap )= "
+                f"('{self.email}', '{self.password}', {self.new_messages}, {self.new_swap})"
+                f"WHERE tg_id = {self.telegram_id} ;"
+            )
+            db.conn.commit()
+
+
 
     @staticmethod
     def get(tg_id):
