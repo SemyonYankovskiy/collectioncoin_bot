@@ -42,6 +42,12 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 
 Database.create_tables()
 
+path = os.path.join(os.getcwd(), 'users_files')
+try:
+    os.mkdir(path)
+    print("Directory '%s' created successfully")
+except OSError as error:
+    print("Directory '%s' can not be created")
 
 # Создаем класс состояний для конечного автомата
 class Form(StatesGroup):
@@ -564,9 +570,9 @@ async def swap(message: types.Message):
 
 @dp.message_handler(commands=["profile"])
 async def profile(message: types.Message):
-    """
-    This handler will be called when user sends `/start` or `/help` command
-    """
+    if User.get(tg_id=message.from_user.id) is None:
+        await message.answer("Доступно после регистрации в боте")
+        return
     coin_st = DataCoin.get_for_user(message.from_user.id)
     user = User.get(message.from_user.id)
     message_status = f'✉️' if user.new_messages == 0 else f'📩'

@@ -166,7 +166,7 @@ class User:
         try:
             db.cursor.execute(
                 f"INSERT INTO users (tg_id, email, password, new_messages, new_swap ) "
-                f"VALUES ('{self.telegram_id}', '{self.email}', '{self.password}', {self.new_messages}, {self.new_swap})"
+                f"VALUES ('{self.telegram_id}', '{self.email}', '{self.password}', {self.new_messages or 0}, {self.new_swap or 0})"
             )
             db.conn.commit()
             print(f"User {self.email} added successfully!")

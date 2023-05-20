@@ -19,6 +19,7 @@ HEADERS = {
 }
 
 
+
 def authorize(username, password):
     # Создаем сессию для сохранения куки
     with requests.Session() as session:
