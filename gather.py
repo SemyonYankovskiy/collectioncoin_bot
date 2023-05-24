@@ -12,13 +12,10 @@ class GatherFail(Exception):
 def gather_graph_data(*args, **kwargs):
     users_list = User.get_all()
 
-    DataCoin.clear_old_data()
-
     for user in users_list:
         user_coin_id, session = authorize(user.email, user.password)
         file_name = download(user_coin_id, session)
         total = file_opener(file_name)
-        DataCoin(user.telegram_id, total, user_coin_id).debug()
         DataCoin(user.telegram_id, total, user_coin_id).save()
         parsing(session, user, user_coin_id)
 
