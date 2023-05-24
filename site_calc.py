@@ -1,6 +1,9 @@
+from typing import List
+
 import requests
 import openpyxl
 import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 from database import DataCoin, User
 import pandas as pd
 
@@ -39,19 +42,29 @@ def authorize(username, password):
 
 
 def get_graph(telegram_id):
-    graph_coin_data = DataCoin.get_for_user(telegram_id)
+    graph_coin_data: List[DataCoin] = DataCoin.get_for_user(telegram_id)
     print(len(graph_coin_data))
 
     graph_date = []
     graph_sum = []
-    step = -7
+    step = len(graph_coin_data) // 3
 
-    for sublist in graph_coin_data:
-        graph_date.append(sublist[2])
-        graph_sum.append(sublist[3])
+    last_date = datetime.strptime(graph_coin_data[-1].datetime, "%Y.%m.%d")
+
+    for sublist in graph_coin_data[::-1]:
+        while datetime.strptime(sublist.datetime, "%Y.%m.%d") != last_date:
+            graph_date.append(last_date.strftime("%Y.%m.%d"))
+            graph_sum.append(None)
+            last_date += timedelta(days=1)
+
+        graph_date.append(sublist.datetime)
+        graph_sum.append(sublist.totla_sum)
+        last_date += timedelta(days=1)
 
     plt.clf()
+    plt.figure(figsize=(12, 6), dpi=100)
     plt.plot(graph_date, graph_sum, marker="o", markersize=4)
+    print(graph_date[::step])
     plt.xticks(graph_date[::step], graph_date[::step])
 
     plt.title("Стоимость коллекции, руб")
@@ -77,12 +90,10 @@ def get_graph(telegram_id):
 
 
 def refresh(telegram_id):
-    DataCoin.clear_old_data()
     user = User.get(telegram_id)
     user_coin_id, session = authorize(user.email, user.password)
     file_name = download(user_coin_id, session)
     total = file_opener(file_name)
-    DataCoin(user.telegram_id, total, user_coin_id).debug()
     DataCoin(user.telegram_id, total, user_coin_id).save()
     parsing(session, user, user_coin_id)
 
