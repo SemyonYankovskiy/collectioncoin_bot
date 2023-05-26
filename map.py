@@ -24,7 +24,7 @@ def get_world_map(user_coin_id) -> str:
 
     world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
     countries_data = gpd.read_file(
-        "ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp"
+        "config/ne_110m_admin_0_countries.shp"
     )
 
     merged = world.merge(df, left_on="name", right_on="eng_name")
