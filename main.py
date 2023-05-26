@@ -22,6 +22,8 @@ from site_calc import (
     refresh
 )
 
+from map import get_world_map
+
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -593,6 +595,21 @@ async def grafik(message: types.Message):
     photo = InputFile(graph_name)
     await bot.send_photo(chat_id=message.from_user.id, photo=photo)
     os.remove(graph_name)
+
+
+@dp.message_handler(commands=["map"])
+async def maps(message: types.Message):
+    if User.get(tg_id=message.from_user.id) is None:
+        await message.answer("Доступно после регистрации в боте")
+        return
+    coin_st = DataCoin.get_for_user(message.from_user.id)
+    graph_name = get_world_map(coin_st[-1].user_coin_id)
+    photo = InputFile(graph_name)
+    await bot.send_photo(chat_id=message.from_user.id, photo=photo)
+    os.remove(graph_name)
+
+
+
 
 
 @dp.message_handler(commands=["delete"])

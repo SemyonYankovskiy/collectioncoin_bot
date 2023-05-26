@@ -10,6 +10,8 @@ import pandas as pd
 
 from bs4 import BeautifulSoup
 
+from name_transformer import transformer
+
 
 # класс ошибок
 class AuthFail(Exception):
@@ -163,13 +165,6 @@ def more_info(file_name):
 
 
 def countries(file_name):
-    df = pd.read_excel("./config/RutoEng.xlsx", header=None)  # assuming no header
-    mydict = df.set_index(0)[
-        1
-    ].to_dict()  # setting first column as index and second column as values
-    df = pd.read_excel("./config/RutoCode.xlsx", header=None)  # assuming no header
-    mydict1 = df.set_index(0)[1].to_dict()
-
     df = pd.read_excel(file_name)
     result = []
     grouped = df.groupby("Страна").size()
@@ -177,10 +172,10 @@ def countries(file_name):
         # result += f"{mydict1[country]} {str(count):<5}{country}\n            /{mydict[country]}\n"
         result.append(
             [
-                mydict1[country],  # Страна
-                count,  # номинал
-                country,  # ГОД
-                mydict[country],
+                transformer.get_country_code(country),  # Флаг страны
+                count,  # Кол-во монет
+                country,  # Русское название страны
+                transformer.get_country_eng_short_name(country),  # Короткое англ. название
             ]
         )
     wb = openpyxl.load_workbook(file_name)
