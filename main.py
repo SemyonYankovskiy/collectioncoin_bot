@@ -31,7 +31,7 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 from database import Database, User, DataCoin
 
 
-API_TOKEN = "6180484344:AAHx0PfGQJudG2CicZxFxszRRULaTXS2zhM"
+API_TOKEN = os.getenv('TG_TOKEN')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -45,9 +45,9 @@ Database.create_tables()
 path = os.path.join(os.getcwd(), 'users_files')
 try:
     os.mkdir(path)
-    print("Directory '%s' created successfully")
+    print("Directory created successfully")
 except OSError as error:
-    print("Directory '%s' can not be created")
+    print("Directory already exist")
 
 # Создаем класс состояний для конечного автомата
 class Form(StatesGroup):

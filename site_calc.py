@@ -22,7 +22,6 @@ HEADERS = {
 }
 
 
-
 def authorize(username, password):
     # Создаем сессию для сохранения куки
     with requests.Session() as session:
@@ -47,31 +46,41 @@ def get_graph(telegram_id):
 
     graph_date = []
     graph_sum = []
-    step = len(graph_coin_data) // 3
 
-    last_date = datetime.strptime(graph_coin_data[-1].datetime, "%Y.%m.%d")
+    # last_date = datetime.strptime(graph_coin_data[0].datetime, "%Y.%m.%d")
+    last_date = datetime.now().date()
 
-    for sublist in graph_coin_data[::-1]:
-        while datetime.strptime(sublist.datetime, "%Y.%m.%d") != last_date:
+    for sublist in graph_coin_data[::1]:
+        while datetime.strptime(sublist.datetime, "%Y.%m.%d").date() != last_date:
             graph_date.append(last_date.strftime("%Y.%m.%d"))
             graph_sum.append(None)
-            last_date += timedelta(days=1)
+            last_date -= timedelta(days=1)
 
         graph_date.append(sublist.datetime)
         graph_sum.append(sublist.totla_sum)
-        last_date += timedelta(days=1)
+        last_date -= timedelta(days=1)
+
+    graph_date_last_30_days = graph_date[:30]
+    graph_summ_last_30_days = graph_sum[:30]
+    step = len(graph_date_last_30_days) // 15
 
     plt.clf()
-    plt.figure(figsize=(12, 6), dpi=100)
-    plt.plot(graph_date, graph_sum, marker="o", markersize=4)
-    print(graph_date[::step])
-    plt.xticks(graph_date[::step], graph_date[::step])
+    plt.figure(figsize=(step * 5, step * 3), dpi=100)
+    plt.plot(
+        graph_date_last_30_days[::-1],
+        graph_summ_last_30_days[::-1],
+        marker="o",
+        markersize=4,
+    )
+
+    new_list = list(map(lambda x: x[5:], graph_date_last_30_days))
+
+    plt.xticks(graph_date_last_30_days[::step], new_list[::step])
 
     plt.title("Стоимость коллекции, руб")
 
     #  Прежде чем рисовать вспомогательные линии
     #  необходимо включить второстепенные деления
-    #  осей:
     plt.minorticks_on()
 
     #  Определяем внешний вид линий основной сетки:
@@ -80,7 +89,6 @@ def get_graph(telegram_id):
     #  Определяем внешний вид линий вспомогательной
     #  сетки:
     plt.grid(
-        # axis="y",
         which="minor",
         linestyle=":",
     )
@@ -110,15 +118,15 @@ def parsing(session, user, user_coin_id):
     tag_messages = results.select("a:nth-child(4) div")
     tag_swap = results.select("a:nth-child(5) div")
 
-    new_messages_count = tag_messages[1].text if len(tag_messages) == 2 else '0'
-    new_swap_count = tag_swap[1].text if len(tag_swap) == 2 else '0'
+    new_messages_count = tag_messages[1].text if len(tag_messages) == 2 else "0"
+    new_swap_count = tag_swap[1].text if len(tag_swap) == 2 else "0"
     if new_messages_count.isdigit() and new_swap_count.isdigit():
         user.new_messages = int(new_messages_count)
         user.new_swap = int(new_swap_count)
         user.save()
-        print('работает')
+        print("работает")
     else:
-        print('Эта хуйня tag_messages tag_swap хотела быть числом')
+        print("Эта хуйня tag_messages tag_swap хотела быть числом")
 
 
 def download(user_coin_id: str, session: requests.Session):
