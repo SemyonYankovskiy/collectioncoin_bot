@@ -23,6 +23,7 @@ from site_calc import (
 )
 
 from map import get_world_map
+from new_map import get_world_map_europe
 
 
 from aiogram import Bot, Dispatcher, executor, types
@@ -549,7 +550,7 @@ async def swap(message: types.Message):
         await message.answer("Доступно после регистрации в боте")
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
-    swap_list = func_swap(f"./users_files/{coin_st[-1][4]}_SWAP.xlsx")
+    swap_list = func_swap(f"./users_files/{coin_st[-1].user_coin_id}_SWAP.xlsx")
     data_length = 0
     output = ""
 
@@ -591,6 +592,9 @@ async def grafik(message: types.Message):
     if User.get(tg_id=message.from_user.id) is None:
         await message.answer("Доступно после регистрации в боте")
         return
+
+    await bot.send_chat_action(chat_id=message.from_id, action="upload_photo")
+
     graph_name = get_graph(message.from_user.id)
     photo = InputFile(graph_name)
     await bot.send_photo(chat_id=message.from_user.id, photo=photo)
@@ -603,9 +607,18 @@ async def maps(message: types.Message):
         await message.answer("Доступно после регистрации в боте")
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
+
+    await bot.send_chat_action(chat_id=message.from_id, action="upload_photo")
+
     graph_name = get_world_map(coin_st[-1].user_coin_id)
     photo = InputFile(graph_name)
     await bot.send_photo(chat_id=message.from_user.id, photo=photo)
+
+    # await bot.send_chat_action(chat_id=message.from_id, action="upload_photo")
+    #
+    # graph_name = get_world_map_europe(coin_st[-1].user_coin_id)
+    # photo2 = InputFile(graph_name)
+    # await bot.send_photo(chat_id=message.from_user.id, photo=photo2)
     os.remove(graph_name)
 
 
