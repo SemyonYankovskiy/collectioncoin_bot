@@ -53,7 +53,7 @@ def get_world_map(user_coin_id, location) -> str:
     )
     countries_data.plot(
         ax=ax,
-        facecolor=plt.cm.Blues(0.15),
+        facecolor=plt.cm.Blues(0.1),
     )
     country_name = False
     if location == "World":
@@ -81,7 +81,7 @@ def get_world_map(user_coin_id, location) -> str:
         ax.set_ylim([-0.42 * 10**7, 0.46 * 10**7])
         country_name = True
     elif location == "Asian_Islands":
-        ax.set_xlim([1 * 10**7, 2 * 10**7])
+        ax.set_xlim([0.8 * 10**7, 2.5 * 10**7])
         ax.set_ylim([-0.6 * 10**7, 0.6 * 10**7])
         country_name = True
 
