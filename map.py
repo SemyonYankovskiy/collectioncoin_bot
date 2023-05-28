@@ -22,25 +22,28 @@ def get_world_map(user_coin_id) -> str:
     ]
 
     df = pd.DataFrame(data, columns=["count", "eng_name"])
-    # df.loc[df['count'] > 40, 'count'] = 35
+
+    #df.loc[df['eng_name'] == 'Denmark', 'eng_name'] = 'Greenland'
+    df.loc[len(df.index)] = [0, 'Greenland']
+    df.loc[df['eng_name'] == 'Greenland', 'count'] += df.loc[df['eng_name'] == 'Denmark', 'count'].values[0]
+
     df['count'] = df['count'].apply(lambda x: x ** 0.05)
 
-    world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
+    world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres")).to_crs('EPSG:3857')
 
     countries_data = gpd.read_file(
         "config/ne_110m_admin_0_countries.shp"
-    )
+    ).to_crs('EPSG:3857')
 
     merged = world.merge(df, left_on="name", right_on="eng_name")
 
-    fig, ax = plt.subplots(1, 1, figsize=(15, 6), facecolor=plt.cm.Blues(0.35), linewidth=0.15)
+    fig, ax = plt.subplots(1, 1, figsize=(9, 4.5), facecolor=plt.cm.Blues(0.35), linewidth=0.15)
     countries_data.plot(ax=ax,  facecolor=plt.cm.Blues(0.15), )
 
-
-    ax.set_xlim([-170, 190])
-    ax.set_ylim([-60, 85])
+    ax.set_xlim([-2*10**7, 2*10**7])
+    ax.set_ylim([-0.8*10**7, 1.9*10**7])
     ax.axis("off")
-
+    #ax.grid('on')
     # divider = make_axes_locatable(ax)
     # cax = divider.append_axes(
     #      "bottom",
@@ -65,9 +68,9 @@ def get_world_map(user_coin_id) -> str:
     img = Image.open(image_name)
     width, height = img.size
     left = 1000
-    top = 150
-    right = width - 900
-    bottom = height - 0
+    top = 270
+    right = width - 885
+    bottom = height - 220
 
     img_res = img.crop((left, top, right, bottom))
     img_res.save(image_name)
