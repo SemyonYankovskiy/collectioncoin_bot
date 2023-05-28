@@ -6,6 +6,7 @@ from aiogram.dispatcher.filters import Command
 from aiogram.types import InputFile
 from threading import Thread
 from limiter import rate_limit
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from gather import gather_manager
 from site_calc import (
@@ -19,12 +20,9 @@ from site_calc import (
     strana,
     func_swap,
     euro,
-    refresh
+    refresh,
 )
-
 from map import get_world_map
-from new_map import get_world_map_europe
-
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -34,7 +32,7 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 from database import Database, User, DataCoin
 
 
-API_TOKEN = os.getenv('TG_TOKEN')
+API_TOKEN = os.getenv("TG_TOKEN")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -45,12 +43,13 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 
 Database.create_tables()
 
-path = os.path.join(os.getcwd(), 'users_files')
+path = os.path.join(os.getcwd(), "users_files")
 try:
     os.mkdir(path)
     print("Directory created successfully")
 except OSError as error:
     print("Directory already exist")
+
 
 # Создаем класс состояний для конечного автомата
 class Form(StatesGroup):
@@ -60,7 +59,7 @@ class Form(StatesGroup):
 
 class DeleteForm(StatesGroup):
     confirm_delete = State()  # 1 состояние для удаления данных из бота
-    confirm_delete2 = State()   # 2 состояние для удаления данных из бота
+    confirm_delete2 = State()  # 2 состояние для удаления данных из бота
 
 
 @dp.message_handler(commands=["start"])
@@ -146,7 +145,6 @@ async def process_email(message: types.Message, state: FSMContext):
 # Создаем обработчик сообщений в состоянии password
 @dp.message_handler(state=Form.password)
 async def process_password(message: types.Message, state: FSMContext):
-
     # Обработка кнопки EXIT
     if message.text.lower() == "/exit":
         await state.finish()  # Завершаем текущий state
@@ -231,17 +229,17 @@ async def output_counties(message: types.Message):
         data_length += part_len
         # при превышении длинны всех строк больше чем 4096 символов
         if data_length > 4096:
-            await message.answer(output)  # Отправляем пользователю output, на данный момент
+            await message.answer(
+                output
+            )  # Отправляем пользователю output, на данный момент
             output = part
             data_length = part_len
         else:
-
             output += part
     await message.answer(output)
 
 
 async def vyvod_monet(message: types.Message, input_list):
-
     data_length = 0
     output = ""
     for flag, nominal, year, cena, md, name in input_list:
@@ -253,7 +251,6 @@ async def vyvod_monet(message: types.Message, input_list):
             output = part
             data_length = part_len
         else:
-
             output += part
     await message.answer(output)
 
@@ -563,10 +560,9 @@ async def swap(message: types.Message):
             output = part
             data_length = part_len
         else:
-
             output += part
     if not output:
-        await message.answer('Список обмена пуст')
+        await message.answer("Список обмена пуст")
     else:
         await message.answer(output)
 
@@ -578,11 +574,11 @@ async def profile(message: types.Message):
         return
     coin_st = DataCoin.get_for_user(message.from_user.id)
     user = User.get(message.from_user.id)
-    message_status = f'✉️' if user.new_messages == 0 else f'📩'
-    swap_status = f'❕' if user.new_swap == 0 else f'❗️'
+    message_status = f"✉️" if user.new_messages == 0 else f"📩"
+    swap_status = f"❕" if user.new_swap == 0 else f"❗️"
     await message.answer(
         f'<a href="https://ru.ucoin.net/uid{coin_st[-1].user_coin_id}?v=home">👤 Профиль</a>\n'
-        f'{message_status} Новые сообщения {user.new_messages} \n{swap_status} Предложения обмена {user.new_swap}',
+        f"{message_status} Новые сообщения {user.new_messages} \n{swap_status} Предложения обмена {user.new_swap}",
         parse_mode="HTML",
     )
 
@@ -606,23 +602,61 @@ async def maps(message: types.Message):
     if User.get(tg_id=message.from_user.id) is None:
         await message.answer("Доступно после регистрации в боте")
         return
+    keyboard = InlineKeyboardMarkup()
+    button1 = InlineKeyboardButton("Европа", callback_data="Europe")
+    button2 = InlineKeyboardButton("Ц.Америка", callback_data="North_America")
+    button3 = InlineKeyboardButton("Ю.Америка", callback_data="South_America")
+    button4 = InlineKeyboardButton("Азия", callback_data="Asia")
+    button5 = InlineKeyboardButton("Африка", callback_data="Afrika")
+    button6 = InlineKeyboardButton("Острова Азии", callback_data="Asian_Islands")
+    keyboard.add(button1, button2, button3, button4, button5, button6)
+
+    location = "World"
+
     coin_st = DataCoin.get_for_user(message.from_user.id)
 
     await bot.send_chat_action(chat_id=message.from_id, action="upload_photo")
 
-    graph_name = get_world_map(coin_st[-1].user_coin_id)
-    photo = InputFile(graph_name)
-    await bot.send_photo(chat_id=message.from_user.id, photo=photo)
+    map_name = get_world_map(coin_st[-1].user_coin_id, location=location)
+    map_img = InputFile(map_name)
+    await bot.send_photo(
+        chat_id=message.from_user.id, photo=map_img, reply_markup=keyboard
+    )
+    os.remove(map_name)
 
-    # await bot.send_chat_action(chat_id=message.from_id, action="upload_photo")
-    #
-    # graph_name = get_world_map_europe(coin_st[-1].user_coin_id)
-    # photo2 = InputFile(graph_name)
-    # await bot.send_photo(chat_id=message.from_user.id, photo=photo2)
-    os.remove(graph_name)
+    # await message.answer("Изменить отображение?", reply_markup=keyboard)
 
 
+@dp.callback_query_handler(
+    lambda c: c.data == "Europe"
+    or c.data == "North_America"
+    or c.data == "South_America"
+    or c.data == "Asia"
+    or c.data == "Afrika"
+    or c.data == "Asian_Islands"
+)
+async def process_callback_button1(callback_query: types.CallbackQuery):
+    location = callback_query.data
+    user_id = callback_query.from_user.id
 
+    coin_st = DataCoin.get_for_user(user_id)
+
+    await bot.send_chat_action(chat_id=user_id, action="upload_photo")
+
+    map_name = get_world_map(coin_st[-1].user_coin_id, location=location)
+    map_img = InputFile(map_name)
+    await bot.send_photo(chat_id=user_id, photo=map_img)
+    os.remove(map_name)
+
+
+@dp.message_handler(commands=["test"])
+async def test(message: types.Message):
+    keyboard = InlineKeyboardMarkup()
+    yes_button = InlineKeyboardButton("Да", callback_data="yes")
+    no_button = InlineKeyboardButton("Нет", callback_data="no")
+    keyboard.add(yes_button, no_button)
+
+    await message.answer("Вы хотите продолжить?", reply_markup=keyboard)
 
 
 @dp.message_handler(commands=["delete"])
