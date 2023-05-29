@@ -14,9 +14,7 @@ def get_world_map(user_coin_id, location) -> str:
     :return: Путь в виде строки изображения.
     """
     dt = pd.read_excel("./config/EngmaptoRu.xlsx", header=None)  # assuming no header
-    mydict = dt.set_index(0)[
-        1
-    ].to_dict()  # setting first column as index and second column as values
+    mydict = dt.set_index(0)[1].to_dict()  # setting first column as index and second column as values
 
     # создание датафрейма для построения карты
     data = [
@@ -25,11 +23,104 @@ def get_world_map(user_coin_id, location) -> str:
     ]
     df = pd.DataFrame(data, columns=["count", "eng_name"])
 
+
+
     # для закрашивания разных территорий, принадлежащих 1 стране
-    df.loc[len(df.index)] = [0, "Greenland"]
-    df.loc[df["eng_name"] == "Greenland", "count"] += df.loc[
-        df["eng_name"] == "Denmark", "count"
-    ].values[0]
+    if df[df['eng_name'] == 'Greenland'].empty:
+        df.loc[len(df.index)] = [0, "Greenland"]
+    df.loc[df["eng_name"] == "Greenland", "count"] += df.loc[df["eng_name"] == "Denmark", "count"].values[0]
+
+    if df[df['eng_name'] == 'Germany'].empty:
+        df.loc[len(df.index)] = [0, "Germany"]
+    if df[df['eng_name'] == 'GDR'].empty:
+        df.loc[len(df.index)] = [0, "GDR"]
+    df.loc[df["eng_name"] == "Germany", "count"] += df.loc[df["eng_name"] == "GDR", "count"].values[0]
+
+    if df[df['eng_name'] == 'Germany'].empty:
+        df.loc[len(df.index)] = [0, "Germany"]
+    df.loc[df["eng_name"] == "Germany", "count"] += df.loc[df["eng_name"] == "Nazi", "count"].values[0]
+
+    if df[df['eng_name'] == 'Germany'].empty:
+        df.loc[len(df.index)] = [0, "Germany"]
+    if df[df['eng_name'] == 'FRG'].empty:
+        df.loc[len(df.index)] = [0, "FRG"]
+    df.loc[df["eng_name"] == "Germany", "count"] += df.loc[df["eng_name"] == "FRG", "count"].values[0]
+
+    # для закрашивания разных территорий, принадлежащих 1 стране
+    if df[df['eng_name'] == 'Djibouti'].empty:
+        df.loc[len(df.index)] = [0, "Djibouti"]
+    df.loc[df["eng_name"] == "Djibouti", "count"] += df.loc[df["eng_name"] == "France_Afar", "count"].values[0]
+
+    # Бенин, Буркина-Фасо, Кот-д'Ивуар, Гвинея-Бисау, Мали, Нигер, Сенегал, Того.
+    # для закрашивания разных территорий, принадлежащих 1 стране
+    if df[df['eng_name'] == 'Benin'].empty:
+        df.loc[len(df.index)] = [0, "Benin"]
+    df.loc[df["eng_name"] == "Benin", "count"] += df.loc[df["eng_name"] == "Afrika", "count"].values[0]
+    if df[df['eng_name'] == 'Burkina Faso'].empty:
+        df.loc[len(df.index)] = [0, "Burkina Faso"]
+    df.loc[df["eng_name"] == "Burkina Faso", "count"] += df.loc[df["eng_name"] == "Afrika", "count"].values[0]
+    if df[df['eng_name'] == "Côte d'Ivoire"].empty:
+        df.loc[len(df.index)] = [0, "Côte d'Ivoire"]
+    df.loc[df["eng_name"] == "Côte d'Ivoire", "count"] += df.loc[df["eng_name"] == "Afrika", "count"].values[0]
+    if df[df['eng_name'] == 'Guinea-Bissau'].empty:
+        df.loc[len(df.index)] = [0, "Guinea-Bissau"]
+    df.loc[df["eng_name"] == "Guinea-Bissau", "count"] += df.loc[df["eng_name"] == "Afrika", "count"].values[0]
+    if df[df['eng_name'] == 'Mali'].empty:
+        df.loc[len(df.index)] = [0, "Mali"]
+    df.loc[df["eng_name"] == "Mali", "count"] += df.loc[df["eng_name"] == "Afrika", "count"].values[0]
+    if df[df['eng_name'] == 'Niger'].empty:
+        df.loc[len(df.index)] = [0, "Niger"]
+    df.loc[df["eng_name"] == "Niger", "count"] += df.loc[df["eng_name"] == "Afrika", "count"].values[0]
+    if df[df['eng_name'] == 'Senegal'].empty:
+        df.loc[len(df.index)] = [0, "Senegal"]
+    df.loc[df["eng_name"] == "Senegal", "count"] += df.loc[df["eng_name"] == "Afrika", "count"].values[0]
+    if df[df['eng_name'] == 'Togo'].empty:
+        df.loc[len(df.index)] = [0, "Togo"]
+    df.loc[df["eng_name"] == "Togo", "count"] += df.loc[df["eng_name"] == "Afrika", "count"].values[0]
+
+    if df[df['eng_name'] == 'N. Cyprus'].empty:
+        df.loc[len(df.index)] = [0, "N. Cyprus"]
+    df.loc[df["eng_name"] == "N. Cyprus", "count"] += df.loc[df["eng_name"] == "Cyprus", "count"].values[0]
+
+    # Босния и Герцеговина, Хорватия, Македония, Черногория, Сербия и Словения.
+    if df[df['eng_name'] == 'Kosovo'].empty:
+        df.loc[len(df.index)] = [0, "Kosovo"]
+    df.loc[df["eng_name"] == "Kosovo", "count"] = df.loc[df["eng_name"] == "Serbia", "count"].values[0]
+
+    if df[df['eng_name'] == 'Bosnia and Herz.'].empty:
+        df.loc[len(df.index)] = [0, "Bosnia and Herz."]
+    df.loc[df["eng_name"] == "Bosnia and Herz.", "count"] += df.loc[df["eng_name"] == "Jyugoslavia", "count"].values[0]
+    if df[df['eng_name'] == 'Croatia'].empty:
+        df.loc[len(df.index)] = [0, "Croatia"]
+    df.loc[df["eng_name"] == "Croatia", "count"] += df.loc[df["eng_name"] == "Jyugoslavia", "count"].values[0]
+    if df[df['eng_name'] == "North Macedonia"].empty:
+        df.loc[len(df.index)] = [0, "North Macedonia"]
+    df.loc[df["eng_name"] == "North Macedonia", "count"] += df.loc[df["eng_name"] == "Jyugoslavia", "count"].values[0]
+    if df[df['eng_name'] == 'Montenegro'].empty:
+        df.loc[len(df.index)] = [0, "Montenegro"]
+    df.loc[df["eng_name"] == "Montenegro", "count"] += df.loc[df["eng_name"] == "Jyugoslavia", "count"].values[0]
+    if df[df['eng_name'] == 'Serbia'].empty:
+        df.loc[len(df.index)] = [0, "Serbia"]
+    df.loc[df["eng_name"] == "Serbia", "count"] += df.loc[df["eng_name"] == "Jyugoslavia", "count"].values[0]
+    if df[df['eng_name'] == 'Slovenia'].empty:
+        df.loc[len(df.index)] = [0, "Slovenia"]
+    df.loc[df["eng_name"] == "Slovenia", "count"] += df.loc[df["eng_name"] == "Jyugoslavia", "count"].values[0]
+    if df[df['eng_name'] == 'Kosovo'].empty:
+        df.loc[len(df.index)] = [0, "Kosovo"]
+    df.loc[df["eng_name"] == "Kosovo", "count"] += df.loc[df["eng_name"] == "Jyugoslavia", "count"].values[0]
+
+    if df[df['eng_name'] == 'Czechia'].empty:
+        df.loc[len(df.index)] = [0, "Czechia"]
+    df.loc[df["eng_name"] == "Czechia", "count"] += df.loc[df["eng_name"] == "Chehoclovakia", "count"].values[0]
+    if df[df['eng_name'] == 'Slovakia'].empty:
+        df.loc[len(df.index)] = [0, "Slovakia"]
+    df.loc[df["eng_name"] == "Slovakia", "count"] += df.loc[df["eng_name"] == "Chehoclovakia", "count"].values[0]
+
+
+
+    if df[df['eng_name'] == 'N. Cyprus'].empty:
+        df.loc[len(df.index)] = [0, "N. Cyprus"]
+    df.loc[df["eng_name"] == "N. Cyprus", "count"] += df.loc[df["eng_name"] == "Cyprus", "count"].values[0]
 
     # Костыль, чтобы закрашивание было более контрастным (не работает с колорбаром)
     df["count"] = df["count"].apply(lambda x: x**0.05)
@@ -51,9 +142,10 @@ def get_world_map(user_coin_id, location) -> str:
         linewidth=0.15,
         edgecolor="black",
     )
+
     countries_data.plot(
         ax=ax,
-        facecolor=plt.cm.Blues(0.1),
+        facecolor=plt.cm.Greys(0.2),
     )
     country_name = False
     if location == "World":
@@ -107,7 +199,7 @@ def get_world_map(user_coin_id, location) -> str:
     #  )
     merged.plot(
         column="count",
-        cmap="YlGn",
+        cmap="YlGn", #YlGn RdYlGn_r
         ax=ax,
         legend=False,
         #    cax=cax,

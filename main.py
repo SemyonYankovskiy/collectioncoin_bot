@@ -87,7 +87,8 @@ async def ua_welcome(message: types.Message):
         "зарегистрироваться в "
         "боте /reg \n \n💬 После регистрации бот будет каждый день собирать данные о вашей коллекции,списке обмена\n"
         "/swap_list, "
-        "считать суммарную стоимость монет /summ, показывать количество монет по странам /countries,  "
+        "считать суммарную стоимость монет /summ, показывать количество монет по странам /countries,"
+        " рисовать карту мира /map "
         "а также строить график изменения стоимости монет за последний месяц /grafik\n \n"
         "💬 Вы можете удалить свои данные из бота /delete. При удалении данных стираются также значения стоимости "
         "монет,"
@@ -649,14 +650,14 @@ async def process_callback_button1(callback_query: types.CallbackQuery):
     os.remove(map_name)
 
 
-@dp.message_handler(commands=["test"])
-async def test(message: types.Message):
-    keyboard = InlineKeyboardMarkup()
-    yes_button = InlineKeyboardButton("Да", callback_data="yes")
-    no_button = InlineKeyboardButton("Нет", callback_data="no")
-    keyboard.add(yes_button, no_button)
-
-    await message.answer("Вы хотите продолжить?", reply_markup=keyboard)
+# @dp.message_handler(commands=["test"])
+# async def test(message: types.Message):
+#     keyboard = InlineKeyboardMarkup()
+#     yes_button = InlineKeyboardButton("Да", callback_data="yes")
+#     no_button = InlineKeyboardButton("Нет", callback_data="no")
+#     keyboard.add(yes_button, no_button)
+#
+#     await message.answer("Вы хотите продолжить?", reply_markup=keyboard)
 
 
 @dp.message_handler(commands=["delete"])
@@ -665,6 +666,9 @@ async def delete1(message: types.Message):
         await message.answer("Доступно после регистрации в боте")
         return
     await DeleteForm.confirm_delete.set()
+    await message.answer(
+        "При удалении данных стираются также значения стоимости монет, график обнуляется"
+    )
     await message.answer("Точно удалить? \nпиши   да   или   нет")
 
 
@@ -673,6 +677,7 @@ async def delete2(message: types.Message, state: FSMContext):
     if message.text.lower() == "да":
         await DeleteForm.confirm_delete2.set()
         await message.answer("Последний раз спрашиваю \nпиши   да   или   нет")
+
     else:
         await message.answer("Ну и всё, больше так не делай")
 
