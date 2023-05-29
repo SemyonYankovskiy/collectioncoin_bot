@@ -113,7 +113,7 @@ class WorldMap:
             axis.set_xlim([0.35 * 10**7, 1.35 * 10**7])
             axis.set_ylim([0.06 * 10**7, 0.68 * 10**7])
             self.need_to_add_counties_names_on_map = True
-        elif location == "Afrika":
+        elif location == "Africa":
             axis.set_xlim([-0.3 * 10**7, 0.7 * 10**7])
             axis.set_ylim([-0.42 * 10**7, 0.46 * 10**7])
             self.need_to_add_counties_names_on_map = True
