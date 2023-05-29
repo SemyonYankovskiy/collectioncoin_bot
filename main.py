@@ -1,14 +1,15 @@
-import logging
 import os
-import emoji
-
-from aiogram.dispatcher.filters import Command
-from aiogram.types import InputFile
+import logging
 from threading import Thread
 
-from helpers.comands import countries_cmd
-from helpers.limiter import rate_limit
+import emoji
+from aiogram.dispatcher.filters import Command
+from aiogram.types import InputFile
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram import Bot, Dispatcher, executor, types
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import StatesGroup, State
 
 from core.gather import gather_manager
 from core.site_calc import (
@@ -25,14 +26,12 @@ from core.site_calc import (
     refresh,
 )
 from core.map import WorldMap
+from core.types import MessageWithUser
+from database import db_connection, User, DataCoin
+from helpers.handler_decorators import check_and_set_user
+from helpers.comands import countries_cmd
+from helpers.limiter import rate_limit
 
-from aiogram import Bot, Dispatcher, executor, types
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import StatesGroup, State
-
-from database import Database, User, DataCoin
-from helpers.permissions import login_required
 
 API_TOKEN = os.getenv("TG_TOKEN")
 
@@ -43,7 +42,8 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
-Database().create_tables()
+# Создаем таблицы в базе данных
+db_connection.create_tables()
 
 path = os.path.join(os.getcwd(), "users_files")
 try:
@@ -65,7 +65,7 @@ class DeleteForm(StatesGroup):
 
 
 @dp.message_handler(commands=["start"])
-async def hello_welcome(message: types.Message):
+async def hello_welcome(message: MessageWithUser):
     await message.answer(emoji.emojize(":robot:"))
     await message.answer(f"Здарова, {message.from_user.full_name}")
     await message.answer("⬇️ Доступные команды")
@@ -73,9 +73,9 @@ async def hello_welcome(message: types.Message):
 
 # Временная функция принудительного обновления
 @dp.message_handler(commands=["refresh"])
-@login_required
+@check_and_set_user
 @rate_limit(600)
-async def refresh_data(message: types.Message):
+async def refresh_data(message: MessageWithUser):
     await bot.send_chat_action(chat_id=message.from_id, action="find_location")
 
     refresh(message.from_user.id)
@@ -83,7 +83,7 @@ async def refresh_data(message: types.Message):
 
 
 @dp.message_handler(commands=["help"])
-async def ua_welcome(message: types.Message):
+async def ua_welcome(message: MessageWithUser):
     await message.answer(
         "💬 Этот бот берет данные из вашего аккаунта на сайте Ucoin \n/profile, для этого необходимо "
         "зарегистрироваться в "
@@ -104,7 +104,7 @@ async def ua_welcome(message: types.Message):
 
 
 @dp.message_handler(commands=["reg"])
-async def reg_welcome(message: types.Message):
+async def reg_welcome(message: MessageWithUser):
     # Проверка пользователя в БД, чтобы исключить регистрацию с 1 аккаунта телеграм, если всё ок, устанавливаем
     # конечный автомат в состояние email чтобы попасть в функцию process_email
     if User.get(tg_id=message.from_user.id) is None:
@@ -119,7 +119,7 @@ async def reg_welcome(message: types.Message):
 
 # Создаем обработчик сообщений в состоянии email
 @dp.message_handler(state=Form.email)
-async def process_email(message: types.Message, state: FSMContext):
+async def process_email(message: MessageWithUser, state: FSMContext):
     # Обработка кнопки EXIT
     if message.text.lower() == "/exit":
         await state.finish()  # Завершаем текущий state
@@ -127,23 +127,21 @@ async def process_email(message: types.Message, state: FSMContext):
         return
     # Проверка пользователя в БД, чтобы исключить регистрацию такой же почты, если совпадения нет, то переводим
     # конечный автомат в следующее состояние password
-    if User.check_email(email=message.text) is None:
+    if User.has_user_with_email(email=message.text):
+        await state.finish()  # Сбрасываем состояние конечного автомата
+        await message.answer("Почта ворованная, пёс")
+    else:
         # Получаем имя пользователя из сообщения и сохраняем его во временном хранилище
         await state.update_data(user_Email=message.text)
-
         # Отправляем сообщение и переводим пользователя в состояние password
         await message.answer(f"Теперь введи свой пароль \n________________________ \nИли жми /EXIT")
         await message.answer(emoji.emojize("\U0001F648"))
         await Form.next()
-    else:
-        await state.finish()  # Сбрасываем состояние конечного автомата
-        await message.answer("Почта ворованная, пёс")
-        return
 
 
 # Создаем обработчик сообщений в состоянии password
 @dp.message_handler(state=Form.password)
-async def process_password(message: types.Message, state: FSMContext):
+async def process_password(message: MessageWithUser, state: FSMContext):
     # Обработка кнопки EXIT
     if message.text.lower() == "/exit":
         await state.finish()  # Завершаем текущий state
@@ -163,7 +161,7 @@ async def process_password(message: types.Message, state: FSMContext):
         user_coin_id, session = authorize(user_email, user_password)
         file_name = download(user_coin_id, session)
         total = file_opener(file_name)
-        DataCoin.init_new_user(message.from_user.id, total, user_coin_id)
+        DataCoin.init_new_user(message.from_user.id, total)
 
     # Перехватываем ошибку
     except AuthFail:
@@ -177,7 +175,12 @@ async def process_password(message: types.Message, state: FSMContext):
         return  # Выходим из данной функции
 
     # Если данные были верные, то записываем в базу пользователя
-    user = User(message.from_user.id, user_email, user_password)
+    user = User(
+        telegram_id=message.from_user.id,
+        email=user_email,
+        password=user_password,
+        user_coin_id=user_coin_id,
+    )
     user.save()
 
     await message.answer("Регистрация успешна\n" "Данные добавлены в базу")
@@ -186,12 +189,11 @@ async def process_password(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(commands=["summ"])
-@login_required
-async def summ(message: types.Message):
-    # обращаемся к БД, через функцию get_for_user, в переменную записываем массив значений для пользователя
+@check_and_set_user
+async def summ(message: MessageWithUser):
     coin_st = DataCoin.get_for_user(message.from_user.id)
     # обращаемся к функции more info, передаем в эту функциию значение переменной (значение из 4 столбца массива)
-    lot, count = more_info(f"./users_files/{coin_st[-1].user_coin_id}_.xlsx")
+    lot, count = more_info(f"./users_files/{message.user.user_coin_id}_.xlsx")
 
     await message.answer(emoji.emojize(":coin:"))
     await message.answer(
@@ -202,13 +204,11 @@ async def summ(message: types.Message):
 
 
 @dp.message_handler(commands=["countries"])
-@login_required
-async def output_counties(message: types.Message):
-    # обращаемся к БД, через функцию get_for_user, в переменную записываем массив значений для пользователя
-    coin_st = DataCoin.get_for_user(message.from_user.id)
+@check_and_set_user
+async def output_counties(message: MessageWithUser):
     # обращаемся к функции countries, передаем в эту функциию значение переменной coin_st(значение из 4 столбца массива)
     # функция возвращает массив strani
-    strani = countries(f"./users_files/{coin_st[-1].user_coin_id}_.xlsx")
+    strani = countries(f"./users_files/{message.user.user_coin_id}_.xlsx")
 
     # Условие построчного переноса, при превышении длинны сообщения более 4096 символов
     data_length = 0
@@ -230,7 +230,7 @@ async def output_counties(message: types.Message):
     await message.answer(output)
 
 
-async def vyvod_monet(message: types.Message, input_list):
+async def vyvod_monet(message: MessageWithUser, input_list):
     data_length = 0
     output = ""
     for flag, nominal, year, cena, md, name in input_list:
@@ -247,26 +247,23 @@ async def vyvod_monet(message: types.Message, input_list):
 
 
 @dp.message_handler(commands=["europe"])
-@login_required
-async def output_eurocoin(message: types.Message):
-    coin_st = DataCoin.get_for_user(message.from_user.id)
-    euro1 = euro(f"./users_files/{coin_st[-1].user_coin_id}_.xlsx")
+@check_and_set_user
+async def output_eurocoin(message: MessageWithUser):
+    euro1 = euro(f"./users_files/{message.user.user_coin_id}_.xlsx")
     await vyvod_monet(message, euro1)
 
 
 @dp.message_handler(Command(countries_cmd))
-@login_required
-async def output_coin(message: types.Message):
-    coin_st = DataCoin.get_for_user(message.from_user.id)
-    strani = strana(f"./users_files/{coin_st[-1].user_coin_id}_.xlsx", message.text)
+@check_and_set_user
+async def output_coin(message: MessageWithUser):
+    strani = strana(f"./users_files/{message.user.user_coin_id}_.xlsx", message.text)
     await vyvod_monet(message, strani)
 
 
 @dp.message_handler(commands=["swap_list"])
-@login_required
-async def swap(message: types.Message):
-    coin_st = DataCoin.get_for_user(message.from_user.id)
-    swap_list = func_swap(f"./users_files/{coin_st[-1].user_coin_id}_SWAP.xlsx")
+@check_and_set_user
+async def swap(message: MessageWithUser):
+    swap_list = func_swap(f"./users_files/{message.user.user_coin_id}_SWAP.xlsx")
     data_length = 0
     output = ""
 
@@ -287,22 +284,21 @@ async def swap(message: types.Message):
 
 
 @dp.message_handler(commands=["profile"])
-@login_required
-async def profile(message: types.Message):
-    coin_st = DataCoin.get_for_user(message.from_user.id)
+@check_and_set_user
+async def profile(message: MessageWithUser):
     user = User.get(message.from_user.id)
     message_status = f"✉️" if user.new_messages == 0 else f"📩"
     swap_status = f"❕" if user.new_swap == 0 else f"❗️"
     await message.answer(
-        f'<a href="https://ru.ucoin.net/uid{coin_st[-1].user_coin_id}?v=home">👤 Профиль</a>\n'
+        f'<a href="https://ru.ucoin.net/uid{message.user.user_coin_id}?v=home">👤 Профиль</a>\n'
         f"{message_status} Новые сообщения {user.new_messages} \n{swap_status} Предложения обмена {user.new_swap}",
         parse_mode="HTML",
     )
 
 
 @dp.message_handler(commands=["grafik"])
-@login_required
-async def grafik(message: types.Message):
+@check_and_set_user
+async def grafik(message: MessageWithUser):
     await bot.send_chat_action(chat_id=message.from_id, action="upload_photo")
 
     graph_name = get_graph(message.from_user.id)
@@ -312,8 +308,8 @@ async def grafik(message: types.Message):
 
 
 @dp.message_handler(commands=["map"])
-@login_required
-async def maps(message: types.Message):
+@check_and_set_user
+async def maps(message: MessageWithUser):
     keyboard = InlineKeyboardMarkup()
     button1 = InlineKeyboardButton("Европа", callback_data="Europe")
     button2 = InlineKeyboardButton("Ц.Америка", callback_data="North_America")
@@ -325,11 +321,9 @@ async def maps(message: types.Message):
 
     location = "World"
 
-    coin_st = DataCoin.get_for_user(message.from_user.id)
-
     await bot.send_chat_action(chat_id=message.from_id, action="upload_photo")
 
-    world_map = WorldMap(user_coin_id=coin_st[-1].user_coin_id)
+    world_map = WorldMap(user_coin_id=message.user.user_coin_id)
     map_name = world_map.create_map(location=location)
     map_img = InputFile(map_name)
     await bot.send_photo(chat_id=message.from_user.id, photo=map_img, reply_markup=keyboard)
@@ -346,28 +340,24 @@ async def maps(message: types.Message):
     or c.data == "Afrika"
     or c.data == "Asian_Islands"
 )
-@login_required
+@check_and_set_user
 async def process_callback_button1(callback_query: types.CallbackQuery):
     location = callback_query.data
-    user_id = callback_query.from_user.id
+    user = User.get(tg_id=callback_query.from_user.id)
 
-    user_coin_id = DataCoin.get_for_user(user_id)[-1].user_coin_id
+    await bot.send_chat_action(chat_id=user.telegram_id, action="upload_photo")
 
-    await bot.send_chat_action(chat_id=user_id, action="upload_photo")
-
-    # image_map_name = get_world_map(user_coin_id, location=location)
-
-    world_map = WorldMap(user_coin_id)
+    world_map = WorldMap(user.user_coin_id)
     image_map_name = world_map.create_map(location=location)
 
     map_img = InputFile(image_map_name)
-    await bot.send_photo(chat_id=user_id, photo=map_img)
+    await bot.send_photo(chat_id=user.telegram_id, photo=map_img)
     os.remove(image_map_name)
 
 
 @dp.message_handler(commands=["delete"])
-@login_required
-async def delete1(message: types.Message):
+@check_and_set_user
+async def delete1(message: MessageWithUser):
     await DeleteForm.confirm_delete.set()
     await message.answer(
         "При удалении данных стираются также значения стоимости монет, график обнуляется"
@@ -376,8 +366,8 @@ async def delete1(message: types.Message):
 
 
 @dp.message_handler(state=DeleteForm.confirm_delete)
-@login_required
-async def delete2(message: types.Message, state: FSMContext):
+@check_and_set_user
+async def delete2(message: MessageWithUser, state: FSMContext):
     if message.text.lower() == "да":
         await DeleteForm.confirm_delete2.set()
         await message.answer("Последний раз спрашиваю \nпиши   да   или   нет")
@@ -389,8 +379,8 @@ async def delete2(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state=DeleteForm.confirm_delete2)
-@login_required
-async def delete2(message: types.Message, state: FSMContext):
+@check_and_set_user
+async def delete2(message: MessageWithUser, state: FSMContext):
     if message.text.lower() == "да":
         User.delete(tg_id=message.from_user.id)
         DataCoin.delete_user_data(tg_id=message.from_user.id)
@@ -403,8 +393,8 @@ async def delete2(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(commands=["all"])
-@login_required
-async def all(message: types.Message):
+@check_and_set_user
+async def all_(message: MessageWithUser):
     await refresh_data(message)
     await profile(message)
     await summ(message)
@@ -413,7 +403,7 @@ async def all(message: types.Message):
 
 
 @dp.message_handler()
-async def unknown(message: types.Message):
+async def unknown(message: MessageWithUser):
     await message.answer("Сложно непонятно говоришь")
     await message.answer("⬇️ Доступные команды")
 

@@ -1,13 +1,11 @@
 from typing import List
+from datetime import datetime, timedelta
 
 import requests
 import openpyxl
 import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
 from database import DataCoin, User
 import pandas as pd
-
-
 from bs4 import BeautifulSoup
 
 from .name_transformer import transformer
@@ -104,7 +102,7 @@ def refresh(telegram_id):
     user_coin_id, session = authorize(user.email, user.password)
     file_name = download(user_coin_id, session)
     total = file_opener(file_name)
-    DataCoin(user.telegram_id, total, user_coin_id).save()
+    DataCoin(user.telegram_id, total).save()
     parsing(session, user, user_coin_id)
 
 
@@ -198,8 +196,6 @@ def countries(file_name):
 
 
 def euro(file_name):
-    df = pd.read_excel("./config/RutoCode.xlsx", header=None)  # assuming no header
-    mydict1 = df.set_index(0)[1].to_dict()
 
     wb = openpyxl.load_workbook(file_name)
     ws = wb.active
@@ -214,7 +210,7 @@ def euro(file_name):
 
             euros.append(
                 [
-                    f"🇪🇺 {mydict1[row[0].value]}",  # Страна
+                    f"🇪🇺 {transformer.get_country_code(row[0].value)}",  # Страна
                     row[1].value,  # номинал
                     row[2].value,  # ГОД
                     f"{row[6].value} ₽",
@@ -227,9 +223,6 @@ def euro(file_name):
 
 
 def strana(file_name, text_in):
-    # Импортируем модули для работы с Excel и ввода данных
-    df = pd.read_excel("./config/RutoCode.xlsx", header=None)  # assuming no header
-    mydict1 = df.set_index(0)[1].to_dict()
     # Открываем файл Excel с именем data.xlsx
     # Выбираем первый лист в файле
     wb = openpyxl.load_workbook(file_name)
@@ -255,7 +248,7 @@ def strana(file_name, text_in):
             desc4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
             arr.append(
                 [
-                    mydict1[row[0].value],
+                    transformer.get_country_code(row[0].value),
                     row[1].value,
                     row[2].value,
                     f"{row[6].value} ₽",
@@ -268,9 +261,6 @@ def strana(file_name, text_in):
 
 
 def func_swap(file_name):
-    # Импортируем модули для работы с Excel и ввода данных
-    df = pd.read_excel("./config/RutoCode.xlsx", header=None)  # assuming no header
-    mydict1 = df.set_index(0)[1].to_dict()
     # Открываем файл Excel с именем data.xlsx
     # Выбираем первый лист в файле
     wb = openpyxl.load_workbook(file_name)
@@ -287,7 +277,7 @@ def func_swap(file_name):
         )  # комментарий
         arr.append(
             [
-                mydict1[row[0].value],  # Флаг
+                transformer.get_country_code(row[0].value),  # Флаг
                 row[1].value,  # Номинал
                 row[2].value,  # Год
                 f" {row[6].value} ₽",  # Цена
