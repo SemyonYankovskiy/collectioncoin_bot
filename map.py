@@ -227,30 +227,6 @@ def get_world_map(user_coin_id, location) -> str:
     right = width - 885
     bottom = height - 220
 
-    # if location == "World":
-    #     left = 1000
-    #     top = 270
-    #     right = width - 885
-    #     bottom = height - 220
-    # elif location == "Europe":
-    #     ax.set_xlim([-2 * 10**7, 2 * 10**7])
-    #     ax.set_ylim([-0.8 * 10**7, 1.9 * 10**7])
-    # elif location == "South_America":
-    #     ax.set_xlim([-2 * 10**7, 2 * 10**7])
-    #     ax.set_ylim([-0.8 * 10**7, 1.9 * 10**7])
-    # elif location == "North_America":
-    #     ax.set_xlim([-2 * 10**7, 2 * 10**7])
-    #     ax.set_ylim([-0.8 * 10**7, 1.9 * 10**7])
-    # elif location == "Asia":
-    #     ax.set_xlim([-2 * 10**7, 2 * 10**7])
-    #     ax.set_ylim([-0.8 * 10**7, 1.9 * 10**7])
-    # elif location == "Afrika":
-    #     ax.set_xlim([-2 * 10**7, 2 * 10**7])
-    #     ax.set_ylim([-0.8 * 10**7, 1.9 * 10**7])
-    # elif location == "Asian_Islands":
-    #     ax.set_xlim([-2 * 10**7, 2 * 10**7])
-    #     ax.set_ylim([-0.8 * 10**7, 1.9 * 10**7])
-
     img_res = img.crop((left, top, right, bottom))
     img_res.save(image_name)
     return image_name
