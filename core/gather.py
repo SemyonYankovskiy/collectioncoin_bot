@@ -2,7 +2,7 @@
 import time
 import schedule
 from database import User, DataCoin
-from site_calc import authorize, download, file_opener, parsing
+from .site_calc import authorize, download, file_opener, parsing
 
 
 class GatherFail(Exception):
@@ -19,8 +19,9 @@ def gather_graph_data(*args, **kwargs):
         DataCoin(user.telegram_id, total, user_coin_id).save()
         parsing(session, user, user_coin_id)
 
+
 def gather_manager(*args):
-    print("Start")
+    print("Start gather manager")
     schedule.every().day.at("08:00").do(gather_graph_data)
     while True:
         schedule.run_pending()

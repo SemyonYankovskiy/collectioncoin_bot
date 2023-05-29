@@ -5,11 +5,13 @@ import emoji
 from aiogram.dispatcher.filters import Command
 from aiogram.types import InputFile
 from threading import Thread
-from limiter import rate_limit
+
+from helpers.comands import countries_cmd
+from helpers.limiter import rate_limit
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from gather import gather_manager
-from site_calc import (
+from core.gather import gather_manager
+from core.site_calc import (
     authorize,
     AuthFail,
     get_graph,
@@ -22,7 +24,7 @@ from site_calc import (
     euro,
     refresh,
 )
-from map import get_world_map
+from core.map import WorldMap
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -30,7 +32,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
 from database import Database, User, DataCoin
-
+from helpers.permissions import login_required
 
 API_TOKEN = os.getenv("TG_TOKEN")
 
@@ -41,7 +43,7 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
-Database.create_tables()
+Database().create_tables()
 
 path = os.path.join(os.getcwd(), "users_files")
 try:
@@ -71,11 +73,11 @@ async def hello_welcome(message: types.Message):
 
 # Временная функция принудительного обновления
 @dp.message_handler(commands=["refresh"])
+@login_required
 @rate_limit(600)
 async def refresh_data(message: types.Message):
-    if User.get(tg_id=message.from_user.id) is None:
-        await message.answer("Доступно после регистрации в боте")
-        return
+    await bot.send_chat_action(chat_id=message.from_id, action="find_location")
+
     refresh(message.from_user.id)
     await message.answer("База данных успешно обновлена")
 
@@ -106,9 +108,7 @@ async def reg_welcome(message: types.Message):
     # Проверка пользователя в БД, чтобы исключить регистрацию с 1 аккаунта телеграм, если всё ок, устанавливаем
     # конечный автомат в состояние email чтобы попасть в функцию process_email
     if User.get(tg_id=message.from_user.id) is None:
-        await message.reply(
-            "Фиксирую. Вводи email \n________________________ \nИли жми /EXIT"
-        )
+        await message.reply("Фиксирую. Вводи email \n________________________ \nИли жми /EXIT")
         await message.answer(emoji.emojize(":monkey_face:"))
         await Form.email.set()
         return
@@ -132,9 +132,7 @@ async def process_email(message: types.Message, state: FSMContext):
         await state.update_data(user_Email=message.text)
 
         # Отправляем сообщение и переводим пользователя в состояние password
-        await message.answer(
-            f"Теперь введи свой пароль \n________________________ \nИли жми /EXIT"
-        )
+        await message.answer(f"Теперь введи свой пароль \n________________________ \nИли жми /EXIT")
         await message.answer(emoji.emojize("\U0001F648"))
         await Form.next()
     else:
@@ -188,11 +186,8 @@ async def process_password(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(commands=["summ"])
+@login_required
 async def summ(message: types.Message):
-    # Проверка наличия пользователя в базе
-    if User.get(tg_id=message.from_user.id) is None:
-        await message.answer("Доступно после регистрации в боте")
-        return
     # обращаемся к БД, через функцию get_for_user, в переменную записываем массив значений для пользователя
     coin_st = DataCoin.get_for_user(message.from_user.id)
     # обращаемся к функции more info, передаем в эту функциию значение переменной (значение из 4 столбца массива)
@@ -207,11 +202,8 @@ async def summ(message: types.Message):
 
 
 @dp.message_handler(commands=["countries"])
+@login_required
 async def output_counties(message: types.Message):
-    # Проверка наличия пользователя в базе
-    if User.get(tg_id=message.from_user.id) is None:
-        await message.answer("Доступно после регистрации в боте")
-        return
     # обращаемся к БД, через функцию get_for_user, в переменную записываем массив значений для пользователя
     coin_st = DataCoin.get_for_user(message.from_user.id)
     # обращаемся к функции countries, передаем в эту функциию значение переменной coin_st(значение из 4 столбца массива)
@@ -230,9 +222,7 @@ async def output_counties(message: types.Message):
         data_length += part_len
         # при превышении длинны всех строк больше чем 4096 символов
         if data_length > 4096:
-            await message.answer(
-                output
-            )  # Отправляем пользователю output, на данный момент
+            await message.answer(output)  # Отправляем пользователю output, на данный момент
             output = part
             data_length = part_len
         else:
@@ -257,296 +247,24 @@ async def vyvod_monet(message: types.Message, input_list):
 
 
 @dp.message_handler(commands=["europe"])
+@login_required
 async def output_eurocoin(message: types.Message):
-    if User.get(tg_id=message.from_user.id) is None:
-        await message.answer("Доступно после регистрации в боте")
-        return
     coin_st = DataCoin.get_for_user(message.from_user.id)
     euro1 = euro(f"./users_files/{coin_st[-1].user_coin_id}_.xlsx")
     await vyvod_monet(message, euro1)
 
 
-@dp.message_handler(
-    Command(
-        [
-            "Australia",
-            "Austria",
-            "Azerbaijan",
-            "Albania",
-            "Algeria",
-            "American_Samoa",
-            "Anguilla",
-            "Angola",
-            "Andorra",
-            "Antarctica",
-            "Antigua_and_Barbuda",
-            "Argentina",
-            "Armenia",
-            "Aruba",
-            "Afghanistan",
-            "Bahamas",
-            "Bangladesh",
-            "Barbados",
-            "Bahrain",
-            "Belarus",
-            "Belize",
-            "Belgium",
-            "Benin",
-            "Bermuda",
-            "Bulgaria",
-            "Bolivia",
-            "Bonaire",
-            "Bosnia_and_Herzegovina",
-            "Botswana",
-            "Brazil",
-            "British Indian Ocean Territory",
-            "Brunei",
-            "Burkina_Faso",
-            "Burundi",
-            "Bhutan",
-            "Vanuatu",
-            "Hungary",
-            "Venezuela",
-            "Virgin Islands_British",
-            "Virgin_Islands",
-            "Vietnam",
-            "Gabon",
-            "Haiti",
-            "Guyana",
-            "Gambia",
-            "Ghana",
-            "Guadeloupe",
-            "Guatemala",
-            "Guinea",
-            "Guinea_Bissau",
-            "Germany",
-            "Guernsey",
-            "Gibraltar",
-            "Honduras",
-            "Hong_Kong",
-            "Grenada",
-            "Greenland",
-            "Greece",
-            "Georgia",
-            "Guam",
-            "Denmark",
-            "Jersey",
-            "Djibouti",
-            "Dominica",
-            "Dominican_Republic",
-            "Egypt",
-            "Zambia",
-            "Western_Sahara",
-            "Zimbabwe",
-            "Israel",
-            "India",
-            "Indonesia",
-            "Jordan",
-            "Iraq",
-            "Iran",
-            "Ireland",
-            "Iceland",
-            "Spain",
-            "Italy",
-            "Yemen",
-            "Cape Verde",
-            "Kazakhstan",
-            "Cambodia",
-            "Cameroon",
-            "Canada",
-            "Qatar",
-            "Kenya",
-            "Cyprus",
-            "Kyrgyzstan",
-            "Kiribati",
-            "China",
-            "Cocos (Keeling) Islands",
-            "Colombia",
-            "Comoros",
-            "Congo",
-            "Congo_democratic",
-            "KNDR",
-            "Korea",
-            "Costa_Rica",
-            "Cote_dIvoire",
-            "Cuba",
-            "Kuwait",
-            "Curacao",
-            "LaoS",
-            "Latvia",
-            "Lesotho",
-            "Lebanon",
-            "Libya",
-            "Liberia",
-            "Liechtenstein",
-            "Lithuania",
-            "Luxembourg",
-            "Mauritius",
-            "Mauritania",
-            "Madagascar",
-            "Mayotte",
-            "Macao",
-            "Malawi",
-            "Malaysia",
-            "Mali",
-            "United States Minor Outlying Islands",
-            "Maldives",
-            "Malta",
-            "Morocco",
-            "Martinique",
-            "Marshall Islands",
-            "Mexico",
-            "Micronesia",
-            "Mozambique",
-            "Moldova",
-            "Monaco",
-            "Mongolia",
-            "Montserrat",
-            "Burma",
-            "Namibia",
-            "Nauru",
-            "Nepal",
-            "Niger",
-            "Nigeria",
-            "Netherlands",
-            "Nicaragua",
-            "Niue",
-            "New_Zealand",
-            "New_Caledonia",
-            "Norway",
-            "United_Arab_Emirates",
-            "Oman",
-            "Bouvet_Island",
-            "Isle_of_Man",
-            "Norfolk_Island",
-            "Christmas_Island",
-            "Heard_Island_and_McDonald_Islands",
-            "Cayman_Islands",
-            "Cook_Islands",
-            "Turks_and_Caicos_Islands",
-            "Pakistan",
-            "Palau",
-            "Palestinian",
-            "Panama",
-            "Vatican",
-            "Papua_New_Guinea",
-            "Paraguay",
-            "Peru",
-            "Pitcairn",
-            "Poland",
-            "Portugal",
-            "Puerto_Rico",
-            "Macedonia",
-            "Reunion",
-            "Russia",
-            "Rwanda",
-            "Romania",
-            "Samoa",
-            "San_Marino",
-            "Sao_Tome_and_Principe",
-            "Saudi_Arabia",
-            "Saint Helena, Ascension And Tristan Da Cunha",
-            "Northern_Mariana_Islands",
-            "Saint_Barthelemy",
-            "Saint_Martin",
-            "Senegal",
-            "Saint_Vincent_and_the_Grenadines",
-            "Saint_Kitts_and_Nevis",
-            "Saint_Lucia",
-            "Saint_Pierre_and_Miquelon",
-            "Serbia",
-            "Seychelles",
-            "Singapore",
-            "Sint_Maarten",
-            "Syrian",
-            "Slovakia",
-            "Slovenia",
-            "GB",
-            "USA",
-            "Solomon_Islands",
-            "Somalia",
-            "Sudan",
-            "Suriname",
-            "Sierra Leone",
-            "Tajikistan",
-            "Thailand",
-            "Taiwan",
-            "Tanzania",
-            "Timor-Leste",
-            "Togo",
-            "Tokelau",
-            "Tonga",
-            "Trinidad_and_Tobago",
-            "Tuvalu",
-            "Tunisia",
-            "Turkmenistan",
-            "Turkey",
-            "Uganda",
-            "Uzbekistan",
-            "Ukraine",
-            "Wallis_and_Futuna",
-            "Uruguay",
-            "Faroe_Islands",
-            "Fiji",
-            "Philippines",
-            "Finland",
-            "Falkland_Islands",
-            "France",
-            "French_Guiana",
-            "French_Polynesia",
-            "French_Southern_Territories",
-            "Croatia",
-            "CAR",
-            "Chad",
-            "Montenegro",
-            "Czech",
-            "Chile",
-            "Switzerland",
-            "Sweden",
-            "Svalbard",
-            "Sri_Lanka",
-            "Ecuador",
-            "Equatorial_Guinea",
-            "Aland_Islands",
-            "El_Salvador",
-            "Eritrea",
-            "Eswatini",
-            "Estonia",
-            "Ethiopia",
-            "South_Africa",
-            "South Georgia and the South Sandwich Islands",
-            "South_Ossetia",
-            "South_Sudan",
-            "Jamaica",
-            "Japan",
-            "Caribean",
-            "GDR",
-            "Nazi",
-            "Afrika",
-            "Crimea",
-            "Nid_Antilla",
-            "Russian_Empire",
-            "USSR",
-            "France_Afar",
-            "Chehoclovakia",
-            "Jyugoslavia",
-        ]
-    )
-)
+@dp.message_handler(Command(countries_cmd))
+@login_required
 async def output_coin(message: types.Message):
-    if User.get(tg_id=message.from_user.id) is None:
-        await message.answer("Доступно после регистрации в боте")
-        return
     coin_st = DataCoin.get_for_user(message.from_user.id)
     strani = strana(f"./users_files/{coin_st[-1].user_coin_id}_.xlsx", message.text)
     await vyvod_monet(message, strani)
 
 
 @dp.message_handler(commands=["swap_list"])
+@login_required
 async def swap(message: types.Message):
-    if User.get(tg_id=message.from_user.id) is None:
-        await message.answer("Доступно после регистрации в боте")
-        return
     coin_st = DataCoin.get_for_user(message.from_user.id)
     swap_list = func_swap(f"./users_files/{coin_st[-1].user_coin_id}_SWAP.xlsx")
     data_length = 0
@@ -569,10 +287,8 @@ async def swap(message: types.Message):
 
 
 @dp.message_handler(commands=["profile"])
+@login_required
 async def profile(message: types.Message):
-    if User.get(tg_id=message.from_user.id) is None:
-        await message.answer("Доступно после регистрации в боте")
-        return
     coin_st = DataCoin.get_for_user(message.from_user.id)
     user = User.get(message.from_user.id)
     message_status = f"✉️" if user.new_messages == 0 else f"📩"
@@ -585,11 +301,8 @@ async def profile(message: types.Message):
 
 
 @dp.message_handler(commands=["grafik"])
+@login_required
 async def grafik(message: types.Message):
-    if User.get(tg_id=message.from_user.id) is None:
-        await message.answer("Доступно после регистрации в боте")
-        return
-
     await bot.send_chat_action(chat_id=message.from_id, action="upload_photo")
 
     graph_name = get_graph(message.from_user.id)
@@ -599,10 +312,8 @@ async def grafik(message: types.Message):
 
 
 @dp.message_handler(commands=["map"])
+@login_required
 async def maps(message: types.Message):
-    if User.get(tg_id=message.from_user.id) is None:
-        await message.answer("Доступно после регистрации в боте")
-        return
     keyboard = InlineKeyboardMarkup()
     button1 = InlineKeyboardButton("Европа", callback_data="Europe")
     button2 = InlineKeyboardButton("Ц.Америка", callback_data="North_America")
@@ -618,11 +329,10 @@ async def maps(message: types.Message):
 
     await bot.send_chat_action(chat_id=message.from_id, action="upload_photo")
 
-    map_name = get_world_map(coin_st[-1].user_coin_id, location=location)
+    world_map = WorldMap(user_coin_id=coin_st[-1].user_coin_id)
+    map_name = world_map.create_map(location=location)
     map_img = InputFile(map_name)
-    await bot.send_photo(
-        chat_id=message.from_user.id, photo=map_img, reply_markup=keyboard
-    )
+    await bot.send_photo(chat_id=message.from_user.id, photo=map_img, reply_markup=keyboard)
     os.remove(map_name)
 
     # await message.answer("Изменить отображение?", reply_markup=keyboard)
@@ -636,25 +346,28 @@ async def maps(message: types.Message):
     or c.data == "Afrika"
     or c.data == "Asian_Islands"
 )
+@login_required
 async def process_callback_button1(callback_query: types.CallbackQuery):
     location = callback_query.data
     user_id = callback_query.from_user.id
 
-    coin_st = DataCoin.get_for_user(user_id)
+    user_coin_id = DataCoin.get_for_user(user_id)[-1].user_coin_id
 
     await bot.send_chat_action(chat_id=user_id, action="upload_photo")
 
-    map_name = get_world_map(coin_st[-1].user_coin_id, location=location)
-    map_img = InputFile(map_name)
+    # image_map_name = get_world_map(user_coin_id, location=location)
+
+    world_map = WorldMap(user_coin_id)
+    image_map_name = world_map.create_map(location=location)
+
+    map_img = InputFile(image_map_name)
     await bot.send_photo(chat_id=user_id, photo=map_img)
-    os.remove(map_name)
+    os.remove(image_map_name)
 
 
 @dp.message_handler(commands=["delete"])
+@login_required
 async def delete1(message: types.Message):
-    if User.get(tg_id=message.from_user.id) is None:
-        await message.answer("Доступно после регистрации в боте")
-        return
     await DeleteForm.confirm_delete.set()
     await message.answer(
         "При удалении данных стираются также значения стоимости монет, график обнуляется"
@@ -663,6 +376,7 @@ async def delete1(message: types.Message):
 
 
 @dp.message_handler(state=DeleteForm.confirm_delete)
+@login_required
 async def delete2(message: types.Message, state: FSMContext):
     if message.text.lower() == "да":
         await DeleteForm.confirm_delete2.set()
@@ -675,20 +389,21 @@ async def delete2(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state=DeleteForm.confirm_delete2)
+@login_required
 async def delete2(message: types.Message, state: FSMContext):
     if message.text.lower() == "да":
         User.delete(tg_id=message.from_user.id)
         DataCoin.delete_user_data(tg_id=message.from_user.id)
-        await message.answer(
-            "Данные удалены из базы данных бота \n↓↓↓ Доступные команды"
-        )
+        await message.answer("Данные удалены из базы данных бота \n↓↓↓ Доступные команды")
 
     else:
         await message.answer("Ну и нахуй ты мне мозгу ебешь, кожаный мешок")
 
     await state.finish()  # Завершаем текущий state
 
+
 @dp.message_handler(commands=["all"])
+@login_required
 async def all(message: types.Message):
     await refresh_data(message)
     await profile(message)

@@ -2,9 +2,8 @@
 !config
 !img
 !main.py
-!site_calc.py
-!gather.py
-!database.py
+!core/site_calc.py
+!core/gather.py
+!database/database.py
 !requirements.txt
-!limiter.py
-!new_map.py
+!helpers/limiter.py

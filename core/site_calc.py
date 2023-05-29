@@ -10,7 +10,7 @@ import pandas as pd
 
 from bs4 import BeautifulSoup
 
-from name_transformer import transformer
+from .name_transformer import transformer
 
 
 # класс ошибок
@@ -186,7 +186,6 @@ def countries(file_name):
         if "евро" in row[1].value:
             count_euro += 1
 
-    # result += f'🇪🇺  {count_euro}   Евросоюз\n             /Europe'
     result.append(
         [
             f"🇪🇺",
@@ -238,15 +237,12 @@ def strana(file_name, text_in):
 
     # Вводим текст для сравнения
     text = text_in
-    print(text_in)
     string_without_first_char = text[1:]
-    print(string_without_first_char)
     df = pd.read_excel("./config/EngtoRu.xlsx", header=None)  # assuming no header
     mydict = df.set_index(0)[
         1
     ].to_dict()  # setting first column as index and second column as values
     text2 = mydict[string_without_first_char]
-    print(text2)
 
     arr = []
 
