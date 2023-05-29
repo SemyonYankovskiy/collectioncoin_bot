@@ -650,16 +650,6 @@ async def process_callback_button1(callback_query: types.CallbackQuery):
     os.remove(map_name)
 
 
-# @dp.message_handler(commands=["test"])
-# async def test(message: types.Message):
-#     keyboard = InlineKeyboardMarkup()
-#     yes_button = InlineKeyboardButton("Да", callback_data="yes")
-#     no_button = InlineKeyboardButton("Нет", callback_data="no")
-#     keyboard.add(yes_button, no_button)
-#
-#     await message.answer("Вы хотите продолжить?", reply_markup=keyboard)
-
-
 @dp.message_handler(commands=["delete"])
 async def delete1(message: types.Message):
     if User.get(tg_id=message.from_user.id) is None:
@@ -697,6 +687,14 @@ async def delete2(message: types.Message, state: FSMContext):
         await message.answer("Ну и нахуй ты мне мозгу ебешь, кожаный мешок")
 
     await state.finish()  # Завершаем текущий state
+
+@dp.message_handler(commands=["all"])
+async def all(message: types.Message):
+    await refresh_data(message)
+    await profile(message)
+    await summ(message)
+    await grafik(message)
+    await maps(message)
 
 
 @dp.message_handler()

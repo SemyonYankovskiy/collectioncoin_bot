@@ -28,6 +28,8 @@ def get_world_map(user_coin_id, location) -> str:
     # для закрашивания разных территорий, принадлежащих 1 стране
     if df[df['eng_name'] == 'Greenland'].empty:
         df.loc[len(df.index)] = [0, "Greenland"]
+    if df[df['eng_name'] == 'Denmark'].empty:
+        df.loc[len(df.index)] = [0, "Denmark"]
     df.loc[df["eng_name"] == "Greenland", "count"] += df.loc[df["eng_name"] == "Denmark", "count"].values[0]
 
     if df[df['eng_name'] == 'Germany'].empty:
@@ -35,11 +37,9 @@ def get_world_map(user_coin_id, location) -> str:
     if df[df['eng_name'] == 'GDR'].empty:
         df.loc[len(df.index)] = [0, "GDR"]
     df.loc[df["eng_name"] == "Germany", "count"] += df.loc[df["eng_name"] == "GDR", "count"].values[0]
-
     if df[df['eng_name'] == 'Germany'].empty:
         df.loc[len(df.index)] = [0, "Germany"]
     df.loc[df["eng_name"] == "Germany", "count"] += df.loc[df["eng_name"] == "Nazi", "count"].values[0]
-
     if df[df['eng_name'] == 'Germany'].empty:
         df.loc[len(df.index)] = [0, "Germany"]
     if df[df['eng_name'] == 'FRG'].empty:
@@ -49,10 +49,14 @@ def get_world_map(user_coin_id, location) -> str:
     # для закрашивания разных территорий, принадлежащих 1 стране
     if df[df['eng_name'] == 'Djibouti'].empty:
         df.loc[len(df.index)] = [0, "Djibouti"]
+    if df[df['eng_name'] == 'France_Afar'].empty:
+        df.loc[len(df.index)] = [0, "France_Afar"]
     df.loc[df["eng_name"] == "Djibouti", "count"] += df.loc[df["eng_name"] == "France_Afar", "count"].values[0]
 
     # Бенин, Буркина-Фасо, Кот-д'Ивуар, Гвинея-Бисау, Мали, Нигер, Сенегал, Того.
     # для закрашивания разных территорий, принадлежащих 1 стране
+    if df[df['eng_name'] == 'Afrika'].empty:
+        df.loc[len(df.index)] = [0, "Afrika"]
     if df[df['eng_name'] == 'Benin'].empty:
         df.loc[len(df.index)] = [0, "Benin"]
     df.loc[df["eng_name"] == "Benin", "count"] += df.loc[df["eng_name"] == "Afrika", "count"].values[0]
@@ -80,13 +84,19 @@ def get_world_map(user_coin_id, location) -> str:
 
     if df[df['eng_name'] == 'N. Cyprus'].empty:
         df.loc[len(df.index)] = [0, "N. Cyprus"]
+    if df[df['eng_name'] == 'Cyprus'].empty:
+        df.loc[len(df.index)] = [0, "Cyprus"]
     df.loc[df["eng_name"] == "N. Cyprus", "count"] += df.loc[df["eng_name"] == "Cyprus", "count"].values[0]
 
     # Босния и Герцеговина, Хорватия, Македония, Черногория, Сербия и Словения.
     if df[df['eng_name'] == 'Kosovo'].empty:
         df.loc[len(df.index)] = [0, "Kosovo"]
+    if df[df['eng_name'] == 'Serbia'].empty:
+        df.loc[len(df.index)] = [0, "Serbia"]
     df.loc[df["eng_name"] == "Kosovo", "count"] = df.loc[df["eng_name"] == "Serbia", "count"].values[0]
 
+    if df[df['eng_name'] == 'Jyugoslavia'].empty:
+        df.loc[len(df.index)] = [0, "Jyugoslavia"]
     if df[df['eng_name'] == 'Bosnia and Herz.'].empty:
         df.loc[len(df.index)] = [0, "Bosnia and Herz."]
     df.loc[df["eng_name"] == "Bosnia and Herz.", "count"] += df.loc[df["eng_name"] == "Jyugoslavia", "count"].values[0]
@@ -109,6 +119,8 @@ def get_world_map(user_coin_id, location) -> str:
         df.loc[len(df.index)] = [0, "Kosovo"]
     df.loc[df["eng_name"] == "Kosovo", "count"] += df.loc[df["eng_name"] == "Jyugoslavia", "count"].values[0]
 
+    if df[df['eng_name'] == 'Chehoclovakia'].empty:
+        df.loc[len(df.index)] = [0, "Chehoclovakia"]
     if df[df['eng_name'] == 'Czechia'].empty:
         df.loc[len(df.index)] = [0, "Czechia"]
     df.loc[df["eng_name"] == "Czechia", "count"] += df.loc[df["eng_name"] == "Chehoclovakia", "count"].values[0]
@@ -118,9 +130,6 @@ def get_world_map(user_coin_id, location) -> str:
 
 
 
-    if df[df['eng_name'] == 'N. Cyprus'].empty:
-        df.loc[len(df.index)] = [0, "N. Cyprus"]
-    df.loc[df["eng_name"] == "N. Cyprus", "count"] += df.loc[df["eng_name"] == "Cyprus", "count"].values[0]
 
     # Костыль, чтобы закрашивание было более контрастным (не работает с колорбаром)
     df["count"] = df["count"].apply(lambda x: x**0.05)
