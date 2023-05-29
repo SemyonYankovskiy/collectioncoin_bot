@@ -1,9 +1,8 @@
 *
 !config
+!core
+!database
+!helpers
 !img
 !main.py
-!core/site_calc.py
-!core/gather.py
-!database/database.py
 !requirements.txt
-!helpers/limiter.py
