@@ -16,7 +16,7 @@ class WorldMap:
 
     countries_alias = {
         "Germany": ["GDR", "Nazi", "FRG"],
-        "Denmark": ["Greenland"],
+        "Greenland": ["Denmark"],
         "Djibouti": ["France_Afar"],
         "Benin": ["Afrika"],
         "Burkina Faso": ["Afrika"],
@@ -36,7 +36,7 @@ class WorldMap:
         "Slovenia": ["Jyugoslavia"],
         "Czechia": ["Chehoclovakia"],
         "Slovakia": ["Chehoclovakia"],
-        "Fr.S.Antarctic Lands": ["France"],
+        "Fr. S. Antarctic Lands": ["France"],
     }
 
     def __init__(self, user_coin_id: int):
