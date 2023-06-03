@@ -260,4 +260,6 @@ countries_cmd = [
     "France_Afar",
     "Chehoclovakia",
     "Jyugoslavia",
+    "N_Yemen",
+    "N_Arabia",
 ]

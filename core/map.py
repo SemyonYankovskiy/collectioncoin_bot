@@ -37,6 +37,8 @@ class WorldMap:
         "Czechia": ["Chehoclovakia"],
         "Slovakia": ["Chehoclovakia"],
         "Fr. S. Antarctic Lands": ["France"],
+        "Yemen": ["N.Yemen", "N.Arabia"],
+
     }
 
     def __init__(self, user_coin_id: int):

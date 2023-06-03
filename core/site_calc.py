@@ -231,11 +231,11 @@ def strana(file_name, text_in):
     # Вводим текст для сравнения
     text = text_in
     string_without_first_char = text[1:]
-    df = pd.read_excel("./config/EngtoRu.xlsx", header=None)  # assuming no header
-    mydict = df.set_index(0)[
-        1
-    ].to_dict()  # setting first column as index and second column as values
-    text2 = mydict[string_without_first_char]
+    # df = pd.read_excel("./config/EngtoRu.xlsx", header=None)  # assuming no header
+    # mydict = df.set_index(0)[
+    #     1
+    # ].to_dict()  # setting first column as index and second column as values
+    text2 = transformer.get_country_rus_name(string_without_first_char)
 
     arr = []
 
@@ -307,3 +307,52 @@ def file_opener(file_name):
             total += row[6].value
 
     return round(total, 2)
+
+def get_top_10_coin(file_name, mode):
+
+    df = pd.read_excel(file_name)
+    arr = []
+    df.fillna(value='', inplace=True)
+
+    if mode == 'old':
+        df = df.sort_values(by='Год', ascending=True)
+    elif mode == 'novelty':
+        df = df.sort_values(by='Год', ascending=False)
+    elif mode == 'expensive_value':
+        df['Цена, RUB [uCoin]'] = pd.to_numeric(df['Цена, RUB [uCoin]'], errors='coerce')
+        df = df.sort_values(by='Цена, RUB [uCoin]', ascending=False)
+    elif mode == 'cheap_value':
+        df['Цена, RUB [uCoin]'] = pd.to_numeric(df['Цена, RUB [uCoin]'], errors='coerce')
+        df = df.sort_values(by='Цена, RUB [uCoin]', ascending=True)
+    elif mode == 'last_append':
+        df = df.sort_values(by='Добавлено', ascending=False)
+    elif mode == 'first_append':
+        df = df.sort_values(by='Добавлено', ascending=True)
+
+
+    top_10 = df.head(10)
+
+
+    # Проходимся по строкам и суммируем значения в столбце G
+    for row in top_10.iterrows():
+        desc4 = f"{row[1][4]}"  # Наименование
+        desc3 = f"{row[1][3]}"  # монетный двор
+        desc10 = (
+            f"\nКомментарий: {row[1][16]}" if row[1][16] else ""
+        )  # комментарий
+        desc5 = f" {row[1][6]} ₽" if row[1][6] else "" # Цена
+        arr.append(
+            [
+                transformer.get_country_code(row[1][0]),  # Флаг
+                row[1][1],  # Номинал
+                row[1][2],  # Год
+                desc5,  # Цена
+
+                desc3,  # монетный двор
+                desc4,  # Наименование
+                desc10,  # комментарий
+            ]
+        )
+
+
+    return arr

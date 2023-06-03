@@ -24,6 +24,7 @@ from core.site_calc import (
     func_swap,
     euro,
     refresh,
+    get_top_10_coin,
 )
 from core.map import WorldMap
 from core.types import MessageWithUser
@@ -50,7 +51,7 @@ try:
     os.mkdir(path)
     print("Directory created successfully")
 except OSError as error:
-    print("Directory already exist")
+    print("Check user_files directory - Done")
 
 
 # Создаем класс состояний для конечного автомата
@@ -255,6 +256,35 @@ async def output_eurocoin(message: MessageWithUser):
     await vyvod_monet(message, euro1)
 
 
+def get_top_keyboards(current_location: str):
+    top_mode = [
+        ("По цене", "value"),
+        ("По году - старые", "old"),
+        ("По году - старые", "novelty"),
+    ]
+    keyboard = []
+
+    for name, callback_data in top_mode:
+        if callback_data != current_location:
+            keyboard.append(InlineKeyboardButton(name, callback_data=callback_data))
+
+    return InlineKeyboardMarkup().add(*keyboard)
+
+
+@dp.message_handler(commands=["top"])
+@check_and_set_user
+async def top10(message: MessageWithUser):
+    mode = 'old'
+    top_coin = get_top_10_coin(f"./users_files/{message.user.user_coin_id}_.xlsx", mode=mode)
+
+    output = ""
+    for flag, nominal, year, cena, md, name, comment in top_coin:
+        output += f"{flag} {nominal} {year} {cena} {md} {name} {comment} \n\n"
+
+    await message.answer(output)
+
+
+
 @dp.message_handler(Command(countries_cmd))
 @check_and_set_user
 async def output_coin(message: MessageWithUser):
@@ -361,7 +391,7 @@ async def maps(message: MessageWithUser):
     or c.data == "Asian_Islands"
 )
 @check_and_set_user
-async def process_callback_button1(callback_query: types.CallbackQuery):
+async def process_callback_map(callback_query: types.CallbackQuery):
     location = callback_query.data
     user = User.get(tg_id=callback_query.from_user.id)
     await get_user_map(location, user, delete_last_message_id=callback_query.message.message_id)
