@@ -131,7 +131,7 @@ class WorldMap:
         """
         for idx, row in world.iterrows():
             axis.annotate(
-                text=transformer.get_rus_country_name(row["name"]),
+                text=transformer.get_rus_country_name_on_map(row["name"]),
                 xy=row["geometry"].centroid.coords[0],
                 horizontalalignment="center",
                 verticalalignment="bottom",

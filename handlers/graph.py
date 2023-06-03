@@ -11,17 +11,18 @@ from settngs import dp, bot
 
 def get_graph_keyboards(current_limit: str):
     time_limit = [
-        ("Последний месяц", "month:1"),
         ("Послдение 2 месяца", "month:2"),
         ("Последние 6 месяцев", "month:6"),
         ("Последний год", "month:12"),
         ("Всё время", "month:all"),
+        ("Последний месяц", "month:1"),
     ]
     keyboard = []
 
     for name, callback_data in time_limit:
-        if callback_data != current_limit:
-            keyboard.append(InlineKeyboardButton(name, callback_data=callback_data))
+        if current_limit == callback_data:
+            name = f"❇️ {name}"
+        keyboard.append(InlineKeyboardButton(name, callback_data=callback_data))
 
     return InlineKeyboardMarkup(row_width=2).add(*keyboard)
 

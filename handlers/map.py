@@ -10,35 +10,33 @@ from settngs import dp, bot
 
 def get_maps_keyboards(current_location: str):
     world_locations = [
-        ("Мир", "map:World"),
         ("Европа", "map:Europe"),
         ("Ц.Америка", "map:North_America"),
         ("Ю.Америка", "map:South_America"),
         ("Азия", "map:Asia"),
         ("Африка", "map:Africa"),
         ("Острова Азии", "map:Asian_Islands"),
+        ("Мир", "map:World"),
     ]
     keyboard = []
-
+    print(current_location)
     for name, callback_data in world_locations:
-        if callback_data != current_location:
-            keyboard.append(InlineKeyboardButton(name, callback_data=callback_data))
-
+        if current_location == callback_data:
+            name = f"❇️ {name}"
+        keyboard.append(InlineKeyboardButton(name, callback_data=callback_data))
     return InlineKeyboardMarkup().add(*keyboard)
 
 
-async def send_user_map(location: str, user: User, delete_last_message_id=None):
+async def send_user_map(location: str, user: User):
     await bot.send_chat_action(chat_id=user.telegram_id, action="upload_photo")
 
     world_map = WorldMap(user_coin_id=user.user_coin_id)
     map_name = world_map.create_map(location=location)
 
-    keyboard = get_maps_keyboards(current_location=location)
+    keyboard = get_maps_keyboards(current_location=f"map:{location}")
 
     map_img = InputFile(map_name)
 
-    if delete_last_message_id:
-        await bot.delete_message(chat_id=user.telegram_id, message_id=delete_last_message_id)
     await bot.send_photo(chat_id=user.telegram_id, photo=map_img, reply_markup=keyboard)
     os.remove(map_name)
 
@@ -55,4 +53,5 @@ async def maps(message: MessageWithUser):
 async def process_callback_map(callback_query: CallbackQueryWithUser):
     location = callback_query.data[4:]
     user = User.get(tg_id=callback_query.from_user.id)
-    await send_user_map(location, user, delete_last_message_id=callback_query.message.message_id)
+    await send_user_map(location, user)
+    await bot.delete_message(chat_id=user.telegram_id, message_id=callback_query.message.message_id)

@@ -10,12 +10,12 @@ from settngs import dp, bot
 def _get_top10_keyboards(active_mode: str):
     keyboard = []
     mode_of_top = [
-        ("Цена ⬆️", "expensive_value"),
-        ("Цена ⬇️", "cheap_value"),
-        ("Дата добавления ⬆️", "last_append"),
-        ("Дата добавления ⬇️", "first_append"),
-        ("Год ⬆️", "novelty"),
-        ("Год ⬇️", "old"),
+        ("Цена 🔼", "expensive_value"),
+        ("Цена 🔽", "cheap_value"),
+        ("Новые 🆕", "last_append"),
+        ("Старые ℹ️", "first_append"),
+        ("Год 🔼", "novelty"),
+        ("Год 🔽", "old"),
     ]
     for name, callback_data in mode_of_top:
         if callback_data == active_mode:
@@ -36,7 +36,7 @@ def _get_top10_message_text(user_coin_id, mode: str):
 @dp.message_handler(commands=["top"])
 @check_and_set_user
 async def top10_default(message: MessageWithUser):
-    default_mode = "old"
+    default_mode = "last_append"
     output = _get_top10_message_text(message.user.user_coin_id, mode=default_mode)
     keyboards = _get_top10_keyboards(active_mode=default_mode)
     await message.answer(output, reply_markup=keyboards)
