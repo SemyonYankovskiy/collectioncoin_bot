@@ -27,7 +27,7 @@ from core.site_calc import (
     get_top_10_coin,
 )
 from core.map import WorldMap
-from core.types import MessageWithUser
+from core.types import MessageWithUser, CallbackQueryWithUser
 from database import db_connection, User, DataCoin
 from helpers.handler_decorators import check_and_set_user
 from helpers.comands import countries_cmd
@@ -256,33 +256,53 @@ async def output_eurocoin(message: MessageWithUser):
     await vyvod_monet(message, euro1)
 
 
-def get_top_keyboards(current_location: str):
-    top_mode = [
-        ("По цене", "value"),
-        ("По году - старые", "old"),
-        ("По году - старые", "novelty"),
-    ]
+def _get_top10_keyboards(active_mode: str):
     keyboard = []
+    mode_of_top = [
+        ("Цена ⬆️", "expensive_value"),
+        ("Цена ⬇️", "cheap_value"),
+        ("Дата добавления ⬆️", "last_append"),
+        ("Дата добавления ⬇️", "first_append"),
+        ("Год ⬆️", "novelty"),
+        ("Год ⬇️", "old"),
+    ]
+    for name, callback_data in mode_of_top:
+        if callback_data == active_mode:
+            name = f"❇️ {name}"
+        keyboard.append(InlineKeyboardButton(name, callback_data=callback_data))
 
-    for name, callback_data in top_mode:
-        if callback_data != current_location:
-            keyboard.append(InlineKeyboardButton(name, callback_data=callback_data))
+    return InlineKeyboardMarkup(row_width=2).add(*keyboard)
 
-    return InlineKeyboardMarkup().add(*keyboard)
+
+def _get_top10_message_text(user_coin_id, mode: str):
+    top_coin = get_top_10_coin(f"./users_files/{user_coin_id}_.xlsx", mode=mode)
+    output = ""
+    for flag, nominal, year, cena, md, name, comment in top_coin:
+        output += f"{flag} {nominal} {year} {cena} {md} {name} {comment} \n\n"
+    return output
 
 
 @dp.message_handler(commands=["top"])
 @check_and_set_user
-async def top10(message: MessageWithUser):
-    mode = 'old'
-    top_coin = get_top_10_coin(f"./users_files/{message.user.user_coin_id}_.xlsx", mode=mode)
+async def top10_default(message: MessageWithUser):
+    default_mode = "old"
+    output = _get_top10_message_text(message.user.user_coin_id, mode=default_mode)
+    keyboards = _get_top10_keyboards(active_mode=default_mode)
+    await message.answer(output, reply_markup=keyboards)
 
-    output = ""
-    for flag, nominal, year, cena, md, name, comment in top_coin:
-        output += f"{flag} {nominal} {year} {cena} {md} {name} {comment} \n\n"
 
-    await message.answer(output)
+@dp.callback_query_handler(
+    lambda c: c.data
+    in ["expensive_value", "cheap_value", "last_append", "first_append", "novelty", "old"]
+)
+@check_and_set_user
+async def top10_by_sort(callback_query: CallbackQueryWithUser):
+    mode = callback_query.data
+    keyboards = _get_top10_keyboards(active_mode=mode)
+    output = _get_top10_message_text(callback_query.user.user_coin_id, mode=mode)
 
+    await callback_query.message.answer(output, reply_markup=keyboards)
+    await bot.delete_message(chat_id=callback_query.user.telegram_id, message_id=callback_query.message.message_id)
 
 
 @dp.message_handler(Command(countries_cmd))
@@ -358,7 +378,7 @@ def get_maps_keyboards(current_location: str):
     return InlineKeyboardMarkup().add(*keyboard)
 
 
-async def get_user_map(location: str, user: User, delete_last_message_id=None):
+async def send_user_map(location: str, user: User, delete_last_message_id=None):
     await bot.send_chat_action(chat_id=user.telegram_id, action="upload_photo")
 
     world_map = WorldMap(user_coin_id=user.user_coin_id)
@@ -378,7 +398,7 @@ async def get_user_map(location: str, user: User, delete_last_message_id=None):
 @check_and_set_user
 async def maps(message: MessageWithUser):
     location = "World"
-    await get_user_map(location, message.user)
+    await send_user_map(location, message.user)
 
 
 @dp.callback_query_handler(
@@ -391,10 +411,10 @@ async def maps(message: MessageWithUser):
     or c.data == "Asian_Islands"
 )
 @check_and_set_user
-async def process_callback_map(callback_query: types.CallbackQuery):
+async def process_callback_map(callback_query: CallbackQueryWithUser):
     location = callback_query.data
     user = User.get(tg_id=callback_query.from_user.id)
-    await get_user_map(location, user, delete_last_message_id=callback_query.message.message_id)
+    await send_user_map(location, user, delete_last_message_id=callback_query.message.message_id)
 
 
 @dp.message_handler(commands=["delete"])

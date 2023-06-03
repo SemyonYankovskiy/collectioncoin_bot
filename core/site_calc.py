@@ -329,17 +329,13 @@ def get_top_10_coin(file_name, mode):
     elif mode == 'first_append':
         df = df.sort_values(by='Добавлено', ascending=True)
 
-
     top_10 = df.head(10)
-
 
     # Проходимся по строкам и суммируем значения в столбце G
     for row in top_10.iterrows():
         desc4 = f"{row[1][4]}"  # Наименование
         desc3 = f"{row[1][3]}"  # монетный двор
-        desc10 = (
-            f"\nКомментарий: {row[1][16]}" if row[1][16] else ""
-        )  # комментарий
+        desc10 = (f"\nКомментарий: {row[1][16]}" if row[1][16] else "")  # комментарий
         desc5 = f" {row[1][6]} ₽" if row[1][6] else "" # Цена
         arr.append(
             [
@@ -347,12 +343,9 @@ def get_top_10_coin(file_name, mode):
                 row[1][1],  # Номинал
                 row[1][2],  # Год
                 desc5,  # Цена
-
                 desc3,  # монетный двор
                 desc4,  # Наименование
                 desc10,  # комментарий
             ]
         )
-
-
     return arr
