@@ -10,13 +10,13 @@ from settngs import dp, bot
 
 def get_maps_keyboards(current_location: str):
     world_locations = [
-        ("Мир", "World"),
-        ("Европа", "Europe"),
-        ("Ц.Америка", "North_America"),
-        ("Ю.Америка", "South_America"),
-        ("Азия", "Asia"),
-        ("Африка", "Africa"),
-        ("Острова Азии", "Asian_Islands"),
+        ("Мир", "map:World"),
+        ("Европа", "map:Europe"),
+        ("Ц.Америка", "map:North_America"),
+        ("Ю.Америка", "map:South_America"),
+        ("Азия", "map:Asia"),
+        ("Африка", "map:Africa"),
+        ("Острова Азии", "map:Asian_Islands"),
     ]
     keyboard = []
 
@@ -50,18 +50,9 @@ async def maps(message: MessageWithUser):
     await send_user_map(location, message.user)
 
 
-@dp.callback_query_handler(
-    lambda c: c.data == "World"
-    or c.data == "Europe"
-    or c.data == "North_America"
-    or c.data == "South_America"
-    or c.data == "Asia"
-    or c.data == "Africa"
-    or c.data == "Asian_Islands"
-)
+@dp.callback_query_handler(lambda c: c.data.startswith("map:"))
 @check_and_set_user
 async def process_callback_map(callback_query: CallbackQueryWithUser):
-    location = callback_query.data
+    location = callback_query.data[4:]
     user = User.get(tg_id=callback_query.from_user.id)
     await send_user_map(location, user, delete_last_message_id=callback_query.message.message_id)
-

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from datetime import datetime, timedelta
 
 import requests
@@ -40,14 +40,36 @@ def authorize(username, password):
         return user_coin_id, session
 
 
-def get_graph(telegram_id):
-    graph_coin_data: List[DataCoin] = DataCoin.get_for_user(telegram_id)
-    print(len(graph_coin_data))
+def get_fig_width(data_length: int) -> int:
+    if data_length > 90:
+        return 20
+    return 15 * (data_length // 60 or 1)
 
+
+def get_date_annotation(date_value: str, data_length: int) -> str:
+    date_ = datetime.strptime(date_value, "%Y.%m.%d")
+
+    if data_length > 350:
+        date_str = date_.strftime("%b %Y")
+    elif data_length > 30 * 6:
+        date_str = date_.strftime("%d %b")
+    else:
+        date_str = date_.strftime("%d.%m")
+
+    return date_str
+
+
+def get_fig_marker(data_length: int) -> str:
+    if data_length < 61:
+        return "o"
+    return ""
+
+
+def get_graph(telegram_id, limit: Optional[int] = 30):
+    graph_coin_data: List[DataCoin] = DataCoin.get_for_user(telegram_id, limit)
     graph_date = []
     graph_sum = []
 
-    # last_date = datetime.strptime(graph_coin_data[0].datetime, "%Y.%m.%d")
     last_date = datetime.now().date()
 
     for sublist in graph_coin_data[::1]:
@@ -60,22 +82,33 @@ def get_graph(telegram_id):
         graph_sum.append(sublist.totla_sum)
         last_date -= timedelta(days=1)
 
-    graph_date_last_30_days = graph_date[:30]
-    graph_summ_last_30_days = graph_sum[:30]
-    step = len(graph_date_last_30_days) // 15
+    if limit:
+        graph_date = graph_date[:limit]
+        graph_sum = graph_sum[:limit]
+
+    data_length = len(graph_date)
+
+    step = data_length // 15
+
+    fig_height = 10
+    fig_width = get_fig_width(data_length)
+    fig_dpi = 100
 
     plt.clf()
-    plt.figure(figsize=(step * 5, step * 3), dpi=100)
+    plt.figure(figsize=(fig_width, fig_height), dpi=fig_dpi)
+
     plt.plot(
-        graph_date_last_30_days[::-1],
-        graph_summ_last_30_days[::-1],
-        marker="o",
+        graph_date[::-1],
+        graph_sum[::-1],
+        marker=get_fig_marker(data_length),
         markersize=4,
     )
 
-    new_list = list(map(lambda x: x[5:], graph_date_last_30_days))
+    date_without_year = list(
+        map(lambda value: get_date_annotation(value, data_length), graph_date)
+    )
 
-    plt.xticks(graph_date_last_30_days[::step], new_list[::step])
+    plt.xticks(graph_date[::step], date_without_year[::step])
 
     plt.title("Стоимость коллекции, руб")
 
@@ -196,16 +229,13 @@ def countries(file_name):
 
 
 def euro(file_name):
-
     wb = openpyxl.load_workbook(file_name)
     ws = wb.active
     euros = []
 
     for row in ws.iter_rows(min_row=1, max_col=7):
         if "евро" in row[1].value:
-            des3 = (
-                f"\nМонетный двор: {row[3].value}" if row[3].value else ""
-            )  # монетный двор
+            des3 = f"\nМонетный двор: {row[3].value}" if row[3].value else ""  # монетный двор
             des4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
 
             euros.append(
@@ -242,9 +272,7 @@ def strana(file_name, text_in):
     # Проходимся по строкам и суммируем значения в столбце G
     for row in ws.iter_rows(min_row=1, max_col=7):
         if row[0].value == text2:
-            desc3 = (
-                f"\nМонетный двор: {row[3].value}" if row[3].value else ""
-            )  # монетный двор
+            desc3 = f"\nМонетный двор: {row[3].value}" if row[3].value else ""  # монетный двор
             desc4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
             arr.append(
                 [
@@ -272,9 +300,7 @@ def func_swap(file_name):
     for row in ws.iter_rows(min_row=2, max_col=11):
         desc4 = f"{row[4].value}" if row[4].value else ""  # Наименование
         desc3 = f"{row[3].value}" if row[3].value else ""  # монетный двор
-        desc10 = (
-            f"\nКомментарий: {row[10].value}" if row[10].value else ""
-        )  # комментарий
+        desc10 = f"\nКомментарий: {row[10].value}" if row[10].value else ""  # комментарий
         arr.append(
             [
                 transformer.get_country_code(row[0].value),  # Флаг
@@ -308,26 +334,26 @@ def file_opener(file_name):
 
     return round(total, 2)
 
-def get_top_10_coin(file_name, mode):
 
+def get_top_10_coin(file_name, mode):
     df = pd.read_excel(file_name)
     arr = []
-    df.fillna(value='', inplace=True)
+    df.fillna(value="", inplace=True)
 
-    if mode == 'old':
-        df = df.sort_values(by='Год', ascending=True)
-    elif mode == 'novelty':
-        df = df.sort_values(by='Год', ascending=False)
-    elif mode == 'expensive_value':
-        df['Цена, RUB [uCoin]'] = pd.to_numeric(df['Цена, RUB [uCoin]'], errors='coerce')
-        df = df.sort_values(by='Цена, RUB [uCoin]', ascending=False)
-    elif mode == 'cheap_value':
-        df['Цена, RUB [uCoin]'] = pd.to_numeric(df['Цена, RUB [uCoin]'], errors='coerce')
-        df = df.sort_values(by='Цена, RUB [uCoin]', ascending=True)
-    elif mode == 'last_append':
-        df = df.sort_values(by='Добавлено', ascending=False)
-    elif mode == 'first_append':
-        df = df.sort_values(by='Добавлено', ascending=True)
+    if mode == "old":
+        df = df.sort_values(by="Год", ascending=True)
+    elif mode == "novelty":
+        df = df.sort_values(by="Год", ascending=False)
+    elif mode == "expensive_value":
+        df["Цена, RUB [uCoin]"] = pd.to_numeric(df["Цена, RUB [uCoin]"], errors="coerce")
+        df = df.sort_values(by="Цена, RUB [uCoin]", ascending=False)
+    elif mode == "cheap_value":
+        df["Цена, RUB [uCoin]"] = pd.to_numeric(df["Цена, RUB [uCoin]"], errors="coerce")
+        df = df.sort_values(by="Цена, RUB [uCoin]", ascending=True)
+    elif mode == "last_append":
+        df = df.sort_values(by="Добавлено", ascending=False)
+    elif mode == "first_append":
+        df = df.sort_values(by="Добавлено", ascending=True)
 
     top_10 = df.head(10)
 
@@ -335,8 +361,8 @@ def get_top_10_coin(file_name, mode):
     for row in top_10.iterrows():
         desc4 = f"{row[1][4]}"  # Наименование
         desc3 = f"{row[1][3]}"  # монетный двор
-        desc10 = (f"\nКомментарий: {row[1][16]}" if row[1][16] else "")  # комментарий
-        desc5 = f" {row[1][6]} ₽" if row[1][6] else "" # Цена
+        desc10 = f"\nКомментарий: {row[1][16]}" if row[1][16] else ""  # комментарий
+        desc5 = f" {row[1][6]} ₽" if row[1][6] else ""  # Цена
         arr.append(
             [
                 transformer.get_country_code(row[1][0]),  # Флаг

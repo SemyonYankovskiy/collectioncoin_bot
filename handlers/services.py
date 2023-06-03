@@ -23,7 +23,7 @@ async def refresh_data(message: MessageWithUser):
 @dp.message_handler(commands=["summ"])
 @check_and_set_user
 async def summ(message: MessageWithUser):
-    coin_st = DataCoin.get_for_user(message.from_user.id)
+    coin_st = DataCoin.get_for_user(message.from_user.id, limit=1)
     # обращаемся к функции more info, передаем в эту функциию значение переменной (значение из 4 столбца массива)
     lot, count = more_info(f"./users_files/{message.user.user_coin_id}_.xlsx")
 
@@ -31,5 +31,5 @@ async def summ(message: MessageWithUser):
     await message.answer(
         f"Количество монет {lot} \n"
         f"Количество стран {count} \n"
-        f"Общая стоимость {coin_st[-1].totla_sum} руб."
+        f"Общая стоимость {coin_st[0].totla_sum} руб."
     )

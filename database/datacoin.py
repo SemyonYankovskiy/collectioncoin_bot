@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import datetime, date, timedelta
-from typing import List
+from typing import List, Optional
 
 from .database import db_connection as db
 
@@ -45,8 +45,12 @@ class DataCoin:
             print(f"Already exists in the database.")
 
     @staticmethod
-    def get_for_user(tg_id) -> List["DataCoin"]:
-        db.cursor.execute(f"SELECT * FROM graph_data WHERE tg_id='{tg_id}' ORDER BY datetime DESC")
+    def get_for_user(tg_id, limit: Optional[int]) -> List["DataCoin"]:
+        limit_str = f"LIMIT {limit}" if limit else ""
+
+        db.cursor.execute(
+            f"SELECT * FROM graph_data WHERE tg_id='{tg_id}' ORDER BY datetime DESC {limit_str}"
+        )
         data_coins = []
         for sublist in db.cursor.fetchall():
             data_coins.append(
