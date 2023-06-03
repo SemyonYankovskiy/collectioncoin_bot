@@ -38,7 +38,6 @@ class WorldMap:
         "Slovakia": ["Chehoclovakia"],
         "Fr. S. Antarctic Lands": ["France"],
         "Yemen": ["N.Yemen", "N.Arabia"],
-
     }
 
     def __init__(self, user_coin_id: int):
@@ -47,6 +46,30 @@ class WorldMap:
         self.df: pd.DataFrame = self._get_countries_and_coin_counts()
 
         self.need_to_add_counties_names_on_map = False
+        self._color_schema = "YlGn"
+
+    def set_color_schema(self, name: str):
+        if name in [
+            "Greys",
+            "Purples",
+            "Blues",
+            "Greens",
+            "Oranges",
+            "Reds",
+            "YlOrBr",
+            "YlOrRd",
+            "OrRd",
+            "PuRd",
+            "RdPu",
+            "BuPu",
+            "GnBu",
+            "PuBu",
+            "YlGnBu",
+            "PuBuGn",
+            "BuGn",
+            "YlGn",
+        ]:
+            self._color_schema = name
 
     def create_map(self, location: str):
         self._unity_all_countries_aliases()
@@ -77,7 +100,7 @@ class WorldMap:
 
         merged.plot(
             column="count",
-            cmap="YlGn",
+            cmap=self._color_schema,
             ax=ax,
             legend=False,
         )

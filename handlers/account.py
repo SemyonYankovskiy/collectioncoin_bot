@@ -1,12 +1,21 @@
 import emoji
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.types import InputFile, InlineKeyboardMarkup, InlineKeyboardButton
 
 from core.site_calc import authorize, AuthFail, download, file_opener
-from core.types import MessageWithUser
+from core.types import MessageWithUser, CallbackQueryWithUser
 from database import User, DataCoin
 from helpers.handler_decorators import check_and_set_user
 from settngs import dp, bot
+
+
+def get_user_profile_keyboard():
+    keyboard = InlineKeyboardButton(
+        "Изменить цветовую схему для карты", callback_data=f"choose_color_map_scheme"
+    )
+
+    return InlineKeyboardMarkup().add(keyboard)
 
 
 @dp.message_handler(commands=["profile"])
@@ -15,10 +24,14 @@ async def profile(message: MessageWithUser):
     user = User.get(message.from_user.id)
     message_status = f"✉️" if user.new_messages == 0 else f"📩"
     swap_status = f"❕" if user.new_swap == 0 else f"❗️"
+
+    keyboard = get_user_profile_keyboard()
+
     await message.answer(
         f'<a href="https://ru.ucoin.net/uid{message.user.user_coin_id}?v=home">👤 Профиль</a>\n'
         f"{message_status} Новые сообщения {user.new_messages} \n{swap_status} Предложения обмена {user.new_swap}",
         parse_mode="HTML",
+        reply_markup=keyboard,
     )
 
 

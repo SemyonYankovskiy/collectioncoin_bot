@@ -1,33 +1,55 @@
 import sqlite3
 from typing import Optional
 
-from .database import db_connection as db
+from .database import db_connection as db, user_default_color_schema
 
 
 class User:
-    def __init__(self, telegram_id, email, password, user_coin_id=None, new_messages=None, new_swap=None):
+    def __init__(
+        self,
+        telegram_id,
+        email,
+        password,
+        user_coin_id=None,
+        new_messages=None,
+        new_swap=None,
+        map_color_schema=None,
+    ):
         self.telegram_id = telegram_id
         self.email = email
         self.password = password
         self.user_coin_id = user_coin_id
         self.new_messages = new_messages
         self.new_swap = new_swap
+        self.map_color_schema = map_color_schema or user_default_color_schema
 
     def save(self):
         try:
             db.cursor.execute(
-                f"INSERT INTO users (tg_id, email, password, user_coin_id, new_messages, new_swap) "
-                f"VALUES ('{self.telegram_id}', '{self.email}', '{self.password}', '{self.user_coin_id}',"
-                f" {self.new_messages or 0}, {self.new_swap or 0})"
+                f"""INSERT INTO users 
+                    (
+                        tg_id, email, password, user_coin_id, new_messages, new_swap, map_color_schema
+                    ) 
+                    VALUES 
+                    (
+                        '{self.telegram_id}', '{self.email}', '{self.password}', '{self.user_coin_id}',
+                        {self.new_messages or 0}, {self.new_swap or 0}, '{self.map_color_schema}'
+                    )"""
             )
             db.conn.commit()
             print(f"User {self.email} added successfully!")
         except sqlite3.IntegrityError:
             print(f"User {self.email} UPDATE in the database.")
             db.cursor.execute(
-                f"UPDATE users SET (email, password, user_coin_id, new_messages, new_swap ) = "
-                f"('{self.email}', '{self.password}', '{self.user_coin_id}', {self.new_messages}, {self.new_swap})"
-                f"WHERE tg_id = {self.telegram_id} ;"
+                f"""UPDATE users SET 
+                    ( 
+                      email, password, user_coin_id, new_messages, new_swap, map_color_schema 
+                    ) = 
+                    (
+                      '{self.email}', '{self.password}', '{self.user_coin_id}', {self.new_messages},
+                       {self.new_swap}, '{self.map_color_schema}'
+                    )
+                      WHERE tg_id = {self.telegram_id};"""
             )
             db.conn.commit()
 
