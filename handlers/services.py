@@ -1,0 +1,35 @@
+import emoji
+
+from core.site_calc import more_info, refresh
+from core.types import MessageWithUser
+from database import DataCoin
+from helpers.handler_decorators import check_and_set_user
+from helpers.limiter import rate_limit
+from settngs import dp, bot
+
+
+@dp.message_handler(commands=["refresh"])
+@check_and_set_user
+@rate_limit(600)
+async def refresh_data(message: MessageWithUser):
+    """Функция принудительного обновления"""
+
+    await bot.send_chat_action(chat_id=message.from_id, action="find_location")
+
+    refresh(message.from_user.id)
+    await message.answer("База данных успешно обновлена")
+
+
+@dp.message_handler(commands=["summ"])
+@check_and_set_user
+async def summ(message: MessageWithUser):
+    coin_st = DataCoin.get_for_user(message.from_user.id)
+    # обращаемся к функции more info, передаем в эту функциию значение переменной (значение из 4 столбца массива)
+    lot, count = more_info(f"./users_files/{message.user.user_coin_id}_.xlsx")
+
+    await message.answer(emoji.emojize(":coin:"))
+    await message.answer(
+        f"Количество монет {lot} \n"
+        f"Количество стран {count} \n"
+        f"Общая стоимость {coin_st[-1].totla_sum} руб."
+    )

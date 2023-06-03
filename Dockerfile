@@ -10,4 +10,4 @@ COPY requirements.txt .
 RUN pip install --upgrade pip --no-cache-dir && pip install -r requirements.txt --no-cache-dir;
 
 COPY . .
-CMD ["python", "new_map.py"]
+CMD ["python", "run.py"]
