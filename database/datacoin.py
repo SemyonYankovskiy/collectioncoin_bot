@@ -31,7 +31,7 @@ class DataCoin:
     def init_new_user(tg_id: int, totla_sum: float):
         query = ""
         day_increment = date.today()
-        for _ in range(30):
+        for _ in range(2):
             query += f"({tg_id}, '{day_increment.strftime('%Y.%m.%d')}', {totla_sum}),"
             day_increment -= timedelta(days=1)
 

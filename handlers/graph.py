@@ -33,16 +33,23 @@ async def send_user_graph(callback_data: str, user: User):
     limit_str = callback_data[6:]
     if limit_str.isdigit():
         limit = int(limit_str) * 30
+        flag = True
     else:
         limit = None
+        flag = False
 
-    graph_name = get_graph(user.telegram_id, limit=limit)
+    graph_name, len_active = get_graph(user.telegram_id, limit=limit)
 
     keyboard = get_graph_keyboards(current_limit=callback_data)
 
     map_img = InputFile(graph_name)
 
-    await bot.send_photo(chat_id=user.telegram_id, photo=map_img, reply_markup=keyboard)
+    if flag and limit > len_active:
+        await bot.send_photo(chat_id=user.telegram_id, photo=map_img, reply_markup=keyboard,
+                                 caption='⚠️ Недостаточно данных для отображения \nДанные приведены с даты регистрации')
+    else:
+        await bot.send_photo(chat_id=user.telegram_id, photo=map_img, reply_markup=keyboard)
+
     os.remove(graph_name)
 
 
@@ -59,4 +66,6 @@ async def process_callback_graph(callback_query: CallbackQueryWithUser):
     limit = callback_query.data
     user = User.get(tg_id=callback_query.from_user.id)
     await send_user_graph(limit, user)
+    # messages = await bot.history(chat_id=user.telegram_id, limit=2)
+    # for callback_query in messages:
     await bot.delete_message(chat_id=user.telegram_id, message_id=callback_query.message.message_id)

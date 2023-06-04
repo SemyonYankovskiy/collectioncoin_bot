@@ -66,6 +66,8 @@ def get_fig_marker(data_length: int) -> str:
 
 
 def get_graph(telegram_id, limit: Optional[int] = 30):
+    len_active = len(DataCoin.get_for_user(telegram_id, limit))
+
     graph_coin_data: List[DataCoin] = DataCoin.get_for_user(telegram_id, limit)
     graph_date = []
     graph_sum = []
@@ -88,7 +90,7 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
 
     data_length = len(graph_date)
 
-    step = data_length // 15
+    step = data_length // 15 or 1
 
     fig_height = 10
     fig_width = get_fig_width(data_length)
@@ -127,7 +129,8 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
     )
 
     plt.savefig(f"{telegram_id}_plot.png")
-    return f"{telegram_id}_plot.png"
+    path = f"{telegram_id}_plot.png"
+    return path, len_active
 
 
 def refresh(telegram_id):

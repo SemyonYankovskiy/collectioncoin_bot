@@ -104,4 +104,5 @@ async def set_color_map_scheme(callback_query: CallbackQueryWithUser):
     color_name = callback_query.data.split(":")[-1]
     callback_query.user.map_color_schema = color_name
     callback_query.user.save()
+    # await callback_query.answer("Готово, чекай карту!", show_alert=True)
     await callback_query.message.answer("Готово, чекай карту!")
