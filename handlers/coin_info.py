@@ -37,8 +37,8 @@ async def output_counties(message: MessageWithUser):
 async def vyvod_monet(message: MessageWithUser, input_list):
     data_length = 0
     output = ""
-    for flag, nominal, year, cena, md, name in input_list:
-        part = f"{flag} {nominal} {year} {cena} {md} {name}\n\n"
+    for flag, nominal, year, cena, md, name, pokupka in input_list:
+        part = f"{flag} {nominal} {year} {cena} {md} {name} {pokupka}\n\n"
         part_len = len(part)
         data_length += part_len
         if data_length > 4096:
@@ -72,7 +72,7 @@ async def swap(message: MessageWithUser):
     output = ""
 
     for flag, nominal, year, cena, count, md, name, comment in swap_list:
-        part = f"{flag} {nominal} {year} {cena} {count} {md} {name} {comment} \n\n"
+        part = f"{flag} {nominal} {year} {cena} {count} {md} {name} {comment}\n\n"
         part_len = len(part)
         data_length += part_len
         if data_length > 4096:

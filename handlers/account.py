@@ -46,12 +46,12 @@ async def reg_welcome(message: MessageWithUser):
     # Проверка пользователя в БД, чтобы исключить регистрацию с 1 аккаунта телеграм, если всё ок, устанавливаем
     # конечный автомат в состояние email чтобы попасть в функцию process_email
     if User.get(tg_id=message.from_user.id) is None:
-        await message.reply("Фиксирую. Вводи email \n________________________ \nИли жми /EXIT")
+        await message.answer("Фиксирую. Вводи email \n________________________ \nИли жми /EXIT")
         await message.answer(emoji.emojize(":monkey_face:"))
         await Form.email.set()
         return
     else:
-        await message.reply("Ты уже регистрировался")
+        await message.answer("Ты уже регистрировался")
         return
 
 
