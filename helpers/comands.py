@@ -262,4 +262,5 @@ countries_cmd = [
     "Jyugoslavia",
     "N_Yemen",
     "N_Arabia",
+    "Somaliland",
 ]

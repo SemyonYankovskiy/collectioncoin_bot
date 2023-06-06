@@ -38,6 +38,12 @@ class WorldMap:
         "Slovakia": ["Chehoclovakia"],
         "Fr. S. Antarctic Lands": ["France"],
         "Yemen": ["N.Yemen", "N.Arabia"],
+        "Somalia": ["Somaliland"],
+        "Gabon": ["Centr_Afrika"],
+        "Cameroon": ["Centr_Afrika"],
+        "Central African Rep.": ["Centr_Afrika"],
+        "Chad": ["Centr_Afrika"],
+        "Eq. Guinea": ["Centr_Afrika"],
     }
 
     def __init__(self, user_coin_id: int):
@@ -124,6 +130,7 @@ class WorldMap:
             axis.set_ylim([-0.8 * 10**7, 1.9 * 10**7])
         elif location == "Europe":
             axis.set_xlim([-0.42 * 10**7, 0.6 * 10**7])
+            #axis.set_ylim([0.36 * 10 ** 7, 1.25 * 10 ** 7])
             axis.set_ylim([0.36 * 10**7, 1.01 * 10**7])
             self.need_to_add_counties_names_on_map = True
         elif location == "South_America":
@@ -157,7 +164,7 @@ class WorldMap:
                 text=transformer.get_rus_country_name_on_map(row["name"]),
                 xy=row["geometry"].centroid.coords[0],
                 horizontalalignment="center",
-                verticalalignment="bottom",
+                verticalalignment="center",
                 fontsize=3,
             )
 

@@ -239,7 +239,7 @@ def euro(file_name):
     for row in ws.iter_rows(min_row=1, max_col=14):
         if "евро" in row[1].value:
             des2 = f"{row[2].value}г." if row[2].value else ""  # год
-            des3 = f"\nМонетный двор: {row[3].value}" if row[3].value else ""  # монетный двор
+            des3 = f"\nРазновидность: {transformer.get_coin_difference(row[3].value)}" if row[3].value else ""  # монетный двор
             des4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
             des5 = f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""  # Наименование
 
@@ -279,7 +279,7 @@ def strana(file_name, text_in):
     for row in ws.iter_rows(min_row=1, max_col=14):
         if row[0].value == text2:
             desс2 = f"{row[2].value}г." if row[2].value else ""  #  год
-            desc3 = f"\nМонетный двор: {row[3].value}" if row[3].value else ""  # монетный двор
+            desc3 = f"\nРазновидность: {transformer.get_coin_difference(row[3].value)}" if row[3].value else ""  # монетный двор
             desc4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
             des5 = f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""  # Наименование
             arr.append(
@@ -309,7 +309,7 @@ def func_swap(file_name):
     for row in ws.iter_rows(min_row=2, max_col=14):
         des2 = f"{row[2].value}г." if row[2].value else ""  # год
         desc4 = f"{row[4].value}" if row[4].value else ""  # Наименование
-        desc3 = f"{row[3].value}" if row[3].value else ""  # монетный двор
+        desc3 = f"\nРазновидность: {transformer.get_coin_difference(row[3].value)}" if row[3].value else ""  # монетный двор
         desc10 = f"\nКомментарий: {row[10].value}" if row[10].value else ""  # комментарий
 
         arr.append(
