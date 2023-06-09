@@ -107,8 +107,7 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
     )
 
     date_without_year = list(
-        map(lambda value: get_date_annotation(value, data_length), graph_date)
-    )
+        map(lambda value: get_date_annotation(value, data_length), graph_date))
 
     plt.xticks(graph_date[::step], date_without_year[::step])
 
@@ -239,7 +238,11 @@ def euro(file_name):
     for row in ws.iter_rows(min_row=1, max_col=14):
         if "евро" in row[1].value:
             des2 = f"{row[2].value}г." if row[2].value else ""  # год
-            des3 = f"\nРазновидность: {transformer.get_coin_difference(row[3].value)}" if row[3].value else ""  # монетный двор
+            des3 = (
+                f"\nРазновидность: {transformer.get_coin_difference(row[3].value)}"
+                if row[3].value
+                else ""
+            )  # монетный двор
             des4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
             des5 = f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""  # Наименование
 
@@ -249,9 +252,9 @@ def euro(file_name):
                     row[1].value,  # номинал
                     des2,  # ГОД
                     f"{row[6].value} ₽",
-                    des3,   # монетный двор
-                    des4,   # Наименование
-                    des5,   # покупка
+                    des3,  # монетный двор
+                    des4,  # Наименование
+                    des5,  # покупка
                 ]
             )
 
@@ -279,7 +282,11 @@ def strana(file_name, text_in):
     for row in ws.iter_rows(min_row=1, max_col=14):
         if row[0].value == text2:
             desс2 = f"{row[2].value}г." if row[2].value else ""  #  год
-            desc3 = f"\nРазновидность: {transformer.get_coin_difference(row[3].value)}" if row[3].value else ""  # монетный двор
+            desc3 = (
+                f"\nРазновидность: {transformer.get_coin_difference(row[3].value)}"
+                if row[3].value
+                else ""
+            )  # монетный двор
             desc4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
             des5 = f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""  # Наименование
             arr.append(
@@ -290,7 +297,7 @@ def strana(file_name, text_in):
                     f"{row[6].value} ₽",
                     desc3,
                     desc4,
-                    des5,   # покупка
+                    des5,  # покупка
                 ]
             )
 
@@ -309,7 +316,11 @@ def func_swap(file_name):
     for row in ws.iter_rows(min_row=2, max_col=14):
         des2 = f"{row[2].value}г." if row[2].value else ""  # год
         desc4 = f"{row[4].value}" if row[4].value else ""  # Наименование
-        desc3 = f"\nРазновидность: {transformer.get_coin_difference(row[3].value)}" if row[3].value else ""  # монетный двор
+        desc3 = (
+            f"\nРазновидность: {transformer.get_coin_difference(row[3].value)}"
+            if row[3].value
+            else ""
+        )  # монетный двор
         desc10 = f"\nКомментарий: {row[10].value}" if row[10].value else ""  # комментарий
 
         arr.append(
@@ -322,7 +333,6 @@ def func_swap(file_name):
                 desc3,  # монетный двор
                 desc4,  # Наименование
                 desc10,  # комментарий
-
             ]
         )
     return arr

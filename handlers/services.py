@@ -2,7 +2,7 @@ import emoji
 
 from core.site_calc import more_info, refresh
 from core.types import MessageWithUser
-from database import DataCoin
+from database import DataCoin, User
 from helpers.handler_decorators import check_and_set_user
 from helpers.limiter import rate_limit
 from settngs import dp, bot
@@ -18,6 +18,10 @@ async def refresh_data(message: MessageWithUser):
 
     refresh(message.from_user.id)
     await message.answer("База данных успешно обновлена")
+
+
+async def send_text_to_user(user: User, text: str):
+    await bot.send_message(user.telegram_id, text)
 
 
 @dp.message_handler(commands=["summ"])

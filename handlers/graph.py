@@ -33,24 +33,35 @@ async def send_user_graph(callback_data: str, user: User):
     limit_str = callback_data[6:]
     if limit_str.isdigit():
         limit = int(limit_str) * 30
-        flag = True
     else:
         limit = None
-        flag = False
 
     graph_name, len_active = get_graph(user.telegram_id, limit=limit)
-
     keyboard = get_graph_keyboards(current_limit=callback_data)
-
     map_img = InputFile(graph_name)
 
-    if flag and limit > len_active:
-        await bot.send_photo(chat_id=user.telegram_id, photo=map_img, reply_markup=keyboard,
-                                 caption='⚠️ Недостаточно данных для отображения \nДанные приведены с даты регистрации')
+    if limit is None or limit > len_active:
+        await bot.send_photo(
+            chat_id=user.telegram_id,
+            photo=map_img,
+            reply_markup=keyboard,
+            caption=f"❕ Данные приведены за последние {len_active} {get_day_verbose_name(len_active)}",
+        )
     else:
         await bot.send_photo(chat_id=user.telegram_id, photo=map_img, reply_markup=keyboard)
 
     os.remove(graph_name)
+
+
+def get_day_verbose_name(days: int) -> str:
+    days %= 10
+    if days == 1:
+        name = "день"
+    elif days <= 4:
+        name = "дня"
+    else:
+        name = "дней"
+    return name
 
 
 @dp.message_handler(commands=["grafik"])
