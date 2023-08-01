@@ -251,7 +251,7 @@ def euro(file_name):
                     f"🇪🇺 {transformer.get_country_code(row[0].value)}",  # Страна
                     row[1].value,  # номинал
                     des2,  # ГОД
-                    f"{row[6].value} ₽",
+                    f"\n{row[6].value} ₽",
                     des3,  # монетный двор
                     des4,  # Наименование
                     des5,  # покупка
