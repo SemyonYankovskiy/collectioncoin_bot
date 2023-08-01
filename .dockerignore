@@ -3,6 +3,10 @@
 !core
 !database
 !helpers
+!handlers
 !img
+!db
 !run.py
+!settngs.py
 !requirements.txt
+!.env

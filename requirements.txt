@@ -1,3 +1,5 @@
+# GDAL~=3.7.0
+Django~=4.2
 aiogram~=2.25.1
 emoji~=2.2.0
 schedule~=1.1.0
@@ -6,10 +8,12 @@ openpyxl~=3.1.2
 matplotlib~=3.7.1
 pandas~=1.5.3
 beautifulsoup4~=4.12.2
-geopandas~=0.13.0
-django-emoji~=2.2.2
+geopandas~=0.12.1
+
+#django-emoji~=2.2.2
 plotly~=5.14.1
-django-scheduler~=0.10.1
+#django-scheduler~=0.10.1
 DateTime~=5.1
 
-Pillow
+Pillow~=9.5.0
+

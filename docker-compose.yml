@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  bot:
+    container_name: telegram_boris  # имя Docker-контейнера
+    build: .
+    image: coin_tg:2.0
+    env_file: .env
+    volumes:
+      - "./db:/app/db"

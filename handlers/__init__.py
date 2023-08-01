@@ -1,3 +1,7 @@
+from django.conf import settings
+
+settings.configure()
+
 from .account import (
     profile,
     reg_welcome,

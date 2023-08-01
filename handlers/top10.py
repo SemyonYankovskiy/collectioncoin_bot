@@ -10,12 +10,12 @@ from settngs import dp, bot
 def _get_top10_keyboards(active_mode: str):
     keyboard = []
     mode_of_top = [
-        ("Цена 🔼", "expensive_value"),
-        ("Цена 🔽", "cheap_value"),
+        ("Цена 🔽", "expensive_value"),
+        ("Цена 🔼", "cheap_value"),
         ("Новые 🆕", "last_append"),
         ("Старые ℹ️", "first_append"),
-        ("Год 🔼", "novelty"),
-        ("Год 🔽", "old"),
+        ("Год 🔽", "novelty"),
+        ("Год 🔼", "old"),
     ]
     for name, callback_data in mode_of_top:
         if callback_data == active_mode:
