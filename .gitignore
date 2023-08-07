@@ -8,7 +8,8 @@ __pycache__/
 *.so
 
 .idea
-users.db
+db/users.db
+.env
 users_files
 *.zip
 *.csv
