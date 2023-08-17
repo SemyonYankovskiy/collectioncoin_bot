@@ -5,7 +5,7 @@ user_default_color_schema = "YlGn"
 
 class Database:
     def __init__(self):
-        self.conn = sqlite3.connect("./db/users.db")
+        self.conn = sqlite3.connect("./db/users.db", check_same_thread=False)
         self.cursor = self.conn.cursor()
 
     def create_tables(self):
