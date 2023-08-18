@@ -47,6 +47,8 @@ async def send_user_graph(callback_data: str, user: User):
             reply_markup=keyboard,
             caption=f"❕ Данные приведены за последние {len_active} {get_day_verbose_name(len_active)}",
         )
+        # тут я(голова) хотел написать отдельный элс для функции  if limit is None
+        # чтобы выводить Данные приведены с хх:хх:хххх 
     else:
         await bot.send_photo(chat_id=user.telegram_id, photo=map_img, reply_markup=keyboard)
 
@@ -57,7 +59,7 @@ def get_day_verbose_name(days: int) -> str:
     days %= 10
     if days == 1:
         name = "день"
-    elif days <= 4:
+    elif days <= 4 & days != 0:
         name = "дня"
     else:
         name = "дней"
