@@ -22,7 +22,7 @@ def gather_graph_data(*args, **kwargs):
 
 def gather_manager(*args):
     print("Start gather manager")
-    schedule.every().day.at("07:00").do(gather_graph_data)
+    schedule.every().day.at("10:50").do(gather_graph_data)
     while True:
         schedule.run_pending()
         time.sleep(1)

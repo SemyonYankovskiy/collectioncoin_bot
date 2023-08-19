@@ -159,9 +159,9 @@ def parsing(session, user, user_coin_id):
         user.new_messages = int(new_messages_count)
         user.new_swap = int(new_swap_count)
         user.save()
-        print("работает")
+        print("Парсинг сообщений - Done")
     else:
-        print("Эта хуйня tag_messages tag_swap хотела быть числом")
+        print("Парсинг сообщений - False")
 
 
 def download(user_coin_id: str, session: requests.Session):

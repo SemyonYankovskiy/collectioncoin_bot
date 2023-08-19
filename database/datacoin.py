@@ -23,7 +23,8 @@ class DataCoin:
                 f"VALUES ('{self.telegram_id}', '{self.datetime.strftime('%Y.%m.%d')}', '{self.totla_sum}')"
             )
             db.conn.commit()
-            print(f"{self.telegram_id} added successfully!")
+            print(f"Обновление базы стоимости")
+            print(f"Данные для {self.telegram_id} добавлены успешно!")
         except sqlite3.IntegrityError:
             print(f"Already exists in the database.")
 
@@ -31,9 +32,11 @@ class DataCoin:
     def init_new_user(tg_id: int, totla_sum: float):
         query = ""
         day_increment = date.today()
-        for _ in range(2):
-            query += f"({tg_id}, '{day_increment.strftime('%Y.%m.%d')}', {totla_sum}),"
-            day_increment -= timedelta(days=1)
+        query += f"({tg_id}, '{day_increment.strftime('%Y.%m.%d')}', {totla_sum}),"
+        # day_increment = date.today()
+        # for _ in range(2):
+        #     query += f"({tg_id}, '{day_increment.strftime('%Y.%m.%d')}', {totla_sum}),"
+        #     day_increment -= timedelta(days=1)
 
         try:
             db.cursor.execute(

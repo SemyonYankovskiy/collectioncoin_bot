@@ -4,12 +4,12 @@ from datetime import datetime, timedelta
 from database.datacoin import DataCoin
 
 
-date_from = datetime(year=2023, month=5, day=20)
+date_from = datetime(year=2023, month=8, day=16)
 
-while date_from != datetime(year=2023, month=5, day=30):
+while date_from != datetime(year=2023, month=8, day=19):
     print(date_from)
     DataCoin(
-        telegram_id=872648196, datetime_=date_from, totla_sum=random.randrange(2_000, 3_000, step=40)
+        telegram_id=726837488, datetime_=date_from, totla_sum=random.randrange(20_000, 30_000, step=500)
     ).save()
     date_from += timedelta(days=1)
 
