@@ -15,7 +15,8 @@
 #COPY . .
 #CMD ["python", "run.py"]
 
-FROM python:3.9-slim-buster
+#FROM python:3.9-slim-buster
+FROM python:3.8.8
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app

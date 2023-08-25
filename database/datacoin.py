@@ -18,11 +18,14 @@ class DataCoin:
                 f"DELETE FROM graph_data WHERE tg_id='{self.telegram_id}' "
                 f"and datetime='{self.datetime.strftime('%Y.%m.%d')}'"
             )
+            print(datetime)
+            print("Удаление из базы данных")
             db.cursor.execute(
                 f"INSERT INTO graph_data (tg_id, datetime, totla_sum) "
                 f"VALUES ('{self.telegram_id}', '{self.datetime.strftime('%Y.%m.%d')}', '{self.totla_sum}')"
             )
             db.conn.commit()
+            print(datetime)
             print(f"Обновление базы стоимости")
             print(f"Данные для {self.telegram_id} добавлены успешно!")
         except sqlite3.IntegrityError:

@@ -8,7 +8,7 @@ __pycache__/
 *.so
 
 .idea
-db/users.db
+core/db/users.db
 .env
 users_files
 *.zip
