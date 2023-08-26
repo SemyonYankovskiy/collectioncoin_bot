@@ -37,13 +37,14 @@ async def summ(message: MessageWithUser):
     # обращаемся к функции more info, передаем в эту функциию значение переменной (значение из 4 столбца массива)
     try:
         lot, count = more_info(f"./users_files/{message.user.user_coin_id}_.xlsx", message.from_user.id)
+        await message.answer(emoji.emojize(":coin:"))
+        await message.answer(
+            f"Количество монет {lot} \n"
+            f"Количество стран {count} \n"
+            f"Общая стоимость {coin_st[0].totla_sum} руб."
+        )
     except Exception:
         await message.answer(f'Обновите базу данных вручную \n/refresh')
 
 
-    await message.answer(emoji.emojize(":coin:"))
-    await message.answer(
-        f"Количество монет {lot} \n"
-        f"Количество стран {count} \n"
-        f"Общая стоимость {coin_st[0].totla_sum} руб."
-    )
+

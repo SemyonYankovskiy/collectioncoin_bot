@@ -60,7 +60,9 @@ def get_day_verbose_name(days: int) -> str:
     days %= 10
     if days == 1:
         name = "день"
-    elif days <= 4 & days != 0:
+    elif days == 0:
+        name = "дней"
+    elif days <= 4:
         name = "дня"
     else:
         name = "дней"
@@ -71,6 +73,7 @@ def get_day_verbose_name(days: int) -> str:
 @check_and_set_user
 async def grafik(message: MessageWithUser):
     print(message.from_user.id, 'commands=["grafik"]')
+    await message.answer("График работает криво, держу в курсе")
     print(datetime.now())
     default_limit = "month:1"
     await send_user_graph(callback_data=default_limit, user=message.user)
