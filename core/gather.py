@@ -1,5 +1,7 @@
 # # Создаем функцию, которая будет выполняться каждый день в 20:00
 import time
+from datetime import datetime
+
 import schedule
 from database import User, DataCoin
 from .site_calc import authorize, download, file_opener, parsing
@@ -11,7 +13,8 @@ class GatherFail(Exception):
 
 def gather_graph_data(*args, **kwargs):
     users_list = User.get_all()
-
+    print("Start gather update")
+    print(datetime.now())
     for user in users_list:
         user_coin_id, session = authorize(user.email, user.password)
         file_name = download(user_coin_id, session)
@@ -22,7 +25,7 @@ def gather_graph_data(*args, **kwargs):
 
 def gather_manager(*args):
     print("Start gather manager")
-    schedule.every().day.at("10:50").do(gather_graph_data)
+    schedule.every().day.at("11:50").do(gather_graph_data)
     while True:
         schedule.run_pending()
         time.sleep(1)

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import emoji
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
@@ -21,6 +23,8 @@ def get_user_profile_keyboard():
 @dp.message_handler(commands=["profile"])
 @check_and_set_user
 async def profile(message: MessageWithUser):
+    print(message.from_user.id, 'commands=["profile"]')
+    print(datetime.now())
     user = User.get(message.from_user.id)
     message_status = f"✉️" if user.new_messages == 0 else f"📩"
     swap_status = f"❕" if user.new_swap == 0 else f"❗️"
@@ -43,6 +47,8 @@ class Form(StatesGroup):
 
 @dp.message_handler(commands=["reg"])
 async def reg_welcome(message: MessageWithUser):
+    print(message.from_user.id, 'commands=["reg"]')
+    print(datetime.now())
     # Проверка пользователя в БД, чтобы исключить регистрацию с 1 аккаунта телеграм, если всё ок, устанавливаем
     # конечный автомат в состояние email чтобы попасть в функцию process_email
     if User.get(tg_id=message.from_user.id) is None:
@@ -136,6 +142,8 @@ class DeleteForm(StatesGroup):
 @dp.message_handler(commands=["delete"])
 @check_and_set_user
 async def delete1(message: MessageWithUser):
+    print(message.from_user.id, 'commands=["delete"]')
+    print(datetime.now())
     await DeleteForm.confirm_delete.set()
     await message.answer(
         "При удалении данных стираются также значения стоимости монет, график обнуляется"

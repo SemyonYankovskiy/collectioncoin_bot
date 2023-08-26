@@ -36,7 +36,8 @@ def authorize(username, password):
             raise AuthFail("неверные данные авторизации")
         # print(resp.headers.get("Location"))
         user_coin_id = "".join(filter(str.isdigit, resp.headers.get("Location")))
-        print(user_coin_id, "Connected")
+        print(datetime.now())
+        print(user_coin_id, "Connected and authorize")
         return user_coin_id, session
 
 
@@ -146,6 +147,8 @@ def parsing(session, user, user_coin_id):
         url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
         headers=HEADERS,
     )
+    print("Start parsing")
+    print(datetime.now())
     print(response)
     soup = BeautifulSoup(response.content, "html.parser")
     results = soup.find(id="notify-popup")

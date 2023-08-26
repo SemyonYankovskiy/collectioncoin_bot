@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from aiogram.types import InputFile, InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -69,6 +70,8 @@ def get_day_verbose_name(days: int) -> str:
 @dp.message_handler(commands=["grafik"])
 @check_and_set_user
 async def grafik(message: MessageWithUser):
+    print(message.from_user.id, 'commands=["grafik"]')
+    print(datetime.now())
     default_limit = "month:1"
     await send_user_graph(callback_data=default_limit, user=message.user)
 

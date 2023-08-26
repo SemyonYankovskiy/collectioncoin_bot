@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from aiogram.types import InputFile, InlineKeyboardButton, InlineKeyboardMarkup
 from core.map import WorldMap
@@ -45,6 +46,8 @@ async def send_user_map(location: str, user: User):
 @dp.message_handler(commands=["map"])
 @check_and_set_user
 async def maps(message: MessageWithUser):
+    print(message.from_user.id, 'commands=["map"]')
+    print(datetime.now())
     location = "World"
     await send_user_map(location, message.user)
 

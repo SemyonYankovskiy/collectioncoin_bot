@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import emoji
 
 from core.site_calc import more_info, refresh
@@ -12,6 +14,8 @@ from settngs import dp, bot
 @check_and_set_user
 @rate_limit(600)
 async def refresh_data(message: MessageWithUser):
+    print(message.from_user.id, 'commands=["refresh"]')
+    print(datetime.now())
     """Функция принудительного обновления"""
 
     await bot.send_chat_action(chat_id=message.from_id, action="find_location")
@@ -27,6 +31,8 @@ async def send_text_to_user(user: User, text: str):
 @dp.message_handler(commands=["summ"])
 @check_and_set_user
 async def summ(message: MessageWithUser):
+    print(message.from_user.id, 'commands=["summ"]')
+    print(datetime.now())
     coin_st = DataCoin.get_for_user(message.from_user.id, limit=1)
     # обращаемся к функции more info, передаем в эту функциию значение переменной (значение из 4 столбца массива)
     lot, count = more_info(f"./users_files/{message.user.user_coin_id}_.xlsx")
