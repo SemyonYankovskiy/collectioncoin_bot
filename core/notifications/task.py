@@ -1,5 +1,5 @@
 import asyncio
-import datetime
+from datetime import datetime
 from database import User
 from handlers.services import send_text_to_user
 from .cache import storage

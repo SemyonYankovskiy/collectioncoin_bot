@@ -35,7 +35,11 @@ async def summ(message: MessageWithUser):
     print(datetime.now())
     coin_st = DataCoin.get_for_user(message.from_user.id, limit=1)
     # обращаемся к функции more info, передаем в эту функциию значение переменной (значение из 4 столбца массива)
-    lot, count = more_info(f"./users_files/{message.user.user_coin_id}_.xlsx")
+    try:
+        lot, count = more_info(f"./users_files/{message.user.user_coin_id}_.xlsx", message.from_user.id)
+    except Exception:
+        await message.answer(f'Обновите базу данных вручную \n/refresh')
+
 
     await message.answer(emoji.emojize(":coin:"))
     await message.answer(

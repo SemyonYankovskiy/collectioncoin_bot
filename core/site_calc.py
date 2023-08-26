@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 import requests
 import openpyxl
 import matplotlib.pyplot as plt
+from aiogram.bot import bot
+
 from database import DataCoin, User
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -108,7 +110,8 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
     )
 
     date_without_year = list(
-        map(lambda value: get_date_annotation(value, data_length), graph_date))
+        map(lambda value: get_date_annotation(value, data_length), graph_date)
+    )
 
     plt.xticks(graph_date[::step], date_without_year[::step])
 
@@ -193,9 +196,16 @@ def download(user_coin_id: str, session: requests.Session):
     return file_name
 
 
-def more_info(file_name):
-    df = pd.read_excel(file_name)
-    countryroad = df[df.columns[0]].unique()  # эта переменная считает кол-во стран
+def more_info(file_name, chat_id):
+    # df = pd.read_excel(file_name)
+    # countryroad = df[df.columns[0]].unique()  # эта переменная считает кол-во стран
+    df = 0
+    countryroad = 0
+    try:
+        df = pd.read_excel(file_name)
+        countryroad = df[df.columns[0]].unique()  # эта переменная считает кол-во стран
+    except Exception:
+        print(f"Ошибка открытия файла")
 
     return len(df), len(countryroad)
 
@@ -211,7 +221,9 @@ def countries(file_name):
                 transformer.get_country_code(country),  # Флаг страны
                 count,  # Кол-во монет
                 country,  # Русское название страны
-                transformer.get_country_eng_short_name(country),  # Короткое англ. название
+                transformer.get_country_eng_short_name(
+                    country
+                ),  # Короткое англ. название
             ]
         )
     wb = openpyxl.load_workbook(file_name)
@@ -247,7 +259,9 @@ def euro(file_name):
                 else ""
             )  # монетный двор
             des4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
-            des5 = f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""  # Наименование
+            des5 = (
+                f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""
+            )  # Наименование
 
             euros.append(
                 [
@@ -291,7 +305,9 @@ def strana(file_name, text_in):
                 else ""
             )  # монетный двор
             desc4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
-            des5 = f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""  # Наименование
+            des5 = (
+                f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""
+            )  # Наименование
             arr.append(
                 [
                     transformer.get_country_code(row[0].value),
@@ -324,7 +340,9 @@ def func_swap(file_name):
             if row[3].value
             else ""
         )  # монетный двор
-        desc10 = f"\nКомментарий: {row[10].value}" if row[10].value else ""  # комментарий
+        desc10 = (
+            f"\nКомментарий: {row[10].value}" if row[10].value else ""
+        )  # комментарий
 
         arr.append(
             [
@@ -370,10 +388,14 @@ def get_top_10_coin(file_name, mode):
     elif mode == "novelty":
         df = df.sort_values(by="Год", ascending=False)
     elif mode == "expensive_value":
-        df["Цена, RUB [uCoin]"] = pd.to_numeric(df["Цена, RUB [uCoin]"], errors="coerce")
+        df["Цена, RUB [uCoin]"] = pd.to_numeric(
+            df["Цена, RUB [uCoin]"], errors="coerce"
+        )
         df = df.sort_values(by="Цена, RUB [uCoin]", ascending=False)
     elif mode == "cheap_value":
-        df["Цена, RUB [uCoin]"] = pd.to_numeric(df["Цена, RUB [uCoin]"], errors="coerce")
+        df["Цена, RUB [uCoin]"] = pd.to_numeric(
+            df["Цена, RUB [uCoin]"], errors="coerce"
+        )
         df = df.sort_values(by="Цена, RUB [uCoin]", ascending=True)
     elif mode == "last_append":
         df = df.sort_values(by="Добавлено", ascending=False)
