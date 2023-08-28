@@ -14,8 +14,9 @@ class DataCoin:
 
     def save(self):
         try:
-
+            print("----------------------")
             print(datetime.now(), "| ", "Удаление из базы данных")
+            print(self.datetime.strftime('%Y.%m.%d'))
             db.cursor.execute(
                 f"DELETE FROM graph_data WHERE tg_id='{self.telegram_id}' "
                 f"and datetime='{self.datetime.strftime('%Y.%m.%d')}'"
