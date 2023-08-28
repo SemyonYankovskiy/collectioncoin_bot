@@ -5,7 +5,6 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from core.site_calc import get_top_10_coin
 from core.types import MessageWithUser, CallbackQueryWithUser
 from helpers.handler_decorators import check_and_set_user
-
 from settngs import dp, bot
 
 

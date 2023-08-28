@@ -2,8 +2,8 @@ from datetime import datetime
 
 import emoji
 from aiogram.types import InputFile
-from core.types import MessageWithUser
 
+from core.types import MessageWithUser
 from settngs import dp, bot
 
 

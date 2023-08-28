@@ -1,15 +1,13 @@
-from typing import List, Optional
 from datetime import datetime, timedelta
+from typing import List, Optional
 
-import requests
-import openpyxl
 import matplotlib.pyplot as plt
-from aiogram.bot import bot
-
-from database import DataCoin, User
+import openpyxl
 import pandas as pd
+import requests
 from bs4 import BeautifulSoup
 
+from database import DataCoin, User
 from .name_transformer import transformer
 
 

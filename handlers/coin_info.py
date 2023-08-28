@@ -4,8 +4,8 @@ from aiogram.dispatcher.filters import Command
 
 from core.site_calc import countries, strana, func_swap, euro
 from core.types import MessageWithUser
-from helpers.handler_decorators import check_and_set_user
 from helpers.comands import countries_cmd
+from helpers.handler_decorators import check_and_set_user
 from settngs import dp
 
 

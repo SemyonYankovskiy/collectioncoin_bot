@@ -1,10 +1,10 @@
-from PIL import Image
-import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
+import pandas as pd
+from PIL import Image
 
-from .site_calc import countries
 from .name_transformer import transformer
+from .site_calc import countries
 
 
 class WorldMap:

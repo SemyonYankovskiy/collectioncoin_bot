@@ -3,10 +3,10 @@ from datetime import datetime
 import emoji
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
-from aiogram.types import InputFile, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from core.site_calc import authorize, AuthFail, download, file_opener
-from core.types import MessageWithUser, CallbackQueryWithUser
+from core.types import MessageWithUser
 from database import User, DataCoin
 from helpers.handler_decorators import check_and_set_user
 from settngs import dp, bot
