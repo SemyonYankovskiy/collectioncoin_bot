@@ -14,19 +14,20 @@ class DataCoin:
 
     def save(self):
         try:
+
+            print(datetime.now(), "Удаление из базы данных")
             db.cursor.execute(
                 f"DELETE FROM graph_data WHERE tg_id='{self.telegram_id}' "
                 f"and datetime='{self.datetime.strftime('%Y.%m.%d')}'"
-            )
-            print(datetime.now())
-            print("Удаление из базы данных")
+                            )
+
             db.cursor.execute(
                 f"INSERT INTO graph_data (tg_id, datetime, totla_sum) "
                 f"VALUES ('{self.telegram_id}', '{self.datetime.strftime('%Y.%m.%d')}', '{self.totla_sum}')"
             )
             db.conn.commit()
-            print(datetime.now())
-            print(f"Обновление базы стоимости")
+
+            print(datetime.now(), "Обновление базы стоимости")
             print(f"Данные для {self.telegram_id} добавлены успешно!")
         except sqlite3.IntegrityError:
             print(f"Already exists in the database.")
@@ -43,7 +44,7 @@ class DataCoin:
                 f"VALUES {query[0:-1]}"
             )
             db.conn.commit()
-            print(f"INIT_NEW_USER___all days added successfully!")
+            print(datetime.now(), "INIT_NEW_USER___all days added successfully!")
         except sqlite3.IntegrityError:
             print(f"Already exists in the database.")
 

@@ -46,8 +46,8 @@ async def send_user_map(location: str, user: User):
 @dp.message_handler(commands=["map"])
 @check_and_set_user
 async def maps(message: MessageWithUser):
-    print(message.from_user.id, 'commands=["map"]')
-    print(datetime.now())
+    print(datetime.now(), message.from_user.id, 'commands=["map"]')
+
     location = "World"
     await send_user_map(location, message.user)
 

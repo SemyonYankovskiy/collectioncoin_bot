@@ -13,8 +13,8 @@ class GatherFail(Exception):
 
 def gather_graph_data(*args, **kwargs):
     users_list = User.get_all()
-    print("Start gather update")
-    print(datetime.now())
+    print(datetime.now(), "Start gather update")
+
     for user in users_list:
         user_coin_id, session = authorize(user.email, user.password)
         file_name = download(user_coin_id, session)
