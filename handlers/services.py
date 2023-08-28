@@ -46,4 +46,4 @@ async def summ(message: MessageWithUser):
             f"Общая стоимость {coin_st[0].totla_sum} руб."
         )
     except Exception:
-        await message.answer(f"Обновите базу данных вручную \n/refresh")
+        await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")

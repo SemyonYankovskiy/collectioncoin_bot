@@ -12,12 +12,16 @@ from settngs import dp
 @dp.message_handler(commands=["countries"])
 @check_and_set_user
 async def output_counties(message: MessageWithUser):
-    print(datetime.now(),"| ",  message.from_user.id, 'commands=["countries"]')
+    print(datetime.now(), "| ", message.from_user.id, 'commands=["countries"]')
 
     # обращаемся к функции countries, передаем в эту функциию значение переменной coin_st(значение из 4 столбца массива)
     # функция возвращает массив strani
-    strani = countries(f"./users_files/{message.user.user_coin_id}_.xlsx")
 
+    try:
+        strani = countries(f"./users_files/{message.user.user_coin_id}_.xlsx")
+    except Exception:
+        await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
+        return
     # Условие построчного переноса, при превышении длинны сообщения более 4096 символов
     data_length = 0
     output = ""
@@ -57,10 +61,12 @@ async def vyvod_monet(message: MessageWithUser, input_list):
 @dp.message_handler(commands=["europe"])
 @check_and_set_user
 async def output_eurocoin(message: MessageWithUser):
-    print(datetime.now(),"| ",  message.from_user.id, 'commands=["europe"]')
-
-    euro1 = euro(f"./users_files/{message.user.user_coin_id}_.xlsx")
-    await vyvod_monet(message, euro1)
+    print(datetime.now(), "| ", message.from_user.id, 'commands=["europe"]')
+    try:
+        euro1 = euro(f"./users_files/{message.user.user_coin_id}_.xlsx")
+        await vyvod_monet(message, euro1)
+    except Exception:
+        await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
 
 
 @dp.message_handler(Command(countries_cmd))
@@ -73,9 +79,13 @@ async def output_coin(message: MessageWithUser):
 @dp.message_handler(commands=["swap_list"])
 @check_and_set_user
 async def swap(message: MessageWithUser):
-    print(datetime.now(),"| ",  message.from_user.id, 'commands=["swap_list"]')
+    print(datetime.now(), "| ", message.from_user.id, 'commands=["swap_list"]')
 
-    swap_list = func_swap(f"./users_files/{message.user.user_coin_id}_SWAP.xlsx")
+    try:
+        swap_list = func_swap(f"./users_files/{message.user.user_coin_id}_SWAP.xlsx")
+    except Exception:
+        await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
+        return
     data_length = 0
     output = ""
 

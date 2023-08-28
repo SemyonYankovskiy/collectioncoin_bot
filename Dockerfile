@@ -20,10 +20,14 @@ FROM python:3.8.8
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app
+#RUN apt-get update && apt-get install -y git
+
 
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
+
+#RUN git clone https://github.com/geopandas/geopandas.git --branch main --single-branch --depth 1 --shallow-submodules 4b72fb417a4e31ad4ffde7df01927faf54ac362bB
 
 COPY . .
 
