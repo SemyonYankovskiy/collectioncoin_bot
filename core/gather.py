@@ -26,7 +26,7 @@ def gather_graph_data(*args, **kwargs):
 
 def gather_manager(*args):
     print(datetime.now(),"| ", "Start gather manager")
-    schedule.every().day.at("12:30").do(gather_graph_data)
+    schedule.every().day.at("07:00").do(gather_graph_data)
     while True:
         schedule.run_pending()
         time.sleep(1)
