@@ -1,25 +1,25 @@
 import sqlite3
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 from typing import List, Optional
 
 from .database import db_connection as db
 
 
 class DataCoin:
-    def __init__(self, telegram_id, totla_sum, datetime_=datetime.now(), id_=None):
+    def __init__(self, telegram_id, totla_sum, datetime_=None, id_=None):
         self.id = id_
         self.telegram_id = telegram_id
         self.totla_sum = totla_sum
-        self.datetime = datetime_
+        self.datetime = datetime.now() if datetime_ is None else datetime_
 
     def save(self):
         try:
 
-            print(datetime.now(),"| ",  "Удаление из базы данных")
+            print(datetime.now(), "| ", "Удаление из базы данных")
             db.cursor.execute(
                 f"DELETE FROM graph_data WHERE tg_id='{self.telegram_id}' "
                 f"and datetime='{self.datetime.strftime('%Y.%m.%d')}'"
-                            )
+            )
 
             db.cursor.execute(
                 f"INSERT INTO graph_data (tg_id, datetime, totla_sum) "
@@ -27,10 +27,14 @@ class DataCoin:
             )
             db.conn.commit()
 
-            print(datetime.now(),"| ",  "Обновление базы стоимости")
-            print(datetime.now(),"| ", f"Данные для {self.telegram_id} добавлены успешно!")
+            print(datetime.now(), "| ", "Обновление базы стоимости")
+            print(
+                datetime.now(),
+                "| ",
+                f"Данные для {self.telegram_id} добавлены успешно!",
+            )
         except sqlite3.IntegrityError:
-            print(datetime.now(),"| ", "Already exists in the database.")
+            print(datetime.now(), "| ", "Already exists in the database.")
 
     @staticmethod
     def init_new_user(tg_id: int, totla_sum: float):
@@ -44,9 +48,9 @@ class DataCoin:
                 f"VALUES {query[0:-1]}"
             )
             db.conn.commit()
-            print(datetime.now(),"| ",  "INIT_NEW_USER___all days added successfully!")
+            print(datetime.now(), "| ", "INIT_NEW_USER___all days added successfully!")
         except sqlite3.IntegrityError:
-            print(datetime.now(),"| ", "Already exists in the database.")
+            print(datetime.now(), "| ", "Already exists in the database.")
 
     @staticmethod
     def get_for_user(tg_id, limit: Optional[int]) -> List["DataCoin"]:
@@ -71,4 +75,4 @@ class DataCoin:
     def delete_user_data(tg_id):
         db.cursor.execute(f"DELETE FROM graph_data WHERE tg_id='{tg_id}'")
         db.conn.commit()
-        print(datetime.now(),"| ", f"User {tg_id} removed successfully!")
+        print(datetime.now(), "| ", f"User {tg_id} removed successfully!")
