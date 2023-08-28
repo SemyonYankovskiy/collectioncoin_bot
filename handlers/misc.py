@@ -9,7 +9,7 @@ from settngs import dp, bot
 
 @dp.message_handler(commands=["start"])
 async def hello_welcome(message: MessageWithUser):
-    print(datetime.now(), message.from_user.id, 'commands=["start"]')
+    print(datetime.now(),"| ",  message.from_user.id, 'commands=["start"]')
 
     await message.answer(emoji.emojize(":robot:"))
     await message.answer(f"Здарова, {message.from_user.full_name}")
@@ -18,7 +18,7 @@ async def hello_welcome(message: MessageWithUser):
 
 @dp.message_handler(commands=["help"])
 async def ua_welcome(message: MessageWithUser):
-    print(datetime.now(), message.from_user.id, 'commands=["help"]')
+    print(datetime.now(),"| ",  message.from_user.id, 'commands=["help"]')
 
     await message.answer(
         "💬 Этот бот берет данные из вашего аккаунта на сайте Ucoin \n/profile, для этого необходимо "

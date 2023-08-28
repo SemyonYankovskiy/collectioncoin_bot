@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 from typing import Optional
 
 from .database import db_connection as db, user_default_color_schema
@@ -37,9 +38,9 @@ class User:
                     )"""
             )
             db.conn.commit()
-            print(f"User {self.email} added successfully!")
+            print(datetime.now(),"| ", f"User {self.email} added successfully!")
         except sqlite3.IntegrityError:
-            print(f"User {self.email} UPDATE in the database.")
+            print(datetime.now(),"| ", f"User {self.email} UPDATE in the database.")
             db.cursor.execute(
                 f"""UPDATE users SET 
                     ( 
@@ -82,4 +83,4 @@ class User:
     def delete(tg_id):
         db.cursor.execute(f"DELETE FROM users WHERE tg_id='{tg_id}'")
         db.conn.commit()
-        print(f"User {tg_id} removed successfully!")
+        print(datetime.now(),"| ", f"User {tg_id} removed successfully!")

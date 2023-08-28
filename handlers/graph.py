@@ -72,7 +72,7 @@ def get_day_verbose_name(days: int) -> str:
 @dp.message_handler(commands=["grafik"])
 @check_and_set_user
 async def grafik(message: MessageWithUser):
-    print(datetime.now(), message.from_user.id, 'commands=["grafik"]')
+    print(datetime.now(),"| ",  message.from_user.id, 'commands=["grafik"]')
     await message.answer("График работает криво, держу в курсе")
 
     default_limit = "month:1"

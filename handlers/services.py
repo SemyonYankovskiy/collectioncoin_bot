@@ -14,7 +14,7 @@ from settngs import dp, bot
 @check_and_set_user
 @rate_limit(600)
 async def refresh_data(message: MessageWithUser):
-    print(datetime.now(), message.from_user.id, 'commands=["refresh"]')
+    print(datetime.now(),"| USER:", message.from_user.id, 'commands=["refresh"]')
 
     """Функция принудительного обновления"""
 
@@ -31,7 +31,7 @@ async def send_text_to_user(user: User, text: str):
 @dp.message_handler(commands=["summ"])
 @check_and_set_user
 async def summ(message: MessageWithUser):
-    print(datetime.now(), message.from_user.id, 'commands=["summ"]')
+    print(datetime.now(),"| USER:", message.from_user.id, 'commands=["summ"]')
 
     coin_st = DataCoin.get_for_user(message.from_user.id, limit=1)
     # обращаемся к функции more info, передаем в эту функциию значение переменной (значение из 4 столбца массива)

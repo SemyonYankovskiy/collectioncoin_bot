@@ -13,7 +13,7 @@ class GatherFail(Exception):
 
 def gather_graph_data(*args, **kwargs):
     users_list = User.get_all()
-    print(datetime.now(), "Start gather update")
+    print(datetime.now(),"| ", "Start gather update")
 
     for user in users_list:
         user_coin_id, session = authorize(user.email, user.password)
@@ -24,7 +24,7 @@ def gather_graph_data(*args, **kwargs):
 
 
 def gather_manager(*args):
-    print("Start gather manager")
+    print(datetime.now(),"| ", "Start gather manager")
     schedule.every().day.at("12:30").do(gather_graph_data)
     while True:
         schedule.run_pending()

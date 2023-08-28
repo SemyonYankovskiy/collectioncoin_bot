@@ -20,7 +20,7 @@ def get_maps_keyboards(current_location: str):
         ("Мир", "map:World"),
     ]
     keyboard = []
-    print(current_location)
+    print(datetime.now(),"| ", current_location)
     for name, callback_data in world_locations:
         if current_location == callback_data:
             name = f"❇️ {name}"
@@ -46,7 +46,7 @@ async def send_user_map(location: str, user: User):
 @dp.message_handler(commands=["map"])
 @check_and_set_user
 async def maps(message: MessageWithUser):
-    print(datetime.now(), message.from_user.id, 'commands=["map"]')
+    print(datetime.now(),"| ",  message.from_user.id, 'commands=["map"]')
 
     location = "World"
     await send_user_map(location, message.user)

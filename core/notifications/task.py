@@ -8,7 +8,7 @@ from ..site_calc import authorize, parsing
 
 async def check_user_notifications(user: User):
 
-    print(datetime.now(), f"check user ({user.email}) notifications")
+    print(datetime.now(),"| ", f"check user ({user.email}) notifications")
 
     old_messages = storage.get_data(user.telegram_id, "new_messages") or 0
     old_swap_messages = storage.get_data(user.telegram_id, "swap_messages") or 0
@@ -25,7 +25,7 @@ async def check_user_notifications(user: User):
 
 
 async def new_notifications_checker():
-    print("Start notifications checker")
+    print(datetime.now(),"| ", "Start notifications checker")
     while True:
         users_list = User.get_all()
         for user in users_list:

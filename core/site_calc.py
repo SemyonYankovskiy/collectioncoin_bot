@@ -39,7 +39,7 @@ def authorize(username, password):
         # print(resp.headers.get("Location"))
         user_coin_id = "".join(filter(str.isdigit, resp.headers.get("Location")))
 
-        print(datetime.now(), user_coin_id, "Connected and authorize")
+        print(datetime.now(),"| ", user_coin_id, "Connected and authorize")
         return user_coin_id, session
 
 
@@ -150,9 +150,9 @@ def parsing(session, user, user_coin_id):
         url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
         headers=HEADERS,
     )
-    print(datetime.now(), "Start parsing")
+    print(datetime.now(),"| ",  "Start parsing")
 
-    print(response)
+    print(datetime.now(),"| ", response)
     soup = BeautifulSoup(response.content, "html.parser")
     results = soup.find(id="notify-popup")
 
@@ -165,9 +165,9 @@ def parsing(session, user, user_coin_id):
         user.new_messages = int(new_messages_count)
         user.new_swap = int(new_swap_count)
         user.save()
-        print("Парсинг сообщений - Done")
+        print(datetime.now(),"| ", "Парсинг сообщений - Done")
     else:
-        print("Парсинг сообщений - False")
+        print(datetime.now(),"| ", "Парсинг сообщений - False")
 
 
 def download(user_coin_id: str, session: requests.Session):
@@ -205,7 +205,7 @@ def more_info(file_name, chat_id):
         df = pd.read_excel(file_name)
         countryroad = df[df.columns[0]].unique()  # эта переменная считает кол-во стран
     except Exception:
-        print(f"Ошибка открытия файла")
+        print(datetime.now(),"| ", f"Ошибка открытия файла")
 
     return len(df), len(countryroad)
 
