@@ -26,7 +26,6 @@ WORKDIR /app
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install git+https://github.com/geopandas/geopandas.git@4b72fb417a4e31ad4ffde7df01927faf54ac362b
 
 COPY . .
 
