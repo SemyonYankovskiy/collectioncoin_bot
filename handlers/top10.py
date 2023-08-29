@@ -38,11 +38,13 @@ def _get_top10_message_text(user_coin_id, mode: str):
 @check_and_set_user
 async def top10_default(message: MessageWithUser):
     print(datetime.now(),"| USER:", message.from_user.id, 'commands=["top"]')
-    default_mode = "last_append"
-    output = _get_top10_message_text(message.user.user_coin_id, mode=default_mode)
-    keyboards = _get_top10_keyboards(active_mode=default_mode)
-    await message.answer(output, reply_markup=keyboards)
-
+    try:
+        default_mode = "last_append"
+        output = _get_top10_message_text(message.user.user_coin_id, mode=default_mode)
+        keyboards = _get_top10_keyboards(active_mode=default_mode)
+        await message.answer(output, reply_markup=keyboards)
+    except Exception:
+        await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
 
 @dp.callback_query_handler(
     lambda c: c.data
