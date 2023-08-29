@@ -33,5 +33,6 @@ async def new_notifications_checker():
             user_coin_id, session = authorize(user.email, user.password)
             parsing(session, user, user_coin_id)
             await check_user_notifications(user)
+            await asyncio.sleep(60 * 2)
 
-        await asyncio.sleep(60 * 10)
+        await asyncio.sleep(60 * 15)
