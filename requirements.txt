@@ -10,5 +10,4 @@ beautifulsoup4~=4.12.2
 plotly~=5.14.1
 DateTime~=5.1
 Pillow~=9.5.0
---find-links /home/syankovskiy/bot/collectioncoin_bot/config/geopandas
-geopandas
+
