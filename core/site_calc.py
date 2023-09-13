@@ -205,8 +205,8 @@ def parsing(session, user, user_coin_id):
         soup = BeautifulSoup(response.content, "html.parser")
         results = soup.find(id="notify-popup")
 
-    tag_messages = results.select("a:nth-child(4) div")
-    tag_swap = results.select("a:nth-child(5) div")
+        tag_messages = results.select("a:nth-child(4) div")
+        tag_swap = results.select("a:nth-child(5) div")
 
         new_messages_count = tag_messages[1].text if len(tag_messages) == 2 else "0"
         new_swap_count = tag_swap[1].text if len(tag_swap) == 2 else "0"
