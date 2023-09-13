@@ -37,7 +37,7 @@ def authorize(username, password):
         # print(resp.headers.get("Location"))
         user_coin_id = "".join(filter(str.isdigit, resp.headers.get("Location")))
 
-        print(datetime.now(),"| ", user_coin_id, "Connected and authorize")
+        print(datetime.now(), "| ", user_coin_id, "Connected and authorize")
         return user_coin_id, session
 
 
@@ -144,28 +144,31 @@ def refresh(telegram_id):
 
 
 def parsing(session, user, user_coin_id):
-    response = session.get(
-        url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
-        headers=HEADERS,
-    )
-    print(datetime.now(),"| ",  "Start parsing")
-
-    print(datetime.now(),"| ", response)
-    soup = BeautifulSoup(response.content, "html.parser")
-    results = soup.find(id="notify-popup")
-
-    tag_messages = results.select("a:nth-child(4) div")
-    tag_swap = results.select("a:nth-child(5) div")
-
-    new_messages_count = tag_messages[1].text if len(tag_messages) == 2 else "0"
-    new_swap_count = tag_swap[1].text if len(tag_swap) == 2 else "0"
-    if new_messages_count.isdigit() and new_swap_count.isdigit():
-        user.new_messages = int(new_messages_count)
-        user.new_swap = int(new_swap_count)
-        user.save()
-        print(datetime.now(),"| ", "Парсинг сообщений - Done")
+    print(datetime.now(), "| ", "Start parsing")
+    try:
+        response = session.get(
+            url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
+            headers=HEADERS,
+        )
+    except AuthFail:
+        print(datetime.now(), "| ", "Парсинг сообщений - False, неверные данные авторизации")
     else:
-        print(datetime.now(),"| ", "Парсинг сообщений - False")
+        print(datetime.now(), "| ", response)
+        soup = BeautifulSoup(response.content, "html.parser")
+        results = soup.find(id="notify-popup")
+
+        tag_messages = results.select("a:nth-child(4) div")
+        tag_swap = results.select("a:nth-child(5) div")
+
+        new_messages_count = tag_messages[1].text if len(tag_messages) == 2 else "0"
+        new_swap_count = tag_swap[1].text if len(tag_swap) == 2 else "0"
+        if new_messages_count.isdigit() and new_swap_count.isdigit():
+            user.new_messages = int(new_messages_count)
+            user.new_swap = int(new_swap_count)
+            user.save()
+            print(datetime.now(), "| ", "Парсинг сообщений - Done")
+        else:
+            print(datetime.now(), "| ", "Парсинг сообщений - False")
 
 
 def download(user_coin_id: str, session: requests.Session):
