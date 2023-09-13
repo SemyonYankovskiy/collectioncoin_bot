@@ -67,6 +67,14 @@ def get_fig_marker(data_length: int) -> str:
 
 
 def get_graph(telegram_id, limit: Optional[int] = 30):
+    # Создать словарь для замены
+    owner_dict = {
+        "726837488": "СемЁн Янковский",
+        "872648196": "Sizihdanil",
+        "799585824": "АлексEй",
+    }
+    owner = owner_dict[str(telegram_id)]  # добавьте кавычки вокруг ключа
+
     len_active = len(DataCoin.get_for_user(telegram_id, limit))
 
     graph_coin_data: List[DataCoin] = DataCoin.get_for_user(telegram_id, limit)
@@ -107,13 +115,53 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
         markersize=4,
     )
 
-    date_without_year = list(
-        map(lambda value: get_date_annotation(value, data_length), graph_date)
-    )
+    filtered_sum = [x for x in graph_sum if x is not None]  # filtered_sum равно [10, 20, 40, 50]
+    maxim = max(filtered_sum)
+    mimin = min(filtered_sum)
+    average = sum(filtered_sum) / len(filtered_sum)
+    average = round(average, 2)
+    last = graph_sum[0]
+    date = datetime.now
+    date1 = date().strftime("%d.%m.%Y %H:%M")
+
+    date_without_year = list(map(lambda value: get_date_annotation(value, data_length), graph_date))
 
     plt.xticks(graph_date[::step], date_without_year[::step])
 
     plt.title("Стоимость коллекции, руб")
+
+    # Добавить текст на график
+    plt.text(0, 1.07, " {}".format(owner), transform=plt.gca().transAxes)
+    plt.text(0, 1.05, " {}".format(date1), transform=plt.gca().transAxes)
+
+    plt.text(
+        0,
+        -0.1,
+        "[◉_◉] Минимум = {} р.".format(mimin),
+        color="red",
+        transform=plt.gca().transAxes
+    )
+    plt.text(
+        0.2,
+        -0.1,
+        "(◕‿◕) Максимум = {} р.".format(maxim),
+        color="green",
+        transform=plt.gca().transAxes,
+    )
+    plt.text(
+        0.4,
+        -0.1,
+        "(─‿‿─) Средняя = {} р.".format(average),
+        color="brown",
+        transform=plt.gca().transAxes,
+    )
+    plt.text(
+        0.8,
+        -0.1,
+        "(• ◡•) Последняя = {} р.".format(last),
+        color="blue",
+        transform=plt.gca().transAxes,
+    )
 
     #  Прежде чем рисовать вспомогательные линии
     #  необходимо включить второстепенные деления
@@ -157,8 +205,8 @@ def parsing(session, user, user_coin_id):
         soup = BeautifulSoup(response.content, "html.parser")
         results = soup.find(id="notify-popup")
 
-        tag_messages = results.select("a:nth-child(4) div")
-        tag_swap = results.select("a:nth-child(5) div")
+    tag_messages = results.select("a:nth-child(4) div")
+    tag_swap = results.select("a:nth-child(5) div")
 
         new_messages_count = tag_messages[1].text if len(tag_messages) == 2 else "0"
         new_swap_count = tag_swap[1].text if len(tag_swap) == 2 else "0"
@@ -264,9 +312,7 @@ def euro(file_name):
                 else ""
             )  # монетный двор
             des4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
-            des5 = (
-                f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""
-            )  # Наименование
+            des5 = f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""  # Наименование
 
             euros.append(
                 [
@@ -310,9 +356,7 @@ def strana(file_name, text_in):
                 else ""
             )  # монетный двор
             desc4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
-            des5 = (
-                f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""
-            )  # Наименование
+            des5 = f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""  # Наименование
             arr.append(
                 [
                     transformer.get_country_code(row[0].value),
@@ -345,9 +389,7 @@ def func_swap(file_name):
             if row[3].value
             else ""
         )  # монетный двор
-        desc10 = (
-            f"\nКомментарий: {row[10].value}" if row[10].value else ""
-        )  # комментарий
+        desc10 = f"\nКомментарий: {row[10].value}" if row[10].value else ""  # комментарий
 
         arr.append(
             [
@@ -393,14 +435,10 @@ def get_top_10_coin(file_name, mode):
     elif mode == "novelty":
         df = df.sort_values(by="Год", ascending=False)
     elif mode == "expensive_value":
-        df["Цена, RUB [uCoin]"] = pd.to_numeric(
-            df["Цена, RUB [uCoin]"], errors="coerce"
-        )
+        df["Цена, RUB [uCoin]"] = pd.to_numeric(df["Цена, RUB [uCoin]"], errors="coerce")
         df = df.sort_values(by="Цена, RUB [uCoin]", ascending=False)
     elif mode == "cheap_value":
-        df["Цена, RUB [uCoin]"] = pd.to_numeric(
-            df["Цена, RUB [uCoin]"], errors="coerce"
-        )
+        df["Цена, RUB [uCoin]"] = pd.to_numeric(df["Цена, RUB [uCoin]"], errors="coerce")
         df = df.sort_values(by="Цена, RUB [uCoin]", ascending=True)
     elif mode == "last_append":
         df = df.sort_values(by="Добавлено", ascending=False)

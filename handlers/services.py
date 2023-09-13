@@ -36,16 +36,15 @@ async def summ(message: MessageWithUser):
     coin_st = DataCoin.get_for_user(message.from_user.id, limit=1)
     # обращаемся к функции more info, передаем в эту функциию значение переменной (значение из 4 столбца массива)
     try:
-        lot, count, purchase = more_info(
+        lot, count, sold = more_info(
             f"./users_files/{message.user.user_coin_id}_.xlsx", message.from_user.id
         )
         await message.answer(emoji.emojize(":coin:"))
         await message.answer(
             f"Количество монет {lot} \n"
-            f"Количество стран {count} \n"
-            f"Общая стоимость {coin_st[0].totla_sum} руб."
-            f"Стоимость покупок {purchase} руб."
-
+            f"Количество стран {count} \n\n"
+            f"Общая стоимость {coin_st[0].totla_sum} руб. \n\n"
+            f"Потрачено {sold} руб. "
         )
     except Exception:
         await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
