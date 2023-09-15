@@ -198,25 +198,29 @@ def parsing(session, user, user_coin_id):
             url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
             headers=HEADERS,
         )
-    except AuthFail:
-        print(datetime.now(), "| ", "Парсинг сообщений - False, неверные данные авторизации")
+    except (AuthFail, AttributeError):
+        print(datetime.now(), "| ", "Парсинг сообщений - AuthFail, AttributeError")
     else:
         print(datetime.now(), "| ", response)
-        soup = BeautifulSoup(response.content, "html.parser")
-        results = soup.find(id="notify-popup")
-
-        tag_messages = results.select("a:nth-child(4) div")
-        tag_swap = results.select("a:nth-child(5) div")
-
-        new_messages_count = tag_messages[1].text if len(tag_messages) == 2 else "0"
-        new_swap_count = tag_swap[1].text if len(tag_swap) == 2 else "0"
-        if new_messages_count.isdigit() and new_swap_count.isdigit():
-            user.new_messages = int(new_messages_count)
-            user.new_swap = int(new_swap_count)
-            user.save()
-            print(datetime.now(), "| ", "Парсинг сообщений - Done")
+        if response != "<Response [200]>":
+            print(datetime.now(), "| ", "Response != 200")
+            return
         else:
-            print(datetime.now(), "| ", "Парсинг сообщений - False")
+            soup = BeautifulSoup(response.content, "html.parser")
+            results = soup.find(id="notify-popup")
+
+            tag_messages = results.select("a:nth-child(4) div")
+            tag_swap = results.select("a:nth-child(5) div")
+
+            new_messages_count = tag_messages[1].text if len(tag_messages) == 2 else "0"
+            new_swap_count = tag_swap[1].text if len(tag_swap) == 2 else "0"
+            if new_messages_count.isdigit() and new_swap_count.isdigit():
+                user.new_messages = int(new_messages_count)
+                user.new_swap = int(new_swap_count)
+                user.save()
+                print(datetime.now(), "| ", "Парсинг сообщений - Done")
+            else:
+                print(datetime.now(), "| ", "Парсинг сообщений - False")
 
 
 def download(user_coin_id: str, session: requests.Session):
