@@ -12,9 +12,9 @@ from database import DataCoin, User
 from .name_transformer import transformer
 
 
-# класс ошибок
-class AuthFail(Exception):
-    pass
+# # класс ошибок
+# class AuthFail(Exception):
+#     pass
 
 
 HEADERS = {
@@ -34,7 +34,7 @@ def authorize(username, password):
             allow_redirects=False,
         )
         if resp.status_code != 302:
-            raise AuthFail("неверные данные авторизации")
+            raise RequestException("неверные данные авторизации")
         # print(resp.headers.get("Location"))
         user_coin_id = "".join(filter(str.isdigit, resp.headers.get("Location")))
 
@@ -199,10 +199,10 @@ def parsing(session, user, user_coin_id):
             url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
             headers=HEADERS,
         )
-        if response.status_code != 200:
-            raise AuthFail(f"Получили ответ от сервера {response.status_code}")
+        # if response.status_code != 200:
+        #     raise AuthFail(f"Получили ответ от сервера {response.status_code}")
 
-    except (AuthFail, RequestException) as exc:
+    except RequestException as exc:
         print(datetime.now(), "| ", f"Парсинг сообщений - ERROR: {exc}")
 
     else:
