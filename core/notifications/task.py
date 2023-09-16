@@ -31,7 +31,10 @@ async def new_notifications_checker():
         users_list = User.get_all()
         for user in users_list:
             user_coin_id, session = authorize(user.email, user.password)
-            parsing(session, user, user_coin_id)
+            try:
+                parsing(session, user, user_coin_id)
+            except Exception as e:
+                await send_text_to_user(user, f"Снова наебнулись уведомления {e})")
             await check_user_notifications(user)
             await asyncio.sleep(60 * 2)
 
