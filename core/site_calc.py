@@ -12,9 +12,9 @@ from database import DataCoin, User
 from .name_transformer import transformer
 
 
-# # класс ошибок
-# class AuthFail(Exception):
-#     pass
+# класс ошибок
+class AuthFail(Exception):
+    pass
 
 
 HEADERS = {
@@ -199,12 +199,12 @@ def parsing(session, user, user_coin_id):
             url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
             headers=HEADERS,
         )
-        # if response.status_code != 200:
-        #     raise AuthFail(f"Получили ответ от сервера {response.status_code}")
+        if response.status_code != 200:
+            raise AuthFail(f"Получили ответ от сервера {response.status_code}")
 
-    except RequestException as exc:
+    except (RequestException, AuthFail) as exc:
         print(datetime.now(), "| ", f"Парсинг сообщений - ERROR: {exc}")
-
+        return
     else:
         soup = BeautifulSoup(response.content, "html.parser")
         results = soup.find(id="notify-popup")
