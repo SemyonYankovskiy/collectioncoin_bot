@@ -141,9 +141,9 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
     date = datetime.now
     date1 = date().strftime("%d.%m.%Y %H:%M")
 
-    mean_count = sum(graph_coin_count) / len(graph_coin_count)
-    max_count = max(graph_coin_count)
-    min_count = min(graph_coin_count)
+    filtered_count = [x for x in graph_coin_count if x is not None]
+    max_count = max(filtered_count)
+    min_count = min(filtered_count)
     raznica = max_count-min_count
     y_min = min_count - 2
     y_max = min_count + raznica+2
@@ -231,13 +231,14 @@ def parsing(session, user, user_coin_id):
         )
         if response.status_code == 504:
             print(datetime.now(), "| ", f"Парсинг сообщений - ERROR: 504")
-            return
+
         elif response.status_code != 200:
             raise AuthFail(f"Получили ответ от сервера {response.status_code}")
 
-    except (RequestException, AuthFail) as exc:
+    except Exception as exc:
+    # except (RequestException, AuthFail) as exc:
         print(datetime.now(), "| ", f"Парсинг сообщений - ERROR: {exc}")
-        return
+
     else:
         soup = BeautifulSoup(response.content, "html.parser")
         results = soup.find(id="notify-popup")

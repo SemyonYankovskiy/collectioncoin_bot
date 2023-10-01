@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     print("\nImport: ", handlers)
 
-    #loop = asyncio.get_event_loop()
-    #loop.create_task(new_notifications_checker())
+    loop = asyncio.get_event_loop()
+    loop.create_task(new_notifications_checker())
 
     executor.start_polling(dp, skip_updates=True)
