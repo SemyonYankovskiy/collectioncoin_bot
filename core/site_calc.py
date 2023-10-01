@@ -448,7 +448,7 @@ def file_opener(file_name):
     # Открываем файл Excel с помощью openpyxl
     wb = openpyxl.load_workbook(file_name)
     ws = wb.active
-    row_count = ws.max_row
+    row_count = ws.max_row-1
     total = 0
 
     # Проходимся по строкам и суммируем значения в столбце G
