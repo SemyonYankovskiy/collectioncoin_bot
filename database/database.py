@@ -24,7 +24,8 @@ class Database:
                             (id INTEGER PRIMARY KEY NOT NULL,
                             tg_id INTEGER NOT NULL,
                             datetime TEXT NOT NULL,
-                            totla_sum REAL NOT NULL);"""
+                            totla_sum REAL NOT NULL,
+                            totla_count INTEGER NOT NULL);"""
         )
         self.conn.commit()
 

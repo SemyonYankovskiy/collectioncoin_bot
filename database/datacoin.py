@@ -6,10 +6,11 @@ from .database import db_connection as db
 
 
 class DataCoin:
-    def __init__(self, telegram_id, totla_sum, datetime_=None, id_=None):
+    def __init__(self, telegram_id, totla_sum, totla_count, datetime_=None, id_=None):
         self.id = id_
         self.telegram_id = telegram_id
         self.totla_sum = totla_sum
+        self.totla_count = totla_count
         self.datetime = datetime.now() if datetime_ is None else datetime_
 
     def save(self):
@@ -21,8 +22,10 @@ class DataCoin:
             )
 
             db.cursor.execute(
-                f"INSERT INTO graph_data (tg_id, datetime, totla_sum) "
-                f"VALUES ('{self.telegram_id}', '{self.datetime.strftime('%Y.%m.%d')}', '{self.totla_sum}')"
+                f"INSERT INTO graph_data (tg_id, datetime, totla_sum, totla_count) "
+                f"VALUES ('{self.telegram_id}', "
+                f"'{self.datetime.strftime('%Y.%m.%d')}', "
+                f"'{self.totla_sum}', '{self.totla_count}')"
             )
             db.conn.commit()
 
@@ -36,15 +39,15 @@ class DataCoin:
             print(datetime.now(), "| ", "Already exists in the database.")
 
     @staticmethod
-    def init_new_user(tg_id: int, totla_sum: float):
+    def init_new_user(tg_id: int, totla_sum: float, totla_count: int):
         query = ""
         day_increment = date.today()
-        query += f"({tg_id}, '{day_increment.strftime('%Y.%m.%d')}', {totla_sum}),"
+        query += f"({tg_id}, '{day_increment.strftime('%Y.%m.%d')}', {totla_sum}, {totla_count})"
 
         try:
             db.cursor.execute(
-                f"INSERT INTO graph_data (tg_id, datetime, totla_sum) "
-                f"VALUES {query[0:-1]}"
+                f"INSERT INTO graph_data (tg_id, datetime, totla_sum, totla_count) "
+                f"VALUES {query[0:-1]})"
             )
             db.conn.commit()
             print(datetime.now(), "| ", "INIT_NEW_USER___all days added successfully!")
@@ -66,6 +69,7 @@ class DataCoin:
                     telegram_id=sublist[1],
                     datetime_=sublist[2],
                     totla_sum=sublist[3],
+                    totla_count=sublist[4],
                 )
             )
         return data_coins

@@ -102,8 +102,8 @@ async def process_password(message: MessageWithUser, state: FSMContext):
         # Пытаемся по введенным данным от пользователя зайти на сайт
         user_coin_id, session = authorize(user_email, user_password)
         file_name = download(user_coin_id, session)
-        total = file_opener(file_name)
-        DataCoin.init_new_user(message.from_user.id, total)
+        total, total_count = file_opener(file_name)
+        DataCoin.init_new_user(message.from_user.id, total, total_count)
 
     # Перехватываем ошибку
     except AuthFail:

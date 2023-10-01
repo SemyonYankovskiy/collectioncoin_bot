@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import openpyxl
 import pandas as pd
 import requests
+from matplotlib import ticker
+from requests.exceptions import RequestException
 from bs4 import BeautifulSoup
 
 from database import DataCoin, User
@@ -33,7 +35,7 @@ def authorize(username, password):
             allow_redirects=False,
         )
         if resp.status_code != 302:
-            raise AuthFail("неверные данные авторизации")
+            raise RequestException("неверные данные авторизации")
         # print(resp.headers.get("Location"))
         user_coin_id = "".join(filter(str.isdigit, resp.headers.get("Location")))
 
@@ -80,6 +82,7 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
     graph_coin_data: List[DataCoin] = DataCoin.get_for_user(telegram_id, limit)
     graph_date = []
     graph_sum = []
+    graph_coin_count = []
 
     last_date = datetime.now().date()
 
@@ -87,15 +90,18 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
         while datetime.strptime(sublist.datetime, "%Y.%m.%d").date() != last_date:
             graph_date.append(last_date.strftime("%Y.%m.%d"))
             graph_sum.append(None)
+            graph_coin_count.append(None)
             last_date -= timedelta(days=1)
 
         graph_date.append(sublist.datetime)
         graph_sum.append(sublist.totla_sum)
+        graph_coin_count.append(sublist.totla_count)
         last_date -= timedelta(days=1)
 
     if limit:
         graph_date = graph_date[:limit]
         graph_sum = graph_sum[:limit]
+        graph_coin_count = graph_coin_count[:limit]
 
     data_length = len(graph_date)
 
@@ -106,13 +112,24 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
     fig_dpi = 100
 
     plt.clf()
-    plt.figure(figsize=(fig_width, fig_height), dpi=fig_dpi)
+    fig, ax1 = plt.subplots(figsize=(fig_width, fig_height), dpi=fig_dpi)
 
-    plt.plot(
+    ax2 = ax1.twinx()
+
+    ax1.plot(
         graph_date[::-1],
         graph_sum[::-1],
         marker=get_fig_marker(data_length),
-        markersize=4,
+        color='#0698FE',
+        markersize=5,
+    )
+    ax2.plot(
+        graph_date[::-1],
+        graph_coin_count[::-1],
+        marker=get_fig_marker(data_length),
+        markersize=3,
+        color='#30BA8F',
+        linewidth = 0.7
     )
 
     filtered_sum = [x for x in graph_sum if x is not None]  # filtered_sum равно [10, 20, 40, 50]
@@ -124,8 +141,18 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
     date = datetime.now
     date1 = date().strftime("%d.%m.%Y %H:%M")
 
+    mean_count = sum(graph_coin_count) / len(graph_coin_count)
+    max_count = max(graph_coin_count)
+    min_count = min(graph_coin_count)
+    raznica = max_count-min_count
+    y_min = min_count - 2
+    y_max = min_count + raznica+2
+    ax2.set_ylim(y_min, y_max)
+
+
     date_without_year = list(map(lambda value: get_date_annotation(value, data_length), graph_date))
 
+    ax2.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     plt.xticks(graph_date[::step], date_without_year[::step])
 
     plt.title("Стоимость коллекции, руб")
@@ -133,6 +160,10 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
     # Добавить текст на график
     plt.text(0, 1.07, " {}".format(owner), transform=plt.gca().transAxes)
     plt.text(0, 1.05, " {}".format(date1), transform=plt.gca().transAxes)
+
+    plt.text(-0.08, 1.02, "Стоимость", color="#0698FE",  transform=plt.gca().transAxes)
+    plt.text(1.02, 1.04, "Кол-во", color="#30BA8F", transform=plt.gca().transAxes)
+    plt.text(1.02, 1.02, "монет", color="#30BA8F", transform=plt.gca().transAxes)
 
     plt.text(
         0,
@@ -165,14 +196,14 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
 
     #  Прежде чем рисовать вспомогательные линии
     #  необходимо включить второстепенные деления
-    plt.minorticks_on()
+    ax1.minorticks_on()
 
     #  Определяем внешний вид линий основной сетки:
-    plt.grid(which="major")
+    ax1.grid(which="major")
 
     #  Определяем внешний вид линий вспомогательной
     #  сетки:
-    plt.grid(
+    ax1.grid(
         which="minor",
         linestyle=":",
     )
@@ -186,34 +217,43 @@ def refresh(telegram_id):
     user = User.get(telegram_id)
     user_coin_id, session = authorize(user.email, user.password)
     file_name = download(user_coin_id, session)
-    total = file_opener(file_name)
-    DataCoin(user.telegram_id, total).save()
+    total, total_count = file_opener(file_name)
+    DataCoin(user.telegram_id, total, total_count).save()
     parsing(session, user, user_coin_id)
 
 
 def parsing(session, user, user_coin_id):
-    response = session.get(
-        url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
-        headers=HEADERS,
-    )
     print(datetime.now(), "| ", "Start parsing")
+    try:
+        response = session.get(
+            url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
+            headers=HEADERS,
+        )
+        if response.status_code == 504:
+            print(datetime.now(), "| ", f"Парсинг сообщений - ERROR: 504")
+            return
+        elif response.status_code != 200:
+            raise AuthFail(f"Получили ответ от сервера {response.status_code}")
 
-    print(datetime.now(), "| ", response)
-    soup = BeautifulSoup(response.content, "html.parser")
-    results = soup.find(id="notify-popup")
-
-    tag_messages = results.select("a:nth-child(4) div")
-    tag_swap = results.select("a:nth-child(5) div")
-
-    new_messages_count = tag_messages[1].text if len(tag_messages) == 2 else "0"
-    new_swap_count = tag_swap[1].text if len(tag_swap) == 2 else "0"
-    if new_messages_count.isdigit() and new_swap_count.isdigit():
-        user.new_messages = int(new_messages_count)
-        user.new_swap = int(new_swap_count)
-        user.save()
-        print(datetime.now(), "| ", "Парсинг сообщений - Done")
+    except (RequestException, AuthFail) as exc:
+        print(datetime.now(), "| ", f"Парсинг сообщений - ERROR: {exc}")
+        return
     else:
-        print(datetime.now(), "| ", "Парсинг сообщений - False")
+        soup = BeautifulSoup(response.content, "html.parser")
+        results = soup.find(id="notify-popup")
+
+        tag_messages = results.select("a:nth-child(4) div")
+        tag_swap = results.select("a:nth-child(5) div")
+
+        new_messages_count = tag_messages[1].text if len(tag_messages) == 2 else "0"
+        new_swap_count = tag_swap[1].text if len(tag_swap) == 2 else "0"
+        if new_messages_count.isdigit() and new_swap_count.isdigit():
+            user.new_messages = int(new_messages_count)
+            user.new_swap = int(new_swap_count)
+            user.save()
+            print(datetime.now(), "| ", "Парсинг сообщений - Done")
+        else:
+            print(datetime.now(), "| ", "Парсинг сообщений - False")
 
 
 def download(user_coin_id: str, session: requests.Session):
@@ -242,7 +282,7 @@ def download(user_coin_id: str, session: requests.Session):
     return file_name
 
 
-def more_info(file_name, chat_id):
+def more_info(file_name):
     # df = pd.read_excel(file_name)
     # countryroad = df[df.columns[0]].unique()  # эта переменная считает кол-во стран
     df = 0
@@ -271,7 +311,9 @@ def countries(file_name):
                 transformer.get_country_code(country),  # Флаг страны
                 count,  # Кол-во монет
                 country,  # Русское название страны
-                transformer.get_country_eng_short_name(country),  # Короткое англ. название
+                transformer.get_country_eng_short_name(
+                    country
+                ),  # Короткое англ. название
             ]
         )
     wb = openpyxl.load_workbook(file_name)
@@ -344,7 +386,7 @@ def strana(file_name, text_in):
     # Проходимся по строкам и суммируем значения в столбце G
     for row in ws.iter_rows(min_row=1, max_col=14):
         if row[0].value == text2:
-            desс2 = f"{row[2].value}г." if row[2].value else ""  #  год
+            desc2 = f"{row[2].value}г." if row[2].value else ""
             desc3 = (
                 f"\nРазновидность: {transformer.get_coin_difference(row[3].value)}"
                 if row[3].value
@@ -356,7 +398,7 @@ def strana(file_name, text_in):
                 [
                     transformer.get_country_code(row[0].value),
                     row[1].value,
-                    desс2,  # ГОД
+                    desc2,  # ГОД
                     f"{row[6].value} ₽",
                     desc3,
                     desc4,
@@ -405,7 +447,7 @@ def file_opener(file_name):
     # Открываем файл Excel с помощью openpyxl
     wb = openpyxl.load_workbook(file_name)
     ws = wb.active
-
+    row_count = ws.max_row
     total = 0
 
     # Проходимся по строкам и суммируем значения в столбце G
@@ -417,7 +459,8 @@ def file_opener(file_name):
         if row[8].value != "Метка 13":
             total += row[6].value
 
-    return round(total, 2)
+    total_r = round(total, 2)
+    return total_r, row_count
 
 
 def get_top_10_coin(file_name, mode):

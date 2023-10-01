@@ -12,7 +12,7 @@ from settngs import dp, bot
 
 def get_graph_keyboards(current_limit: str):
     time_limit = [
-        ("Послдение 2 месяца", "month:2"),
+        ("Последние 2 месяца", "month:2"),
         ("Последние 6 месяцев", "month:6"),
         ("Последний год", "month:12"),
         ("Всё время", "month:all"),
@@ -48,8 +48,6 @@ async def send_user_graph(callback_data: str, user: User):
             reply_markup=keyboard,
             caption=f"❕ Данные приведены за последние {len_active} {get_day_verbose_name(len_active)}",
         )
-        # тут я(голова) хотел написать отдельный элс для функции  if limit is None
-        # чтобы выводить Данные приведены с хх:хх:хххх 
     else:
         await bot.send_photo(chat_id=user.telegram_id, photo=map_img, reply_markup=keyboard)
 
@@ -57,12 +55,9 @@ async def send_user_graph(callback_data: str, user: User):
 
 
 def get_day_verbose_name(days: int) -> str:
-    days %= 10
-    if days == 1:
+    if days % 10 == 1 and days % 100 != 11:
         name = "день"
-    elif days == 0:
-        name = "дней"
-    elif days <= 4:
+    elif 2 <= days % 10 <= 4 and (days % 100 < 10 or days % 100 >= 20):
         name = "дня"
     else:
         name = "дней"
@@ -72,7 +67,7 @@ def get_day_verbose_name(days: int) -> str:
 @dp.message_handler(commands=["grafik"])
 @check_and_set_user
 async def grafik(message: MessageWithUser):
-    print(datetime.now(),"| ",  message.from_user.id, 'commands=["grafik"]')
+    print(datetime.now(), "| ",  message.from_user.id, 'commands=["grafik"]')
 
     default_limit = "month:1"
     await send_user_graph(callback_data=default_limit, user=message.user)
