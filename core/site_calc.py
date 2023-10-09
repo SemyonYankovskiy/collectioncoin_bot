@@ -35,8 +35,8 @@ def authorize(username, password):
             allow_redirects=False,
         )
         if resp.status_code != 302:
-            raise RequestException("неверные данные авторизации")
-        # print(resp.headers.get("Location"))
+            raise RequestException(f"Неверные данные авторизации. Status code: {resp.status_code}")
+        # Находит в строке /uid34693?v=home цифры
         user_coin_id = "".join(filter(str.isdigit, resp.headers.get("Location")))
 
         print(datetime.now(), "| ", user_coin_id, "Connected and authorize")
