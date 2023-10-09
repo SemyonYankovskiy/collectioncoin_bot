@@ -27,11 +27,9 @@ async def profile(message: MessageWithUser):
     users_list = User.get_all()
 
     for user in users_list:
-        try:
-            user_coin_id, session = authorize(user.email, user.password)
-            parsing(session, user, user_coin_id)
-        except Exception as e:
-            await message.answer(user.telegram_id, f"Что-то пошло не так {e})")
+        user_coin_id, session = authorize(user.email, user.password)
+        parsing(session, user, user_coin_id)
+
 
     user = User.get(message.from_user.id)
     message_status = f"✉️" if user.new_messages == 0 else f"📩"
