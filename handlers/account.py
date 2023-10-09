@@ -29,6 +29,7 @@ async def profile(message: MessageWithUser):
     print(users_list)
 
     for user in users_list:
+        print("for")
         user_coin_id, session = authorize(user.email, user.password)
         parsing(session, user, user_coin_id)
         print(user, session)
