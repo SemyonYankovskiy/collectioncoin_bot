@@ -23,7 +23,7 @@ def gather_graph_data(*args, **kwargs):
         total, total_count = file_opener(file_name)
         DataCoin(user.telegram_id, total, total_count).save()
         parsing(session, user, user_coin_id)
-        await asyncio.sleep(60 * 2)
+        asyncio.sleep(60 * 2)
 
 
 def gather_manager(*args):
