@@ -5,7 +5,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from core.site_calc import authorize, AuthFail, download, file_opener
+from core.site_calc import authorize, AuthFail, download, file_opener, parsing
 from core.types import MessageWithUser
 from database import User, DataCoin
 from helpers.handler_decorators import check_and_set_user
@@ -24,6 +24,15 @@ def get_user_profile_keyboard():
 @check_and_set_user
 async def profile(message: MessageWithUser):
     print(datetime.now(),"| ",  message.from_user.id, 'commands=["profile"]')
+    users_list = User.get_all()
+
+    for user in users_list:
+        try:
+            user_coin_id, session = authorize(user.email, user.password)
+            parsing(session, user, user_coin_id)
+        except Exception as e:
+            await message.answer(user.telegram_id, f"Что-то пошло не так {e})")
+
     user = User.get(message.from_user.id)
     message_status = f"✉️" if user.new_messages == 0 else f"📩"
     swap_status = f"❕" if user.new_swap == 0 else f"❗️"

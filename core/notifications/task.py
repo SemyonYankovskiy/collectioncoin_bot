@@ -33,9 +33,9 @@ async def new_notifications_checker():
             user_coin_id, session = authorize(user.email, user.password)
             try:
                 parsing(session, user, user_coin_id)
+                await check_user_notifications(user)
             except Exception as e:
                 await send_text_to_user(user.telegram_id, f"Снова наебнулись уведомления {e})")
-            await check_user_notifications(user)
             await asyncio.sleep(60 * 2)
 
-        await asyncio.sleep(60 * 15)
+        await asyncio.sleep(60 * 60)
