@@ -30,7 +30,6 @@ async def profile(message: MessageWithUser):
         user_coin_id, session = authorize(user.email, user.password)
         parsing(session, user, user_coin_id)
 
-
     user = User.get(message.from_user.id)
     message_status = f"✉️" if user.new_messages == 0 else f"📩"
     swap_status = f"❕" if user.new_swap == 0 else f"❗️"

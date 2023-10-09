@@ -34,6 +34,9 @@ def authorize(username, password):
             headers=HEADERS,
             allow_redirects=False,
         )
+        print(resp.status_code)
+        print(resp.headers.get("Location"))
+
         if resp.status_code != 302:
             raise RequestException(f"Неверные данные авторизации. Status code: {resp.status_code}")
         # Находит в строке /uid34693?v=home цифры
