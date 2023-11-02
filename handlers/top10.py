@@ -44,6 +44,7 @@ async def top10_default(message: MessageWithUser):
         keyboards = _get_top10_keyboards(active_mode=default_mode)
         await message.answer(output, reply_markup=keyboards)
     except Exception:
+        print(Exception)
         await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
 
 @dp.callback_query_handler(
