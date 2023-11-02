@@ -498,7 +498,9 @@ def get_top_10_coin(file_name, mode):
     for row in top_10.iterrows():
         desc4 = f"{row[1][4]}"  # Наименование
         desc3 = f"{row[1][3]}"  # монетный двор
-        desc10 = f"\nКомментарий: {row[1][16]}" if row[1][16] else ""  # комментарий
+        desc10 = ""
+        if len(top_10) > 16:
+            desc10 = f"\nКомментарий: {row[1][16]}" if row[1][16] else ""  # комментарий
         desc5 = f" {row[1][6]} ₽" if row[1][6] else ""  # Цена
         arr.append(
             [
