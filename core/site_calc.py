@@ -76,8 +76,13 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
     owner_dict = {
         "726837488": "СемЁн Янковский",
         "872648196": "Sizihdanil",
-        "799585824": "АлексEй",
+        "799585824": "АлексEй"
     }
+
+    # Добавить новый ключ, если он отсутствует в словаре
+    if str(telegram_id) not in owner_dict:
+        owner_dict[str(telegram_id)] = ""
+
     owner = owner_dict[str(telegram_id)]  # добавьте кавычки вокруг ключа
 
     len_active = len(DataCoin.get_for_user(telegram_id, limit))
