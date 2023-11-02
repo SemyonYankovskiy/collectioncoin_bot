@@ -43,8 +43,8 @@ async def top10_default(message: MessageWithUser):
         output = _get_top10_message_text(message.user.user_coin_id, mode=default_mode)
         keyboards = _get_top10_keyboards(active_mode=default_mode)
         await message.answer(output, reply_markup=keyboards)
-    except Exception:
-        print(Exception)
+    except Exception as exc:
+        print(exc)
         await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
 
 @dp.callback_query_handler(
