@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from aiogram.dispatcher.filters import Command
+from aiogram.dispatcher.filters import Command, Text
 
 from core.site_calc import countries, strana, func_swap, euro
 from core.types import MessageWithUser
@@ -8,7 +8,7 @@ from helpers.comands import countries_cmd
 from helpers.handler_decorators import check_and_set_user
 from settngs import dp
 
-
+@dp.message_handler(Text(equals="Страны"))
 @dp.message_handler(commands=["countries"])
 @check_and_set_user
 async def output_counties(message: MessageWithUser):

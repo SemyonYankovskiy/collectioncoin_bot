@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+from aiogram.dispatcher.filters import Text
 from aiogram.types import InputFile, InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.site_calc import get_graph
@@ -63,7 +64,7 @@ def get_day_verbose_name(days: int) -> str:
         name = "дней"
     return name
 
-
+@dp.message_handler(Text(equals="График"))
 @dp.message_handler(commands=["grafik"])
 @check_and_set_user
 async def grafik(message: MessageWithUser):

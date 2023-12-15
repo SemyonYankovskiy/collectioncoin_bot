@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+from aiogram.dispatcher.filters import Text
 from aiogram.types import InputFile, InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.map import WorldMap
@@ -43,7 +44,7 @@ async def send_user_map(location: str, user: User):
     await bot.send_photo(chat_id=user.telegram_id, photo=map_img, reply_markup=keyboard)
     os.remove(map_name)
 
-
+@dp.message_handler(Text(equals="Карта"))
 @dp.message_handler(commands=["map"])
 @check_and_set_user
 async def maps(message: MessageWithUser):
