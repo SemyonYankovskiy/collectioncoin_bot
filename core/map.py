@@ -44,6 +44,7 @@ class WorldMap:
         "Central African Rep.": ["Centr_Afrika"],
         "Chad": ["Centr_Afrika"],
         "Eq. Guinea": ["Centr_Afrika"],
+        "Kenya": ["Britan_Afrika"],
     }
 
     def __init__(self, user_coin_id: int):

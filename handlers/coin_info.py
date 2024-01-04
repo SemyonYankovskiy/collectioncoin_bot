@@ -2,6 +2,7 @@ from datetime import datetime
 
 from aiogram.dispatcher.filters import Command, Text
 
+from core.name_transformer import transformer
 from core.site_calc import countries, strana, func_swap, euro
 from core.types import MessageWithUser
 from helpers.comands import countries_cmd
@@ -45,17 +46,28 @@ async def output_counties(message: MessageWithUser):
 async def vyvod_monet(message: MessageWithUser, input_list):
     data_length = 0
     output = ""
+    output_with_header = ""
+
     for flag, nominal, year, cena, md, name, pokupka in input_list:
         part = f"{flag} {nominal} {year} {cena} {md} {name} {pokupka}\n\n"
         part_len = len(part)
         data_length += part_len
+
+        ru_name = transformer.get_rus_from_code(flag)
+        print(flag)
         if data_length > 4096:
-            await message.answer(output)  # Отправляем пользователю output.
+            if "🇪🇺" in flag:
+                flag = "🇪🇺"
+            output_with_header = f"{flag}  {ru_name}\n----------------------------------------\n" + output
+            await message.answer(output_with_header)  # Отправляем пользователю output.
             output = part
             data_length = part_len
         else:
+            if "🇪🇺" in flag:
+                flag = "🇪🇺"
             output += part
-    await message.answer(output)
+            output_with_header = f"{flag}  {ru_name}\n----------------------------------------\n" + output
+    await message.answer(output_with_header)
 
 
 @dp.message_handler(commands=["europe"])

@@ -32,6 +32,14 @@ class Transformer:
         df = pd.read_excel(self.eng_to_rus_map_file_path, header=None)
         self._eng_to_rus_map_names = df.set_index(0)[1].to_dict()
 
+    def get_rus_from_code(self, country_code: str):
+        for key, value in self._countries_codes.items():
+            if value == country_code:
+                return key
+            elif "🇪🇺" in country_code:
+                return "Евросоюз"
+        return ""
+
     def get_country_eng_short_name(self, country_name: str):
         return self._short_eng_names.get(country_name, "")
 
@@ -49,6 +57,9 @@ class Transformer:
 
     def get_country_rus_name(self, country_name: str):
         return self._rus_names.get(country_name, "")
+
+    def get_eng_from_code(self, country_code: str):
+        return self._short_eng_names.get(country_code, "")
 
 
 transformer = Transformer()

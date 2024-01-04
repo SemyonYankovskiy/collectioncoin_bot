@@ -263,5 +263,6 @@ countries_cmd = [
     "N_Yemen",
     "N_Arabia",
     "Somaliland",
-    "Centr_Afrika"
+    "Centr_Afrika",
+    "Britan_Afrika"
 ]
