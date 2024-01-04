@@ -48,25 +48,28 @@ async def vyvod_monet(message: MessageWithUser, input_list):
     output = ""
     output_with_header = ""
 
+    string_without_first_char = message.text[1:]
+    text2 = transformer.get_country_rus_name(string_without_first_char)
+
     for flag, nominal, year, cena, md, name, pokupka in input_list:
         part = f"{flag} {nominal} {year} {cena} {md} {name} {pokupka}\n\n"
         part_len = len(part)
         data_length += part_len
 
-        ru_name = transformer.get_rus_from_code(flag)
-        print(flag)
-        if data_length > 4096:
+        if data_length > 4012:
             if "🇪🇺" in flag:
                 flag = "🇪🇺"
-            output_with_header = f"{flag}  {ru_name}\n----------------------------------------\n" + output
+                text2 = "Евросоюз"
+            output_with_header = f"{flag}  {text2}\n----------------------------------------\n" + output
             await message.answer(output_with_header)  # Отправляем пользователю output.
             output = part
             data_length = part_len
         else:
             if "🇪🇺" in flag:
                 flag = "🇪🇺"
+                text2 = "Евросоюз"
             output += part
-            output_with_header = f"{flag}  {ru_name}\n----------------------------------------\n" + output
+            output_with_header = f"{flag}  {text2}\n----------------------------------------\n" + output
     await message.answer(output_with_header)
 
 
