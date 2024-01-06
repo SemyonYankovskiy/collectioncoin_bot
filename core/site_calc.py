@@ -389,18 +389,29 @@ def strana(file_name, text_in):
     #     1
     # ].to_dict()  # setting first column as index and second column as values
     text2 = transformer.get_country_rus_name(string_without_first_char)
-
     arr = []
+
+    argentina = {'A': 'ОМД: Тэджон, Южная Корея. 6-угольная звезда над датой',
+                 'B': 'ОМД: 6-гранный цветок над датой. Правильная надпись "PROVINCIAS"',
+                 'B-er': 'ОМД: 6-гранный цветок над датой. Ошибочная надпись "PROVINGIAS"',
+                 'C': 'ОМД: Париж, Франция. Ромашка с 6 лепестками над датой'}
 
     # Проходимся по строкам и суммируем значения в столбце G
     for row in ws.iter_rows(min_row=1, max_col=14):
         if row[0].value == text2:
             desc2 = f"{row[2].value}г." if row[2].value else ""
-            desc3 = (
-                f"\nРазновидность: {transformer.get_coin_difference(row[3].value)}"
-                if row[3].value
-                else ""
-            )  # монетный двор
+            if row[0].value == "Аргентина":
+                desc3 = (
+                    f"\nРазновидность: {argentina.get(row[3].value)}"
+                    if row[3].value
+                    else ""
+                )  # монетный двор
+            else:
+                desc3 = (
+                    f"\nРазновидность: {transformer.get_coin_difference(row[3].value)}"
+                    if row[3].value
+                    else ""
+                )  # монетный двор
             desc4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
             des5 = f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""  # Наименование
             arr.append(
