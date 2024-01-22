@@ -246,6 +246,7 @@ def parsing(session, user, user_coin_id):
         pattern = r'<h1 class="wrap left">(.*?)</h1>'
         user_name = str(re.search(pattern, name).group(1))
         user_name = user_name.replace(' ', '_')
+        print(user_name)
 
 
 

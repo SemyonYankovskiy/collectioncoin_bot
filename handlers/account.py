@@ -130,7 +130,7 @@ async def process_password(message: MessageWithUser, state: FSMContext):
     user.save()
 
     await bot.delete_message(message.from_user.id, message.message_id)
-
+    parsing(session, user, user_coin_id)
     await message.answer("Регистрация успешна\n" "Данные добавлены в базу")
     # сбрасываем состояние автомата
     await state.finish()

@@ -6,7 +6,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from database import db_connection
 
 
-API_TOKEN = os.getenv("TG_TOKEN")
+API_TOKEN = "6180484344:AAH0Ypqp090qja_ovPdzFwROifdyZ2CzlLI"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
