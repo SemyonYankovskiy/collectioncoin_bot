@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 from typing import List, Optional
 
@@ -224,10 +225,11 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
 def refresh(telegram_id):
     user = User.get(telegram_id)
     user_coin_id, session = authorize(user.email, user.password)
+    parsing(session, user, user_coin_id)
     file_name = download(user_coin_id, session)
     total, total_count = file_opener(file_name)
     DataCoin(user.telegram_id, total, total_count).save()
-    parsing(session, user, user_coin_id)
+
 
 
 def parsing(session, user, user_coin_id):
@@ -238,31 +240,30 @@ def parsing(session, user, user_coin_id):
             headers=HEADERS,
         )
         if response.status_code == 504:
-            print(datetime.now(), "| ", f"Парсинг сообщений - ERROR: 504")
+            print(datetime.now(), "| ", f"Парсинг - ERROR: 504")
 
         elif response.status_code != 200:
             raise AuthFail(f"Получили ответ от сервера {response.status_code}")
 
     except Exception as exc:
-    # except (RequestException, AuthFail) as exc:
-        print(datetime.now(), "| ", f"Парсинг сообщений - ERROR: {exc}")
+        print(datetime.now(), "| ", f"Парсинг - ERROR: {exc}")
 
     else:
         soup = BeautifulSoup(response.content, "html.parser")
-        results = soup.find(id="notify-popup")
+        mydivs = str(soup.find_all("a", {"class": "btn-s btn-gray"}))
+        print(mydivs)
+        swap_pattern = r'<a class="btn-s btn-gray" href="/swap-mgr".*?>Обмен.*?<span class="blue-12">\(\+(\d+)\)</span></a>'
+        message_pattern = r'<a class="btn-s btn-gray" href="/messages".*?>Сообщения.*?<span class="blue-12">\(\+(\d+)\)</span></a>'
 
-        tag_messages = results.select("a:nth-child(4) div")
-        tag_swap = results.select("a:nth-child(5) div")
+        swap_matches = re.findall(swap_pattern, mydivs)
+        message_matches = re.findall(message_pattern, mydivs)
 
-        new_messages_count = tag_messages[1].text if len(tag_messages) == 2 else "0"
-        new_swap_count = tag_swap[1].text if len(tag_swap) == 2 else "0"
-        if new_messages_count.isdigit() and new_swap_count.isdigit():
-            user.new_messages = int(new_messages_count)
-            user.new_swap = int(new_swap_count)
-            user.save()
-            print(datetime.now(), "| ", "Парсинг сообщений - Done")
-        else:
-            print(datetime.now(), "| ", "Парсинг сообщений - False")
+        swap_count = sum(int(count) for count in swap_matches)
+        message_count = sum(int(count) for count in message_matches)
+
+        user.new_messages = message_count
+        user.new_swap = swap_count
+        user.save()
 
 
 def download(user_coin_id: str, session: requests.Session):
