@@ -73,18 +73,7 @@ def get_fig_marker(data_length: int) -> str:
 
 
 def get_graph(telegram_id, limit: Optional[int] = 30):
-    # Создать словарь для замены
-    owner_dict = {
-        "726837488": "СемЁн Янковский",
-        "872648196": "Sizihdanil",
-        "799585824": "АлексEй"
-    }
-
-    # Добавить новый ключ, если он отсутствует в словаре
-    if str(telegram_id) not in owner_dict:
-        owner_dict[str(telegram_id)] = ""
-
-    owner = owner_dict[str(telegram_id)]  # добавьте кавычки вокруг ключа
+    owne1r = User.get(telegram_id)
 
     len_active = len(DataCoin.get_for_user(telegram_id, limit))
 
@@ -167,7 +156,7 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
     plt.title("Стоимость коллекции, руб")
 
     # Добавить текст на график
-    plt.text(0, 1.07, " {}".format(owner), transform=plt.gca().transAxes)
+    plt.text(0, 1.07, " {}".format(owne1r.user_name), transform=plt.gca().transAxes)
     plt.text(0, 1.05, " {}".format(date1), transform=plt.gca().transAxes)
 
     plt.text(-0.08, 1.02, "Стоимость", color="#0698FE",  transform=plt.gca().transAxes)
@@ -250,8 +239,18 @@ def parsing(session, user, user_coin_id):
 
     else:
         soup = BeautifulSoup(response.content, "html.parser")
+
+        name = str(soup.find_all("div", {"class": "name-block"}))
+
+
+        pattern = r'<h1 class="wrap left">(.*?)</h1>'
+        user_name = str(re.search(pattern, name).group(1))
+        user_name = user_name.replace(' ', '_')
+
+
+
         mydivs = str(soup.find_all("a", {"class": "btn-s btn-gray"}))
-        print(mydivs)
+
         swap_pattern = r'<a class="btn-s btn-gray" href="/swap-mgr".*?>Обмен.*?<span class="blue-12">\(\+(\d+)\)</span></a>'
         message_pattern = r'<a class="btn-s btn-gray" href="/messages".*?>Сообщения.*?<span class="blue-12">\(\+(\d+)\)</span></a>'
 
@@ -261,6 +260,7 @@ def parsing(session, user, user_coin_id):
         swap_count = sum(int(count) for count in swap_matches)
         message_count = sum(int(count) for count in message_matches)
 
+        user.user_name = user_name
         user.new_messages = message_count
         user.new_swap = swap_count
         user.save()

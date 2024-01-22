@@ -17,6 +17,7 @@ class Database:
                             user_coin_id TEXT DEFAULT NULL,
                             new_messages INTEGER DEFAULT NULL,
                             new_swap INTEGER DEFAULT NULL,
+                            user_name TEXT DEFAULT NULL,
                             map_color_schema VARCHAR(50) DEFAULT '{user_default_color_schema}');"""
         )
         self.cursor.execute(

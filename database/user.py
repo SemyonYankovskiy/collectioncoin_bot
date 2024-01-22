@@ -14,6 +14,7 @@ class User:
         user_coin_id=None,
         new_messages=None,
         new_swap=None,
+        user_name = None,
         map_color_schema=None,
     ):
         self.telegram_id = telegram_id
@@ -22,6 +23,7 @@ class User:
         self.user_coin_id = user_coin_id
         self.new_messages = new_messages
         self.new_swap = new_swap
+        self.user_name = user_name
         self.map_color_schema = map_color_schema or user_default_color_schema
 
     def save(self):
@@ -29,12 +31,12 @@ class User:
             db.cursor.execute(
                 f"""INSERT INTO users 
                     (
-                        tg_id, email, password, user_coin_id, new_messages, new_swap, map_color_schema
+                        tg_id, email, password, user_coin_id, new_messages, new_swap, user_name, map_color_schema
                     ) 
                     VALUES 
                     (
                         '{self.telegram_id}', '{self.email}', '{self.password}', '{self.user_coin_id}',
-                        {self.new_messages or 0}, {self.new_swap or 0}, '{self.map_color_schema}'
+                        '{self.new_messages or 0}', '{self.new_swap or 0}', '{self.user_name}', '{self.map_color_schema}'
                     )"""
             )
             db.conn.commit()
@@ -44,11 +46,11 @@ class User:
             db.cursor.execute(
                 f"""UPDATE users SET 
                     ( 
-                      email, password, user_coin_id, new_messages, new_swap, map_color_schema 
+                      email, password, user_coin_id, new_messages, new_swap, user_name, map_color_schema 
                     ) = 
                     (
-                      '{self.email}', '{self.password}', '{self.user_coin_id}', {self.new_messages},
-                       {self.new_swap}, '{self.map_color_schema}'
+                      '{self.email}', '{self.password}', '{self.user_coin_id}', '{self.new_messages}',
+                       '{self.new_swap}', '{self.user_name}', '{self.map_color_schema}'
                     )
                       WHERE tg_id = {self.telegram_id};"""
             )
