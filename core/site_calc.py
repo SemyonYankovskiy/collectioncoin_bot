@@ -239,17 +239,6 @@ def parsing(session, user, user_coin_id):
 
     else:
         soup = BeautifulSoup(response.content, "html.parser")
-
-        name = str(soup.find_all("div", {"class": "name-block"}))
-
-
-        pattern = r'<h1 class="wrap left">(.*?)</h1>'
-        user_name = str(re.search(pattern, name).group(1))
-        user_name = user_name.replace(' ', '_')
-        print(user_name)
-
-
-
         mydivs = str(soup.find_all("a", {"class": "btn-s btn-gray"}))
 
         swap_pattern = r'<a class="btn-s btn-gray" href="/swap-mgr".*?>Обмен.*?<span class="blue-12">\(\+(\d+)\)</span></a>'
@@ -261,7 +250,9 @@ def parsing(session, user, user_coin_id):
         swap_count = sum(int(count) for count in swap_matches)
         message_count = sum(int(count) for count in message_matches)
 
-        user.user_name = user_name
+
+
+        user.last_refresh = datetime.now().strftime("%d.%m.%Y %H:%M")
         user.new_messages = message_count
         user.new_swap = swap_count
         user.save()

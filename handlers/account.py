@@ -1,9 +1,11 @@
+import re
 from datetime import datetime
 
 import emoji
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from bs4 import BeautifulSoup
 
 from core.site_calc import authorize, AuthFail, download, file_opener, parsing
 from core.types import MessageWithUser
@@ -31,12 +33,14 @@ async def profile(message: MessageWithUser):
     user = User.get(message.from_user.id)
     message_status = f"✉️" if user.new_messages == 0 else f"📩"
     swap_status = f"❕" if user.new_swap == 0 else f"❗️"
+    last_refresh = user.last_refresh
 
     keyboard = get_user_profile_keyboard()
 
     await message.answer(
         f'<a href="https://ru.ucoin.net/uid{message.user.user_coin_id}?v=home">👤 Профиль</a>\n'
-        f"{message_status} Новые сообщения {user.new_messages} \n{swap_status} Предложения обмена {user.new_swap}",
+        f"{message_status} Новые сообщения {user.new_messages} \n{swap_status} Предложения обмена {user.new_swap}"
+        f"\n🕓 Последнее обновление: {last_refresh}",
         parse_mode="HTML",
         reply_markup=keyboard,
     )
@@ -105,20 +109,44 @@ async def process_password(message: MessageWithUser, state: FSMContext):
     try:
         # Пытаемся по введенным данным от пользователя зайти на сайт
         user_coin_id, session = authorize(user_email, user_password)
+
+
+        HEADERS = {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 "
+                          "YaBrowser/23.3.0.2246 Yowser/2.5 Safari/537.36"
+        }
+
+        response = session.get(
+            url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
+            headers=HEADERS,
+        )
+        if response.status_code == 504:
+            print(datetime.now(), "| ", f"Парсинг - ERROR: 504")
+        elif response.status_code != 200:
+            raise AuthFail(f"Получили ответ от сервера {response.status_code}")
+    # Перехватываем ошибку
+    except AuthFail as e:
+        # Если данные неверные, то просим его ввести их снова
+        await Form.email.set()  # Заново будем запрашивать email
+        await message.answer(
+            f"Ошибка {e} \n"
+            f"Возможно неправильный email или пароль \n")
+        await message.answer(
+            f"Повторная попытка регистрации \n"
+            f"\nВведите email \n________________________ \nИли нажмите /EXIT"
+        )
+        return
+    else:
+        #если всё ок - собираем данные
         file_name = download(user_coin_id, session)
         total, total_count = file_opener(file_name)
         DataCoin.init_new_user(message.from_user.id, total, total_count)
 
-    # Перехватываем ошибку
-    except AuthFail:
-        # Если данные неверные, то просим его ввести их снова
-        await Form.email.set()  # Заново будем запрашивать email
-        await message.answer(
-            f"Неправильный email или пароль \n"
-            f"\nВведи правильный email \n________________________ \nИли жми /EXIT"
-        )
-
-        return  # Выходим из данной функции
+        soup = BeautifulSoup(response.content, "html.parser")
+        name = str(soup.find_all("div", {"class": "name-block"}))
+        pattern = r'<h1 class="wrap left">(.*?)</h1>'
+        user_name = str(re.search(pattern, name).group(1))
+        user_name = user_name.replace(' ', '_')
 
     # Если данные были верные, то записываем в базу пользователя
     user = User(
@@ -126,11 +154,11 @@ async def process_password(message: MessageWithUser, state: FSMContext):
         email=user_email,
         password=user_password,
         user_coin_id=user_coin_id,
+        user_name=user_name,
     )
     user.save()
 
     await bot.delete_message(message.from_user.id, message.message_id)
-    parsing(session, user, user_coin_id)
     await message.answer("Регистрация успешна\n" "Данные добавлены в базу")
     # сбрасываем состояние автомата
     await state.finish()

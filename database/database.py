@@ -18,7 +18,8 @@ class Database:
                             new_messages INTEGER DEFAULT NULL,
                             new_swap INTEGER DEFAULT NULL,
                             user_name TEXT DEFAULT NULL,
-                            map_color_schema VARCHAR(50) DEFAULT '{user_default_color_schema}');"""
+                            map_color_schema VARCHAR(50) DEFAULT '{user_default_color_schema}',
+                            last_refresh TEXT DEFAULT NULL);"""
         )
         self.cursor.execute(
             """CREATE TABLE IF NOT EXISTS graph_data
