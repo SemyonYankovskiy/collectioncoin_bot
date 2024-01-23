@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 
 import emoji
@@ -31,13 +32,20 @@ async def send_text_to_user(user: User, text: str):
 @dp.message_handler(commands=["summ"])
 @check_and_set_user
 async def summ(message: MessageWithUser):
+    if random.random()<0.5:
+        await message.answer(emoji.emojize(":coin:"))
+    await _summ(message)
+
+
+@check_and_set_user
+async def _summ(message: MessageWithUser):
     print(datetime.now(),"| USER:", message.from_user.id, 'commands=["summ"]')
 
     coin_st = DataCoin.get_for_user(message.from_user.id, limit=1)
     # обращаемся к функции more info, передаем в эту функциию значение переменной (значение из 4 столбца массива)
     try:
         lot, count, sold = more_info(f"./users_files/{message.user.user_coin_id}_.xlsx")
-        await message.answer(emoji.emojize(":coin:"))
+
         await message.answer(
             f"Количество монет {lot} \n"
             f"Количество стран {count} \n\n"

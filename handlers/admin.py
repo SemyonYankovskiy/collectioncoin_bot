@@ -4,7 +4,7 @@ from core.types import MessageWithUser
 from handlers import profile
 from handlers.graph import grafik
 from handlers.map import maps
-from handlers.services import refresh_data, summ
+from handlers.services import refresh_data, summ, _summ
 from helpers.handler_decorators import check_and_set_user
 from settngs import dp
 
@@ -13,8 +13,8 @@ from settngs import dp
 @check_and_set_user
 async def all_(message: MessageWithUser):
     print(datetime.now(),"| ",  message.from_user.id, 'commands=["all"]')
-    await refresh_data(message)
+    # await refresh_data(message)
     await profile(message)
-    await summ(message)
+    await _summ(message)
     await grafik(message)
-    await maps(message)
+
