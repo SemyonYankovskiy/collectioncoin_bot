@@ -32,8 +32,8 @@ async def send_text_to_user(user: User, text: str):
 @dp.message_handler(commands=["summ"])
 @check_and_set_user
 async def summ(message: MessageWithUser):
-    if random.random()<0.5:
-        await message.answer(emoji.emojize(":coin:"))
+
+    await message.answer(emoji.emojize(":coin:"))
     await _summ(message)
 
 

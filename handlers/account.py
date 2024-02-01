@@ -26,9 +26,9 @@ def get_user_profile_keyboard():
 @check_and_set_user
 async def profile(message: MessageWithUser):
     print(datetime.now(),"| ",  message.from_user.id, 'commands=["profile"]')
-    # user = User.get(message.from_user.id)
-    # user_coin_id, session = authorize(user.email, user.password)
-    # parsing(session, user, user_coin_id)
+    user = User.get(message.from_user.id)
+    user_coin_id, session = authorize(user.email, user.password)
+    parsing(session, user, user_coin_id)
 
     user = User.get(message.from_user.id)
     message_status = f"✉️" if user.new_messages == 0 else f"📩"
