@@ -51,8 +51,8 @@ async def vyvod_monet(message: MessageWithUser, input_list):
     string_without_first_char = message.text[1:]
     text2 = transformer.get_country_rus_name(string_without_first_char)
 
-    for flag, nominal, year, cena, md, name, pokupka in input_list:
-        part = f"{flag} {nominal} {year} {cena} {md} {name} {pokupka}\n\n"
+    for flag, nominal, year, cena, md, name, pokupka, kommentariy in input_list:
+        part = f"{flag} {nominal} {year} {cena} {md} {name} {pokupka} {kommentariy}\n\n"
         part_len = len(part)
         data_length += part_len
 
