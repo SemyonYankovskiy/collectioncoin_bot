@@ -9,6 +9,7 @@ from helpers.comands import countries_cmd
 from helpers.handler_decorators import check_and_set_user
 from settngs import dp
 
+
 @dp.message_handler(Text(equals="Страны"))
 @dp.message_handler(commands=["countries"])
 @check_and_set_user

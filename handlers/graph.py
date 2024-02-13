@@ -64,6 +64,7 @@ def get_day_verbose_name(days: int) -> str:
         name = "дней"
     return name
 
+
 @dp.message_handler(Text(equals="График"))
 @dp.message_handler(commands=["grafik"])
 @check_and_set_user

@@ -58,7 +58,7 @@ def authorize(username, password):
         # Находит в строке /uid34693?v=home цифры
         user_coin_id = "".join(filter(str.isdigit, resp.headers.get("Location")))
 
-        print(datetime.now(), "| ", username, f"UserCoinId=[{user_coin_id}]","Connected and authorize")
+        print(datetime.now(), "| ", username, f"UserCoinId=[{user_coin_id}]", "Connected and authorize")
         return user_coin_id, session
 
 

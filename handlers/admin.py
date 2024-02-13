@@ -5,7 +5,7 @@ from handlers import profile
 from handlers.graph import grafik
 from handlers.services import _summ, send_message_to_user
 from helpers.handler_decorators import check_and_set_user
-from settngs import dp, bot
+from settngs import dp
 from database import User
 
 

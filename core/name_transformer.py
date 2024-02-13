@@ -8,7 +8,6 @@ class Transformer:
     eng_to_rus_map_file_path = "./config/EngmaptoRu.xlsx"
     coin_difference_file_path = "./config/diff.xlsx"
 
-
     def __init__(self):
         # Короткие названия стран на англ, для команд бота
         df = pd.read_excel(self.ru_to_short_eng_file_path, header=None)  # assuming no header

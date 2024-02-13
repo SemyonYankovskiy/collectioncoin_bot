@@ -131,7 +131,6 @@ class WorldMap:
             axis.set_ylim([-0.8 * 10**7, 1.9 * 10**7])
         elif location == "Europe":
             axis.set_xlim([-0.42 * 10**7, 0.6 * 10**7])
-            #axis.set_ylim([0.36 * 10 ** 7, 1.25 * 10 ** 7])
             axis.set_ylim([0.36 * 10**7, 1.01 * 10**7])
             self.need_to_add_counties_names_on_map = True
         elif location == "South_America":
