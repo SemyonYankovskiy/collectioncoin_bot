@@ -1,3 +1,4 @@
+import random
 import re
 from datetime import datetime
 
@@ -7,7 +8,7 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from bs4 import BeautifulSoup
 
-from core.site_calc import authorize, AuthFail, download, file_opener, parsing
+from core.site_calc import authorize, AuthFail, download, file_opener
 from core.types import MessageWithUser
 from database import User, DataCoin
 from helpers.handler_decorators import check_and_set_user
@@ -25,10 +26,7 @@ def get_user_profile_keyboard():
 @dp.message_handler(commands=["profile"])
 @check_and_set_user
 async def profile(message: MessageWithUser):
-    print(datetime.now(),"| ",  message.from_user.id, 'commands=["profile"]')
-    user = User.get(message.from_user.id)
-    user_coin_id, session = authorize(user.email, user.password)
-    parsing(session, user, user_coin_id)
+    print(datetime.now(), "| ",  message.from_user.id, 'commands=["profile"]')
 
     user = User.get(message.from_user.id)
     message_status = f"✉️" if user.new_messages == 0 else f"📩"
@@ -54,9 +52,9 @@ class Form(StatesGroup):
 
 @dp.message_handler(commands=["reg"])
 async def reg_welcome(message: MessageWithUser):
-    print(datetime.now(),"| ",  message.from_user.id, 'commands=["reg"]')
+    print(datetime.now(), "| ",  message.from_user.id, 'commands=["reg"]')
     # Проверка пользователя в БД, чтобы исключить регистрацию с 1 аккаунта телеграм, если всё ок, устанавливаем
-    # конечный автомат в состояние email чтобы попасть в функцию process_email
+    # конечный автомат в состояние email, чтобы попасть в функцию process_email
     if User.get(tg_id=message.from_user.id) is None:
         await message.answer("Фиксирую. Вводи email \n________________________ \nИли жми /EXIT")
         await message.answer(emoji.emojize(":monkey_face:"))
@@ -110,15 +108,24 @@ async def process_password(message: MessageWithUser, state: FSMContext):
         # Пытаемся по введенным данным от пользователя зайти на сайт
         user_coin_id, session = authorize(user_email, user_password)
 
-
-        HEADERS = {
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 "
-                          "YaBrowser/23.3.0.2246 Yowser/2.5 Safari/537.36"
-        }
+        HEADERS = [
+            "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+            "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+            "Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/121.0",
+            "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:109.0) Gecko/20100101 Firefox/121.0",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0",
+            "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.43 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 OPR/106.0.0.0",
+            "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.43 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 OPR/106.0.0.0",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.43 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 OPR/106.0.0.0",
+        ]
 
         response = session.get(
             url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
-            headers=HEADERS,
+            headers={"user-agent": random.choice(HEADERS)},
         )
         if response.status_code == 504:
             print(datetime.now(), "| ", f"Парсинг - ERROR: 504")
@@ -137,7 +144,7 @@ async def process_password(message: MessageWithUser, state: FSMContext):
         )
         return
     else:
-        #если всё ок - собираем данные
+        # если всё ок - собираем данные
         file_name = download(user_coin_id, session)
         total, total_count = file_opener(file_name)
         DataCoin.init_new_user(message.from_user.id, total, total_count)
@@ -172,7 +179,7 @@ class DeleteForm(StatesGroup):
 @dp.message_handler(commands=["delete"])
 @check_and_set_user
 async def delete1(message: MessageWithUser):
-    print(datetime.now(),"| ",  message.from_user.id, 'commands=["delete"]')
+    print(datetime.now(), "| ",  message.from_user.id, 'commands=["delete"]')
 
     await DeleteForm.confirm_delete.set()
     await message.answer(

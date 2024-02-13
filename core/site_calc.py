@@ -39,6 +39,7 @@ HEADERS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.43 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 OPR/106.0.0.0",
 ]
 
+
 def authorize(username, password):
     # Создаем сессию для сохранения куки
     with requests.Session() as session:
@@ -57,7 +58,7 @@ def authorize(username, password):
         # Находит в строке /uid34693?v=home цифры
         user_coin_id = "".join(filter(str.isdigit, resp.headers.get("Location")))
 
-        print(datetime.now(), "| ", user_coin_id, "Connected and authorize")
+        print(datetime.now(), "| ", username, f"UserCoinId=[{user_coin_id}]","Connected and authorize")
         return user_coin_id, session
 
 
@@ -141,7 +142,7 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
         marker=get_fig_marker(data_length),
         markersize=3,
         color='#30BA8F',
-        linewidth = 0.7
+        linewidth=0.7
     )
 
     filtered_sum = [x for x in graph_sum if x is not None]  # filtered_sum равно [10, 20, 40, 50]
@@ -160,7 +161,6 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
     y_min = min_count - 2
     y_max = min_count + raznica+2
     ax2.set_ylim(y_min, y_max)
-
 
     date_without_year = list(map(lambda value: get_date_annotation(value, data_length), graph_date))
 
@@ -234,7 +234,6 @@ def refresh(telegram_id):
     DataCoin(user.telegram_id, total, total_count).save()
 
 
-
 def parsing(session, user, user_coin_id):
     print(datetime.now(), "| ", "Start parsing")
     try:
@@ -264,12 +263,11 @@ def parsing(session, user, user_coin_id):
         swap_count = sum(int(count) for count in swap_matches)
         message_count = sum(int(count) for count in message_matches)
 
-
-
         user.last_refresh = datetime.now().strftime("%d.%m.%Y %H:%M")
         user.new_messages = message_count
         user.new_swap = swap_count
         user.save()
+        print(datetime.now(), "| ", f"Спарсил данные для {user.email}")
 
 
 def download(user_coin_id: str, session: requests.Session):
@@ -378,7 +376,7 @@ def euro(file_name):
                     des3,  # монетный двор
                     des4,  # Наименование
                     des5,  # покупка
-                    des6, #комменатрий
+                    des6,  # комментарий
                 ]
             )
 
@@ -439,7 +437,6 @@ def strana(file_name, text_in):
                     des6,
                 ]
             )
-
 
     return arr
 

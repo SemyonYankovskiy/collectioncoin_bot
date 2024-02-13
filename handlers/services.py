@@ -1,8 +1,7 @@
-import random
+import asyncio
 from datetime import datetime
-
+from aiogram.utils import exceptions
 import emoji
-
 from core.site_calc import more_info, refresh
 from core.types import MessageWithUser
 from database import DataCoin, User
@@ -15,7 +14,7 @@ from settngs import dp, bot
 @check_and_set_user
 @rate_limit(600)
 async def refresh_data(message: MessageWithUser):
-    print(datetime.now(),"| USER:", message.from_user.id, 'commands=["refresh"]')
+    print(datetime.now(), "| USER:", message.from_user.id, 'commands=["refresh"]')
 
     """Функция принудительного обновления"""
 
@@ -25,8 +24,27 @@ async def refresh_data(message: MessageWithUser):
     await message.answer("База данных успешно обновлена")
 
 
-async def send_text_to_user(user: User, text: str):
-    await bot.send_message(user.telegram_id, text)
+# Вспомогательная функция для безопасной отправки сообщения
+async def send_message_to_user(user_id: int, text: str, disable_notification: bool = False) -> bool:
+    user = User.get(user_id)
+    try:
+        await bot.send_message(user_id, text, disable_notification=disable_notification)
+    except exceptions.BotBlocked:
+        print(datetime.now(), "| ", f"Пользователь [ID:{user.email}] заблокировал бота")
+    except exceptions.ChatNotFound:
+        print(datetime.now(), "| ", f"Неверный ID пользователя [ID:{user.email}]")
+    except exceptions.RetryAfter as e:
+        print(datetime.now(), "| ", f"Превышен лимит отправки сообщений для [ID:{user.email}]. Жди {e.timeout} сек.")
+        await asyncio.sleep(e.timeout)
+        return await send_message_to_user(user_id, text)
+    except exceptions.UserDeactivated:
+        print(datetime.now(), "| ", f"Пользователь [ID:{user.email}] деактивирован")
+    except exceptions.TelegramAPIError:
+        print(datetime.now(), "| ", f"Не удалось отправить сообщение пользователю [ID:{user.email}]")
+    else:
+        print(datetime.now(), "| ", f"Сообщение успешно отправлено пользователю [ID:{user.email}]")
+        return True
+    return False
 
 
 @dp.message_handler(commands=["summ"])
@@ -39,7 +57,7 @@ async def summ(message: MessageWithUser):
 
 @check_and_set_user
 async def _summ(message: MessageWithUser):
-    print(datetime.now(),"| USER:", message.from_user.id, 'commands=["summ"]')
+    print(datetime.now(), "| USER:", message.from_user.id, 'commands=["summ"]')
 
     coin_st = DataCoin.get_for_user(message.from_user.id, limit=1)
     # обращаемся к функции more info, передаем в эту функциию значение переменной (значение из 4 столбца массива)
