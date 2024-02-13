@@ -79,3 +79,23 @@ class DataCoin:
         db.cursor.execute(f"DELETE FROM graph_data WHERE tg_id='{tg_id}'")
         db.conn.commit()
         print(datetime.now(), "| ", f"User {tg_id} removed successfully!")
+
+    @staticmethod
+    def check_graph_data():
+        # Получение текущей даты и времени
+        now = datetime.now()
+
+        # Преобразование в строку с нужным форматом
+        formatted_datetime_now = now.strftime('%Y.%m.%d')
+
+        query = f"SELECT EXISTS (SELECT 1 FROM graph_data WHERE datetime = '{formatted_datetime_now}')"
+
+        db.cursor.execute(query)
+        result = db.cursor.fetchone()[0]
+
+        if result:
+            print("Проверяю есть ли запись в БД - ЗАПИСЬ СУЩЕСТВУЕТ")
+            return True
+        else:
+            print("Проверяю есть ли запись в БД - Запись сегодня отсутствует")
+            return False

@@ -1,3 +1,4 @@
+import random
 import re
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -19,11 +20,24 @@ class AuthFail(Exception):
     pass
 
 
-HEADERS = {
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 "
-    "YaBrowser/23.3.0.2246 Yowser/2.5 Safari/537.36"
-}
-
+# HEADERS = {
+#     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 "
+#     "YaBrowser/23.3.0.2246 Yowser/2.5 Safari/537.36"
+# }
+HEADERS = [
+    "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+    "Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/121.0",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:109.0) Gecko/20100101 Firefox/121.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0",
+    "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.43 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 OPR/106.0.0.0",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.43 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 OPR/106.0.0.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.43 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 OPR/106.0.0.0",
+]
 
 def authorize(username, password):
     # Создаем сессию для сохранения куки
@@ -32,7 +46,7 @@ def authorize(username, password):
         resp = session.post(
             "https://ru.ucoin.net/login",
             data={"email": username, "passwd": password, "remember": 1},
-            headers=HEADERS,
+            headers={"user-agent": random.choice(HEADERS)},
             allow_redirects=False,
         )
         print(resp.status_code)
@@ -226,7 +240,7 @@ def parsing(session, user, user_coin_id):
     try:
         response = session.get(
             url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
-            headers=HEADERS,
+            headers={"user-agent": random.choice(HEADERS)},
         )
         if response.status_code == 504:
             print(datetime.now(), "| ", f"Парсинг - ERROR: 504")
@@ -263,7 +277,7 @@ def download(user_coin_id: str, session: requests.Session):
     response = session.get(
         # URL файла, который нужно скачать
         url=f"https://ru.ucoin.net/uid{user_coin_id}?export=xls",
-        headers=HEADERS,
+        headers={"user-agent": random.choice(HEADERS)},
     )
 
     # Имя файла, в который нужно сохранить содержимое
@@ -274,7 +288,7 @@ def download(user_coin_id: str, session: requests.Session):
     response2 = session.get(
         # URL файла, который нужно скачать
         url=f"https://ru.ucoin.net/swap-list/?uid={user_coin_id}&export=xls",
-        headers=HEADERS,
+        headers={"user-agent": random.choice(HEADERS)},
     )
     # Имя файла, в который нужно сохранить содержимое
     file_name2 = f"./users_files/{user_coin_id}_SWAP.xlsx"
