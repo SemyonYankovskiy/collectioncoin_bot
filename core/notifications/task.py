@@ -56,7 +56,7 @@ async def new_notifications_checker():
                 await check_user_notifications(user)
         except requests.exceptions.ConnectionError as e:
             await send_message_to_user(726837488, f"Снова наебнулись уведомления {e})")
-        await asyncio.sleep(random.randint(60, 120))
+        await asyncio.sleep(random.randint(60, 180))
 
 
 async def notifications_checker():
@@ -71,4 +71,4 @@ async def notifications_checker():
             # Повторная попытка выполнения функции через некоторое время
             await asyncio.sleep(5)  # Подождать 5 секунд перед повторной попыткой
             await new_notifications_checker()
-        await asyncio.sleep(60 * 5)  # Время между проверками новых сообщений, в т.ч. парсинга, шоб не ддосить сайт
+        await asyncio.sleep(60 * 10)  # Время между проверками новых сообщений, в т.ч. парсинга, шоб не ддосить сайт
