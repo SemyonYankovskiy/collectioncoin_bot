@@ -21,6 +21,7 @@ async def gather_graph_data():
         file_name = download(user_coin_id, session)
         total, total_count = file_opener(file_name)
         DataCoin(user.telegram_id, total, total_count).save()
+        await asyncio.sleep(60)
 
     if not DataCoin.check_graph_data():
         await send_message_to_user(726837488, "Нет сегодняшней записи в БД")

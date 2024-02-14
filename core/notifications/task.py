@@ -71,4 +71,4 @@ async def notifications_checker():
             # Повторная попытка выполнения функции через некоторое время
             await asyncio.sleep(5)  # Подождать 5 секунд перед повторной попыткой
             await new_notifications_checker()
-        await asyncio.sleep(60 * 10)  # Время между проверками новых сообщений, в т.ч. парсинга, шоб не ддосить сайт
+        await asyncio.sleep(random.randint(60*10, 60*15)) # Время между проверками новых сообщений, в т.ч. парсинга, шоб не ддосить сайт
