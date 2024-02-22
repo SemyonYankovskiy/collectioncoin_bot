@@ -30,19 +30,19 @@ async def send_message_to_user(user_id: int, text: str, disable_notification: bo
     try:
         await bot.send_message(user_id, text, disable_notification=disable_notification)
     except exceptions.BotBlocked:
-        print(datetime.now(), "| ", f"Пользователь [ID:{user.email}] заблокировал бота")
+        print(datetime.now(), "| ", f"Пользователь [{user.email}] заблокировал бота")
     except exceptions.ChatNotFound:
-        print(datetime.now(), "| ", f"Неверный ID пользователя [ID:{user.email}]")
+        print(datetime.now(), "| ", f"Неверный ID пользователя [{user.email}]")
     except exceptions.RetryAfter as e:
-        print(datetime.now(), "| ", f"Превышен лимит отправки сообщений для [ID:{user.email}]. Жди {e.timeout} сек.")
+        print(datetime.now(), "| ", f"Превышен лимит отправки сообщений для [{user.email}]. Жди {e.timeout} сек.")
         await asyncio.sleep(e.timeout)
         return await send_message_to_user(user_id, text)
     except exceptions.UserDeactivated:
-        print(datetime.now(), "| ", f"Пользователь [ID:{user.email}] деактивирован")
+        print(datetime.now(), "| ", f"Пользователь [{user.email}] деактивирован")
     except exceptions.TelegramAPIError:
-        print(datetime.now(), "| ", f"Не удалось отправить сообщение пользователю [ID:{user.email}]")
+        print(datetime.now(), "| ", f"Не удалось отправить сообщение пользователю [{user.email}]")
     else:
-        print(datetime.now(), "| ", f"Сообщение успешно отправлено пользователю [ID:{user.email}]")
+        print(datetime.now(), "| ", f"Сообщение успешно отправлено пользователю [{user.email}]")
         return True
     return False
 

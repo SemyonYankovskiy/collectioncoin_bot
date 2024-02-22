@@ -30,7 +30,7 @@ async def main():
     await asyncio.gather(
         on_startup(dp),
         gather_manager(),
-        notifications_checker()
+        #notifications_checker()
     )
 
 if __name__ == "__main__":

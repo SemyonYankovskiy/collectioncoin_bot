@@ -86,16 +86,23 @@ class DataCoin:
         now = datetime.now()
 
         # Преобразование в строку с нужным форматом
-        formatted_datetime_now = now.strftime('%Y.%m.%d')
+        formatted_date_now = now.strftime('%Y.%m.%d')
 
-        query = f"SELECT EXISTS (SELECT 1 FROM graph_data WHERE datetime = '{formatted_datetime_now}')"
+        # Получение всех пользователей из базы данных
+        query_users = "SELECT DISTINCT tg_id FROM graph_data"
+        db.cursor.execute(query_users)
+        users = db.cursor.fetchall()
 
-        db.cursor.execute(query)
-        result = db.cursor.fetchone()[0]
+        res = ""
 
-        if result:
-            print("Проверяю есть ли запись в БД - ЗАПИСЬ СУЩЕСТВУЕТ")
-            return True
-        else:
-            print("Проверяю есть ли запись в БД - Запись сегодня отсутствует")
-            return False
+        for user in users:
+            user_id = user[0]
+            query = f"SELECT EXISTS (SELECT 1 FROM graph_data WHERE datetime = '{formatted_date_now}' AND tg_id = '{user_id}')"
+            db.cursor.execute(query)
+            result = db.cursor.fetchone()[0]
+
+            if not result:
+                res += f"Запись для пользователя {user_id} сегодня отсутствует\n"
+        if res != "":
+            return res
+        return "Для всех пользователей запись в БД сегодня существует"
