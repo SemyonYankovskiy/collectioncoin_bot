@@ -102,7 +102,7 @@ class DataCoin:
             result = db.cursor.fetchone()[0]
 
             if not result:
-                res += f"Запись для пользователя {user_id} сегодня отсутствует\n"
+                res += f"Запись для пользователя `{user_id}` сегодня отсутствует\n"
         if res != "":
             return res
         return "Для всех пользователей запись в БД сегодня существует"
