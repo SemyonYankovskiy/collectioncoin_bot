@@ -28,7 +28,7 @@ async def refresh_data(message: MessageWithUser):
 async def send_message_to_user(user_id: int, text: str, disable_notification: bool = False) -> bool:
     user = User.get(user_id)
     try:
-        await bot.send_message(user_id, text, disable_notification=disable_notification)
+        await bot.send_message(user_id, text, disable_notification=disable_notification, parse_mode="MARKDOWN")
     except exceptions.BotBlocked:
         print(datetime.now(), "| ", f"Пользователь [{user.email}] заблокировал бота")
     except exceptions.ChatNotFound:

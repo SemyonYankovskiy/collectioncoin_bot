@@ -3,7 +3,7 @@ from datetime import datetime
 from core.types import MessageWithUser
 from handlers import profile
 from handlers.graph import grafik
-from handlers.services import _summ, send_message_to_user
+from handlers.services import _summ, send_message_to_user, refresh_data
 from helpers.handler_decorators import check_and_set_user
 from helpers.limiter import rate_limit
 from settngs import dp
@@ -11,10 +11,13 @@ from database import User
 
 
 @dp.message_handler(commands=["all"])
-@check_and_set_user
 async def all_(message: MessageWithUser):
+    if message.from_user.id != "726837488":
+        await message.answer("Сложно непонятно говоришь")
+        await message.answer("⬇️ Доступные команды")
+
     print(datetime.now(), "| ",  message.from_user.id, 'commands=["all"]')
-    # await refresh_data(message)
+    await refresh_data(message)
     await profile(message)
     await _summ(message)
     await grafik(message)
@@ -31,9 +34,12 @@ async def send_to_all_users(message_text="Бот был перезагружен
 
 
 @dp.message_handler(commands=["m"])
-@check_and_set_user
 @rate_limit(600)
 async def from_user_to_user(message: MessageWithUser):
+    if message.from_user.id != "726837488":
+        await message.answer("Сложно непонятно говоришь")
+        await message.answer("⬇️ Доступные команды")
+
     # Получаем аргументы из сообщения пользователя
     args = message.get_args().split(maxsplit=1)
     if len(args) != 2:

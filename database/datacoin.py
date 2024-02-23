@@ -96,6 +96,7 @@ class DataCoin:
         res = ""
 
         for user in users:
+            print(user)
             user_id = user[0]
             query = f"SELECT EXISTS (SELECT 1 FROM graph_data WHERE datetime = '{formatted_date_now}' AND tg_id = '{user_id}')"
             db.cursor.execute(query)
@@ -103,6 +104,7 @@ class DataCoin:
 
             if not result:
                 res += f"Запись для пользователя `{user_id}` сегодня отсутствует\n"
+
         if res != "":
             return res
         return "Для всех пользователей запись в БД сегодня существует"

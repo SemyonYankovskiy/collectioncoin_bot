@@ -15,21 +15,32 @@ async def gather_graph_data():
     users_list = User.get_all()
     print(datetime.now(), "| ", "Start gather update")
 
-    for user in users_list:
-        user_coin_id, session = authorize(user.email, user.password)
-        parsing(session, user, user_coin_id)
-        file_name = download(user_coin_id, session)
-        total, total_count = file_opener(file_name)
-        DataCoin(user.telegram_id, total, total_count).save()
-        await asyncio.sleep(60)
-    check = DataCoin.check_graph_data()
-    if check != "Для всех пользователей запись в БД сегодня существует":
-        await send_message_to_user(726837488, "❌ Нет данных\n", check)
+    check = "Заебало, не работает"
+
+    for i in range(3):
+        print(f"{i+1} check")
+        for user in users_list:
+            # user_coin_id, session = authorize(user.email, user.password)
+            # parsing(session, user, user_coin_id)
+            # file_name = download(user_coin_id, session)
+            # total, total_count = file_opener(file_name)
+            # DataCoin(user.telegram_id, total, total_count).save()
+            # await asyncio.sleep(60)
+            print(f"do something for {user}")
+
+        check = DataCoin.check_graph_data()
+
+        if check == "Для всех пользователей запись в БД сегодня существует":
+            break
+        await asyncio.sleep(5 if i == 0 else 10)  # задержка 5 минут первый раз, затем 10 минут
+
+    else:
+        await send_message_to_user(726837488, f"❌ Нет данных\n{check}")
 
 
 async def gather_manager():
     print(datetime.now(), "| ", "Start gather manager")
-    schedule.every().day.at("07:00").do(lambda: asyncio.create_task(gather_graph_data()))
+    schedule.every().day.at("12:52").do(lambda: asyncio.create_task(gather_graph_data()))
     while True:
         schedule.run_pending()
         await asyncio.sleep(1)
