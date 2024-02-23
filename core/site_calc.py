@@ -50,8 +50,8 @@ def authorize(username, password):
             headers={"user-agent": random.choice(HEADERS)},
             allow_redirects=False,
         )
-        print(resp.status_code)
-        print(resp.headers.get("Location"))
+        print(datetime.now(), "| ", "Код ответа от сайта: ", resp.status_code)
+        # print(datetime.now(), "| ", "С", resp.headers.get("Location"))
 
         if resp.status_code != 302:
             raise RequestException(f"Неверные данные авторизации. Status code: {resp.status_code}")

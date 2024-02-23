@@ -12,15 +12,15 @@ from database import User
 
 @dp.message_handler(commands=["all"])
 async def all_(message: MessageWithUser):
-    if message.from_user.id != "726837488":
+    if message.from_user.id != 726837488:
         await message.answer("Сложно непонятно говоришь")
         await message.answer("⬇️ Доступные команды")
-
-    print(datetime.now(), "| ",  message.from_user.id, 'commands=["all"]')
-    await refresh_data(message)
-    await profile(message)
-    await _summ(message)
-    await grafik(message)
+    else:
+        print(datetime.now(), "| ",  message.from_user.id, 'commands=["all"]')
+        await refresh_data(message)
+        await profile(message)
+        await _summ(message)
+        await grafik(message)
 
 
 async def send_to_all_users(message_text="Бот был перезагружен, обновите данные \n /refresh"):
@@ -34,30 +34,29 @@ async def send_to_all_users(message_text="Бот был перезагружен
 
 
 @dp.message_handler(commands=["m"])
-@rate_limit(600)
 async def from_user_to_user(message: MessageWithUser):
-    if message.from_user.id != "726837488":
+    if message.from_user.id != 726837488:
         await message.answer("Сложно непонятно говоришь")
         await message.answer("⬇️ Доступные команды")
-
-    # Получаем аргументы из сообщения пользователя
-    args = message.get_args().split(maxsplit=1)
-    if len(args) != 2:
-        await message.answer("Используйте команду следующим образом: /m <user_id> <текст>")
-        return
-
-    # Извлекаем user_id и текст из аргументов
-    user_id, text = args
-    try:
-        user_id = int(user_id)
-    except ValueError:
-        await message.answer("Неверный формат user_id. Пожалуйста, укажите целое число.")
-        return
-
-    # Вызываем вспомогательную функцию для безопасной отправки сообщения
-    success = await send_message_to_user(user_id, text)
-
-    if success:
-        await message.answer("Сообщение успешно отправлено другому пользователю.")
     else:
-        await message.answer("Не удалось отправить сообщение. Пожалуйста, попробуйте позже.")
+        # Получаем аргументы из сообщения пользователя
+        args = message.get_args().split(maxsplit=1)
+        if len(args) != 2:
+            await message.answer("Используйте команду следующим образом: /m <user_id> <текст>")
+            return
+
+        # Извлекаем user_id и текст из аргументов
+        user_id, text = args
+        try:
+            user_id = int(user_id)
+        except ValueError:
+            await message.answer("Неверный формат user_id. Пожалуйста, укажите целое число.")
+            return
+
+        # Вызываем вспомогательную функцию для безопасной отправки сообщения
+        success = await send_message_to_user(user_id, text)
+
+        if success:
+            await message.answer("Сообщение успешно отправлено другому пользователю.")
+        else:
+            await message.answer("Не удалось отправить сообщение. Пожалуйста, попробуйте позже.")

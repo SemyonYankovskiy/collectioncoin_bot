@@ -81,29 +81,26 @@ class DataCoin:
         print(datetime.now(), "| ", f"User {tg_id} removed successfully!")
 
     @staticmethod
-    def check_graph_data():
+    def check_graph_data(user_id):
         # Получение текущей даты и времени
         now = datetime.now()
 
         # Преобразование в строку с нужным форматом
         formatted_date_now = now.strftime('%Y.%m.%d')
 
-        # Получение всех пользователей из базы данных
-        query_users = "SELECT DISTINCT tg_id FROM graph_data"
-        db.cursor.execute(query_users)
-        users = db.cursor.fetchall()
+        # # Получение всех пользователей из базы данных
+        # query_users = "SELECT DISTINCT tg_id FROM graph_data"
+        # db.cursor.execute(query_users)
+        # users = db.cursor.fetchall()
 
         res = ""
 
-        for user in users:
-            print(user)
-            user_id = user[0]
-            query = f"SELECT EXISTS (SELECT 1 FROM graph_data WHERE datetime = '{formatted_date_now}' AND tg_id = '{user_id}')"
-            db.cursor.execute(query)
-            result = db.cursor.fetchone()[0]
+        query = f"SELECT EXISTS (SELECT 1 FROM graph_data WHERE datetime = '{formatted_date_now}' AND tg_id = '{user_id}')"
+        db.cursor.execute(query)
+        result = db.cursor.fetchone()[0]
 
-            if not result:
-                res += f"Запись для пользователя `{user_id}` сегодня отсутствует\n"
+        if not result:
+            res += f"Запись для пользователя `{user_id}` сегодня отсутствует\n"
 
         if res != "":
             return res

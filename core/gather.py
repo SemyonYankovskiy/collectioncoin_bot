@@ -1,5 +1,6 @@
 # # Создаем функцию, которая будет выполняться каждый день в 20:00
 import asyncio
+import random
 from datetime import datetime
 import schedule
 from database import User, DataCoin
@@ -14,33 +15,39 @@ class GatherFail(Exception):
 async def gather_graph_data():
     users_list = User.get_all()
     print(datetime.now(), "| ", "Start gather update")
-
-    check = "Заебало, не работает"
-
+    check = "AAA CYKA"
     for i in range(3):
-        print(f"{i+1} check")
+        print(datetime.now(), "| ", f"{i + 1} try")
+        retry_for_users = []  # список пользователей, для которых нужно повторно выполнить операции
+        all_data_exist = True  # флаг для проверки наличия данных у всех пользователей
         for user in users_list:
-            # user_coin_id, session = authorize(user.email, user.password)
-            # parsing(session, user, user_coin_id)
-            # file_name = download(user_coin_id, session)
-            # total, total_count = file_opener(file_name)
-            # DataCoin(user.telegram_id, total, total_count).save()
-            # await asyncio.sleep(60)
-            print(f"do something for {user}")
+            user_coin_id, session = authorize(user.email, user.password)
+            parsing(session, user, user_coin_id)
+            file_name = download(user_coin_id, session)
+            total, total_count = file_opener(file_name)
+            DataCoin(user.telegram_id, total, total_count).save()
+            await asyncio.sleep(random.randint(60, 180))
 
-        check = DataCoin.check_graph_data()
+            check = DataCoin.check_graph_data(user.telegram_id)
+            if check != "Для всех пользователей запись в БД сегодня существует":
+                all_data_exist = False
+                retry_for_users.append(user)
 
-        if check == "Для всех пользователей запись в БД сегодня существует":
+        if all_data_exist:
+            print(datetime.now(), "| ", check)
             break
-        await asyncio.sleep(5 if i == 0 else 10)  # задержка 5 минут первый раз, затем 10 минут
 
+        # повторно выполняем операции только для пользователей, у которых нет данных
+        users_list = retry_for_users
+        await asyncio.sleep(5*60 if i == 0 else 10*60)  # задержка 5 секунд первый раз, затем 10 секунд
     else:
+        print(datetime.now(), "| ", check)
         await send_message_to_user(726837488, f"❌ Нет данных\n{check}")
 
 
 async def gather_manager():
     print(datetime.now(), "| ", "Start gather manager")
-    schedule.every().day.at("12:52").do(lambda: asyncio.create_task(gather_graph_data()))
+    schedule.every().day.at("07:00").do(lambda: asyncio.create_task(gather_graph_data()))
     while True:
         schedule.run_pending()
         await asyncio.sleep(1)
