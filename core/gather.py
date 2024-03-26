@@ -3,6 +3,8 @@ import asyncio
 import random
 from datetime import datetime
 import schedule
+from requests import RequestException
+
 from database import User, DataCoin
 from handlers.services import send_message_to_user
 from .site_calc import authorize, download, file_opener, parsing
@@ -21,12 +23,17 @@ async def gather_graph_data():
         retry_for_users = []  # список пользователей, для которых нужно повторно выполнить операции
         all_data_exist = True  # флаг для проверки наличия данных у всех пользователей
         for user in users_list:
-            user_coin_id, session = authorize(user.email, user.password)
-            parsing(session, user, user_coin_id)
-            file_name = download(user_coin_id, session)
-            total, total_count = file_opener(file_name)
-            DataCoin(user.telegram_id, total, total_count).save()
-            await asyncio.sleep(random.randint(60, 180))
+            try:
+                user_coin_id, session = authorize(user.email, user.password)
+            except RequestException as e:
+                print("Error", e)
+            else:
+                parsing(session, user, user_coin_id)
+                file_name = download(user_coin_id, session)
+                total, total_count = file_opener(file_name)
+                DataCoin(user.telegram_id, total, total_count).save()
+
+                await asyncio.sleep(random.randint(30, 60))
 
             check = DataCoin.check_graph_data(user.telegram_id)
             if check != "Для всех пользователей запись в БД сегодня существует":
@@ -39,7 +46,8 @@ async def gather_graph_data():
 
         # повторно выполняем операции только для пользователей, у которых нет данных
         users_list = retry_for_users
-        await asyncio.sleep(5*60 if i == 0 else 10*60)  # задержка 5 секунд первый раз, затем 10 секунд
+        # await asyncio.sleep(5*60 if i == 0 else 10*60)  # задержка 5 мин первый раз, затем 10 мин
+        await asyncio.sleep(5*60)  # задержка 5 мин
     else:
         print(datetime.now(), "| ", check)
         await send_message_to_user(726837488, f"❌ Нет данных\n{check}")

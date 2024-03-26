@@ -127,9 +127,7 @@ async def process_password(message: MessageWithUser, state: FSMContext):
             url=f"https://ru.ucoin.net/uid{user_coin_id}?v=home",
             headers={"user-agent": random.choice(HEADERS)},
         )
-        if response.status_code == 504:
-            print(datetime.now(), "| ", f"Парсинг - ERROR: 504")
-        elif response.status_code != 200:
+        if response.status_code != 200:
             raise AuthFail(f"Получили ответ от сервера {response.status_code}")
     # Перехватываем ошибку
     except AuthFail as e:

@@ -41,7 +41,8 @@ HEADERS = [
 
 
 def authorize(username, password):
-    # Создаем сессию для сохранения куки
+    print(datetime.now(), "| ", f"authorize [{username}]")
+
     with requests.Session() as session:
         # Авторизуемся на сайте
         resp = session.post(
@@ -51,14 +52,13 @@ def authorize(username, password):
             allow_redirects=False,
         )
         print(datetime.now(), "| ", "Код ответа от сайта: ", resp.status_code)
-        # print(datetime.now(), "| ", "С", resp.headers.get("Location"))
 
         if resp.status_code != 302:
             raise RequestException(f"Неверные данные авторизации. Status code: {resp.status_code}")
-        # Находит в строке /uid34693?v=home цифры
-        user_coin_id = "".join(filter(str.isdigit, resp.headers.get("Location")))
 
-        print(datetime.now(), "| ", username, f"UserCoinId=[{user_coin_id}]", "Connected and authorize")
+        # Получаем ID пользователя
+        user_coin_id = "".join(filter(str.isdigit, resp.headers.get("Location")))
+        print(datetime.now(), "| ", username, f"UserCoinId=[{user_coin_id}]", "Connected and authorized")
         return user_coin_id, session
 
 
@@ -272,6 +272,7 @@ def parsing(session, user, user_coin_id):
 
 def download(user_coin_id: str, session: requests.Session):
     # Скачиваем файл
+
     response = session.get(
         # URL файла, который нужно скачать
         url=f"https://ru.ucoin.net/uid{user_coin_id}?export=xls",

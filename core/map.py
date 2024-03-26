@@ -142,7 +142,7 @@ class WorldMap:
             axis.set_ylim([0 * 10**7, 0.4 * 10**7])
             self.need_to_add_counties_names_on_map = True
         elif location == "Asia":
-            axis.set_xlim([0.35 * 10**7, 1.35 * 10**7])
+            axis.set_xlim([0.31 * 10**7, 1.31 * 10**7])
             axis.set_ylim([0.06 * 10**7, 0.68 * 10**7])
             self.need_to_add_counties_names_on_map = True
         elif location == "Africa":
@@ -150,7 +150,7 @@ class WorldMap:
             axis.set_ylim([-0.42 * 10**7, 0.46 * 10**7])
             self.need_to_add_counties_names_on_map = True
         elif location == "Asian_Islands":
-            axis.set_xlim([0.8 * 10**7, 2.5 * 10**7])
+            axis.set_xlim([0.6 * 10**7, 2.3 * 10**7])
             axis.set_ylim([-0.6 * 10**7, 0.6 * 10**7])
             self.need_to_add_counties_names_on_map = True
 
