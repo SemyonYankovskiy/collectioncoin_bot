@@ -1,5 +1,7 @@
 import asyncio
 from aiogram import executor
+
+from core.site_calc import refresh
 from handlers.admin import send_to_all_users
 from handlers.services import send_message_to_user
 from settngs import dp
@@ -11,9 +13,11 @@ from core.notifications.task import notifications_checker
 async def on_startup(dp):
     # print("Отправляем пользователям сообщение о перезагрузке бота")
     # await send_to_all_users()
-    await send_message_to_user(726837488, "🗿️️ Бот был перезагружен")
+    await send_message_to_user(726837488, "ℹ️ Бот был перезагружен")
+    await send_message_to_user(726837488, "🔄 Обновляем данные для пользователей после перезагрузки...")
     print("Обновляем данные для пользователей после перезагрузки")
     await gather_graph_data()
+    # await refresh()
 
 
 async def main():

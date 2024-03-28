@@ -35,15 +35,15 @@ async def gather_graph_data():
 
                 await asyncio.sleep(random.randint(30, 60))
 
-                check = DataCoin.check_graph_data(user.telegram_id)
-                if check != "Для всех пользователей запись в БД сегодня существует":
-                    all_data_exist = False
-                    retry_for_users.append(user)
+            check = DataCoin.check_graph_data(user.telegram_id)
+            if check != "Для всех пользователей запись в БД сегодня существует":
+                all_data_exist = False
+                retry_for_users.append(user)
 
-            if all_data_exist:
-                print(datetime.now(), "| ", check)
-                await send_message_to_user(726837488, f"ℹ️ {check}")
-                break
+        if all_data_exist:
+            print(datetime.now(), "| ", check)
+            await send_message_to_user(726837488, f"️✅ {check}")
+            break
 
         # повторно выполняем операции только для пользователей, у которых нет данных
         users_list = retry_for_users
