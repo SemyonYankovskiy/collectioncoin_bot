@@ -16,37 +16,34 @@ class GatherFail(Exception):
 
 async def gather_graph_data():
     users_list = User.get_all()
-    print(datetime.now(), "| ", "Start gather update")
+    print(datetime.now(), "| ", "Запуск обновления данных")
     check = "AAA CYKA"
     for i in range(3):
-        print(datetime.now(), "| ", f"{i + 1} try")
+        print(datetime.now(), "| ", "Пробуем спарсить и скачать нужные данные, " f"{i + 1} попытка")
         retry_for_users = []  # список пользователей, для которых нужно повторно выполнить операции
         all_data_exist = True  # флаг для проверки наличия данных у всех пользователей
-        print(datetime.now(), "| ", "Проверяем есть ли данные")
         for user in users_list:
-            check = DataCoin.check_graph_data(user.telegram_id)
-            if check != "Для всех пользователей запись в БД сегодня существует":
-                all_data_exist = False
-                retry_for_users.append(user)
-        if all_data_exist:
-            print(datetime.now(), "| ", check)
-            await send_message_to_user(726837488, "ℹ️ Для всех пользователей запись в БД сегодня существует")
-            break
-        else:
-            print(datetime.now(), "| ", "Данных нет, будем парсить")
-            for user in users_list:
-                print("-=-=-=-=-=-=-=-=-=-")
-                try:
-                    user_coin_id, session = authorize(user.email, user.password)
-                except RequestException as e:
-                    print("Error", e)
-                else:
-                    parsing(session, user, user_coin_id)
-                    file_name = download(user_coin_id, session)
-                    total, total_count = file_opener(file_name)
-                    DataCoin(user.telegram_id, total, total_count).save()
+            try:
+                user_coin_id, session = authorize(user.email, user.password)
+            except RequestException as e:
+                print("Error", e)
+            else:
+                parsing(session, user, user_coin_id)
+                file_name = download(user_coin_id, session)
+                total, total_count = file_opener(file_name)
+                DataCoin(user.telegram_id, total, total_count).save()
 
-                    await asyncio.sleep(random.randint(30, 60))
+                await asyncio.sleep(random.randint(30, 60))
+
+                check = DataCoin.check_graph_data(user.telegram_id)
+                if check != "Для всех пользователей запись в БД сегодня существует":
+                    all_data_exist = False
+                    retry_for_users.append(user)
+
+            if all_data_exist:
+                print(datetime.now(), "| ", check)
+                await send_message_to_user(726837488, f"ℹ️ {check}")
+                break
 
         # повторно выполняем операции только для пользователей, у которых нет данных
         users_list = retry_for_users
