@@ -30,6 +30,7 @@ async def gather_graph_data():
                 retry_for_users.append(user)
         if all_data_exist:
             print(datetime.now(), "| ", check)
+            await send_message_to_user(726837488, "ℹ️ Для всех пользователей запись в БД сегодня существует")
             break
         else:
             print(datetime.now(), "| ", "Данных нет, будем парсить")

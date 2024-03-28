@@ -11,7 +11,7 @@ from core.notifications.task import notifications_checker
 async def on_startup(dp):
     # print("Отправляем пользователям сообщение о перезагрузке бота")
     # await send_to_all_users()
-    await send_message_to_user(726837488, "ℹ️Бот был перезагружен")
+    await send_message_to_user(726837488, "🗿️️ Бот был перезагружен")
     print("Обновляем данные для пользователей после перезагрузки")
     await gather_graph_data()
 

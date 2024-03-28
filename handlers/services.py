@@ -65,10 +65,10 @@ async def _summ(message: MessageWithUser):
         lot, count, sold = more_info(f"./users_files/{message.user.user_coin_id}_.xlsx")
 
         await message.answer(
-            f"Количество монет {lot} \n"
-            f"Количество стран {count} \n\n"
-            f"Общая стоимость {coin_st[0].totla_sum} руб. \n\n"
-            f"Потрачено {sold} руб. "
+            f"🪙 Количество монет {lot} \n"
+            f"🌐 Количество стран {count} \n\n"
+            f"💵 Общая стоимость {coin_st[0].totla_sum} руб. \n\n"
+            f"💶 Потрачено {sold} руб. "
         )
     except Exception:
         await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
