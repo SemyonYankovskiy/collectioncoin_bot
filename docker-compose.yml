@@ -4,6 +4,7 @@ services:
   coin-bot:
     build: .
     image: coin-bot:2.0.7
+    restart: always
     environment:
       TG_TOKEN: <token>
     volumes:
