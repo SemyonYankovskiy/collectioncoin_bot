@@ -33,16 +33,32 @@ def get_maps_keyboards(current_location: str):
 async def send_user_map(location: str, user: User):
     await bot.send_chat_action(chat_id=user.telegram_id, action="upload_photo")
 
-    world_map = WorldMap(user_coin_id=user.user_coin_id)
-    world_map.set_color_schema(user.map_color_schema)
-    map_name = world_map.create_map(location=location)
-
     keyboard = get_maps_keyboards(current_location=f"map:{location}")
 
-    map_img = InputFile(map_name)
+    map_img = InputFile(f"./users_files/{user.user_coin_id}_{location}.png")
 
     await bot.send_photo(chat_id=user.telegram_id, photo=map_img, reply_markup=keyboard)
-    os.remove(map_name)
+
+
+def save_user_map(user: User):
+    location = ["World", "Asian_Islands", "Africa", "Asia", "South_America", "North_America", "Europe"]
+    try:
+        for item in location:
+            world_map = WorldMap(user_coin_id=user.user_coin_id)
+            world_map.set_color_schema(user.map_color_schema)
+            world_map.create_map(location=item)
+
+    except Exception as e:
+        print(f"Ой! Скачивание карты сломалось\n {e}")
+
+# @dp.message_handler(commands=["save"])
+# @check_and_set_user
+# async def save_(message: MessageWithUser):
+#     try:
+#         save_user_map(message.user)
+#         await message.answer(f"Done")
+#     except Exception as e:
+#         await message.answer(f"Ой!\n{e}")
 
 
 @dp.message_handler(Text(equals="Карта"))
@@ -53,8 +69,10 @@ async def maps(message: MessageWithUser):
     try:
         location = "World"
         await send_user_map(location, message.user)
-    except Exception:
-        await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
+    except Exception as e:
+        await message.answer(f"Ой! Обновите базу данных вручную \n/refresh\n {e}")
+
+
 
 
 @dp.callback_query_handler(lambda c: c.data.startswith("map:"))

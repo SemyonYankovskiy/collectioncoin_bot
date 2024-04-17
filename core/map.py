@@ -113,9 +113,10 @@ class WorldMap:
         )
         countries_data.plot(ax=ax, edgecolor="black", facecolor="none", linewidth=0.15)
 
-        image_name = self._create_map_image()
+        image_name = self._create_map_image(location)
 
         plt.clf()
+        plt.close()
 
         return image_name
 
@@ -183,12 +184,12 @@ class WorldMap:
             edgecolor="black",
         )
 
-    def _create_map_image(self) -> str:
+    def _create_map_image(self, location) -> str:
         """
         Создает изображение карты.
         :return: Путь к изображению.
         """
-        image_name = f"users_files/{self.user_coin_id}.png"
+        image_name = f"users_files/{self.user_coin_id}_{location}.png"
         plt.savefig(image_name, dpi=500)
 
         # Обрезаем картинку.

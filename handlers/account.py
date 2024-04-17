@@ -8,7 +8,7 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from bs4 import BeautifulSoup
 
-from core.site_calc import authorize, AuthFail, download, file_opener
+from core.site_calc import authorize, AuthFail, download, file_opener, parsing
 from core.types import MessageWithUser
 from database import User, DataCoin
 from helpers.handler_decorators import check_and_set_user
@@ -32,6 +32,9 @@ async def profile(message: MessageWithUser):
     message_status = f"✉️" if user.new_messages == 0 else f"📩"
     swap_status = f"❕" if user.new_swap == 0 else f"❗️"
     last_refresh = user.last_refresh
+
+    user_coin_id, session = authorize(user.email, user.password)
+    parsing(session, user, user_coin_id)
 
     keyboard = get_user_profile_keyboard()
 

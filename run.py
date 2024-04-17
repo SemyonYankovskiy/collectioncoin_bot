@@ -1,7 +1,5 @@
 import asyncio
 from aiogram import executor
-
-from core.site_calc import refresh
 from handlers.admin import send_to_all_users
 from handlers.services import send_message_to_user
 from settngs import dp

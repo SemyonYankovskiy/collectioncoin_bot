@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime
 from aiogram.utils import exceptions
 import emoji
-from core.site_calc import more_info, refresh
+from core.site_calc import more_info, authorize, parsing, download, file_opener
 from core.types import MessageWithUser
 from database import DataCoin, User
 from helpers.handler_decorators import check_and_set_user
@@ -20,7 +20,13 @@ async def refresh_data(message: MessageWithUser):
 
     await bot.send_chat_action(chat_id=message.from_id, action="find_location")
 
-    refresh(message.from_user.id)
+    user = User.get(message.from_user.id)
+    user_coin_id, session = authorize(user.email, user.password)
+    parsing(session, user, user_coin_id)
+    file_name = download(user_coin_id, session)
+    total, total_count = file_opener(file_name)
+    DataCoin(user.telegram_id, total, total_count).save()
+
     await message.answer("База данных успешно обновлена")
 
 

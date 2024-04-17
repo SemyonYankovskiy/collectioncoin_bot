@@ -1,11 +1,13 @@
 # # Создаем функцию, которая будет выполняться каждый день в 20:00
 import asyncio
+import os
 import random
 from datetime import datetime
 import schedule
 from requests import RequestException
 
 from database import User, DataCoin
+from handlers.map import save_user_map
 from handlers.services import send_message_to_user
 from .site_calc import authorize, download, file_opener, parsing
 
@@ -32,6 +34,9 @@ async def gather_graph_data():
                 file_name = download(user_coin_id, session)
                 total, total_count = file_opener(file_name)
                 DataCoin(user.telegram_id, total, total_count).save()
+                print(datetime.now(), "| ", f"Скачиваем карты для {user.user_name}")
+                save_user_map(user)
+
 
                 await asyncio.sleep(random.randint(30, 60))
 

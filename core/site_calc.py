@@ -220,18 +220,19 @@ def get_graph(telegram_id, limit: Optional[int] = 30):
         linestyle=":",
     )
 
-    plt.savefig(f"{telegram_id}_plot.png")
-    path = f"{telegram_id}_plot.png"
+    path = f"./users_files/{owne1r.user_coin_id}_grafik.png"
+    plt.savefig(path)
+
     return path, len_active
 
-
-def refresh(telegram_id):
-    user = User.get(telegram_id)
-    user_coin_id, session = authorize(user.email, user.password)
-    parsing(session, user, user_coin_id)
-    file_name = download(user_coin_id, session)
-    total, total_count = file_opener(file_name)
-    DataCoin(user.telegram_id, total, total_count).save()
+#
+# def refresh(telegram_id):
+#     user = User.get(telegram_id)
+#     user_coin_id, session = authorize(user.email, user.password)
+#     parsing(session, user, user_coin_id)
+#     file_name = download(user_coin_id, session)
+#     total, total_count = file_opener(file_name)
+#     DataCoin(user.telegram_id, total, total_count).save()
 
 
 def parsing(session, user, user_coin_id):

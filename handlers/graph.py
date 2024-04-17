@@ -52,7 +52,7 @@ async def send_user_graph(callback_data: str, user: User):
     else:
         await bot.send_photo(chat_id=user.telegram_id, photo=map_img, reply_markup=keyboard)
 
-    os.remove(graph_name)
+    # os.remove(graph_name)
 
 
 def get_day_verbose_name(days: int) -> str:
