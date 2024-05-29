@@ -491,7 +491,11 @@ def file_opener(file_name):
             continue
 
         if row[9].value != "Метка 13":
-            total += row[7].value
+            # проверка на число
+            if isinstance(row[7].value, (int, float)):
+                total += row[7].value
+            else:
+                pass
 
     total_r = round(total, 2)
     return total_r, row_count
