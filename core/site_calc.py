@@ -13,7 +13,6 @@ from bs4 import BeautifulSoup
 
 from database import DataCoin, User
 from .name_transformer import transformer
-import locale
 
 
 
@@ -523,9 +522,6 @@ def get_top_10_coin(file_name, mode):
         df = df.sort_values(by="Добавлено", ascending=True)
 
     top_10 = df.head(10)
-
-    # Устанавливаем русскую локаль
-    locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 
     # Проходимся по строкам и суммируем значения в столбце G
     for row in top_10.iterrows():
