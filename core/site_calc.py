@@ -13,6 +13,8 @@ from bs4 import BeautifulSoup
 
 from database import DataCoin, User
 from .name_transformer import transformer
+import locale
+
 
 
 # класс ошибок
@@ -308,7 +310,7 @@ def more_info(file_name):
         df = pd.read_excel(file_name)
         countryroad = df[df.columns[0]].unique()  # эта переменная считает кол-во стран
         # Получить сумму элементов в 7 столбце
-        sold = df.iloc[:, 13].sum()
+        sold = df.iloc[:, 14].sum()
 
     except Exception:
         print(datetime.now(), "| ", f"Ошибка открытия файла")
@@ -356,7 +358,7 @@ def euro(file_name):
     ws = wb.active
     euros = []
 
-    for row in ws.iter_rows(min_row=1, max_col=17):
+    for row in ws.iter_rows(min_row=1, max_col=18):
         if "евро" in row[1].value:
             des2 = f"{row[2].value}г." if row[2].value else ""  # год
             des3 = (
@@ -365,9 +367,9 @@ def euro(file_name):
                 else ""
             )  # монетный двор
             des4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
-            des5 = f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""  # Моя цена
-            des6 = f"\nКомментарий: {row[16].value}" if row[16].value else ""  # Комментарий
-            cena = f" {row[6].value} ₽" if row[6].value else ""  # Цена
+            des5 = f"\nМоя цена: {row[14].value} ₽" if row[14].value else ""  # Моя цена
+            des6 = f"\nКомментарий: {row[17].value}" if row[17].value else ""  # Комментарий
+            cena = f" {row[7].value} ₽" if row[6].value else ""  # Цена
 
             euros.append(
                 [
@@ -407,7 +409,7 @@ def strana(file_name, text_in):
                  'C': 'ОМД: Париж, Франция. Ромашка с 6 лепестками над датой'}
 
     # Проходимся по строкам и суммируем значения в столбце G
-    for row in ws.iter_rows(min_row=1, max_col=17):
+    for row in ws.iter_rows(min_row=1, max_col=18):
         if row[0].value == text2:
             desc2 = f"{row[2].value}г." if row[2].value else ""
             if row[0].value == "Аргентина":
@@ -423,9 +425,9 @@ def strana(file_name, text_in):
                     else ""
                 )  # монетный двор
             desc4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
-            des5 = f"\nМоя цена: {row[13].value} ₽" if row[13].value else ""  # Наименование
-            des6 = f"\nКомментарий: {str(row[16].value)}" if row[16].value else ""  # Комментарий
-            cena = f" {row[6].value} ₽" if row[6].value else ""  # Цена
+            des5 = f"\nМоя цена: {row[14].value} ₽" if row[14].value else ""  # Наименование
+            des6 = f"\nКомментарий: {str(row[17].value)}" if row[17].value else ""  # Комментарий
+            cena = f" {row[7].value} ₽" if row[7].value else ""  # Цена
 
             arr.append(
                 [
@@ -454,7 +456,7 @@ def func_swap(file_name):
     # Проходимся по строкам и суммируем значения в столбце G
     for row in ws.iter_rows(min_row=2, max_col=17):
         des2 = f"{row[2].value}г." if row[2].value else ""  # год
-        desc4 = f"{row[4].value}" if row[4].value else ""  # Наименование
+        desc4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
         desc3 = (
             f"\nРазновидность: {transformer.get_coin_difference(row[3].value)}"
             if row[3].value
@@ -468,9 +470,9 @@ def func_swap(file_name):
                 row[1].value,  # Номинал
                 des2,  # ГОД
                 f" {row[6].value} ₽",  # Цена
+                desc4,  # Наименование
                 f"\nКол-во: {row[7].value}",  # Кол-во
                 desc3,  # монетный двор
-                desc4,  # Наименование
                 desc10,  # комментарий
             ]
         )
@@ -486,7 +488,8 @@ def file_opener(file_name):
 
     # Проходимся по строкам и суммируем значения в столбце G
     for row in ws.iter_rows(min_row=2, max_col=10):
-        # print(row[6].value)
+        print(row[7].value)
+        print(row[9].value)
         if not row[7].value:
             continue
 
@@ -523,13 +526,27 @@ def get_top_10_coin(file_name, mode):
 
     top_10 = df.head(10)
 
+    # Устанавливаем русскую локаль
+    locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
+
     # Проходимся по строкам и суммируем значения в столбце G
     for row in top_10.iterrows():
         desc4 = f"\n{row[1][4]}" if row[1][4] else ""  # Наименование
         desc3 = f"{row[1][3]}" if row[1][3] else ""  # монетный двор
 
-        desc10 = f"\nКомментарий: {row[1][16]}" if row[1][16] else ""  # комментарий
-        desc5 = f" {row[1][6]} ₽" if row[1][6] else ""  # Цена
+        original_date_str = str(row[1][11])
+        original_date = datetime.strptime(original_date_str, '%Y-%m-%d %H:%M:%S')
+
+        # Получаем название месяца на русском языке
+        month_names = [
+            'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+            'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+        ]
+        formatted_date = f"{original_date.day} {month_names[original_date.month - 1]} {original_date.year}"
+
+        desc11 = f"\nДобавлено: {formatted_date}" if row[1][11] else ""  # дата добавления
+        desc10 = f"\nКомментарий: {row[1][17]}" if row[1][17] else ""  # комментарий
+        desc5 = f" {row[1][7]} ₽" if row[1][7] else ""  # Цена
         arr.append(
             [
                 transformer.get_country_code(row[1][0]),  # Флаг
@@ -539,6 +556,7 @@ def get_top_10_coin(file_name, mode):
                 desc3,  # монетный двор
                 desc4,  # Наименование
                 desc10,  # комментарий
+                desc11, #Дата добавления
             ]
         )
     return arr

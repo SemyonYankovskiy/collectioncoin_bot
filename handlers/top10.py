@@ -29,8 +29,12 @@ def _get_top10_keyboards(active_mode: str):
 def _get_top10_message_text(user_coin_id, mode: str):
     top_coin = get_top_10_coin(f"./users_files/{user_coin_id}_.xlsx", mode=mode)
     output = ""
-    for flag, nominal, year, cena, md, name, comment in top_coin:
-        output += f"{flag} {nominal} {year} {cena} {md} {name} {comment} \n\n"
+    if mode == "last_append" or mode == "first_append":
+        for flag, nominal, year, cena, md, name, comment, date in top_coin:
+            output += f"{flag} {nominal} {year} {cena} {md} {name} {comment} {date} \n\n"
+    else:
+        for flag, nominal, year, cena, md, name, comment, date in top_coin:
+            output += f"{flag} {nominal} {year} {cena} {md} {name} {comment} \n\n"
     return output
 
 
