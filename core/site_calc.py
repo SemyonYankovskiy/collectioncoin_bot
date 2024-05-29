@@ -488,8 +488,6 @@ def file_opener(file_name):
 
     # Проходимся по строкам и суммируем значения в столбце G
     for row in ws.iter_rows(min_row=2, max_col=10):
-        print(row[7].value)
-        print(row[9].value)
         if not row[7].value:
             continue
 
