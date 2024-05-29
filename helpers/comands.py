@@ -265,5 +265,6 @@ countries_cmd = [
     "Somaliland",
     "Centr_Afrika",
     "Britan_Afrika",
-    "Transnistria"
+    "Transnistria",
+    "Britan_Palestine"
 ]

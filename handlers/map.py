@@ -31,7 +31,7 @@ def get_maps_keyboards(current_location: str):
 
 
 async def send_user_map(location: str, user: User):
-    await bot.send_chat_action(chat_id=user.telegram_id, action="upload_photo")
+    await bot.send_chat_action(chat_id=user.telegram_id, action="find_location")
 
     keyboard = get_maps_keyboards(current_location=f"map:{location}")
 

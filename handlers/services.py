@@ -5,6 +5,7 @@ import emoji
 from core.site_calc import more_info, authorize, parsing, download, file_opener
 from core.types import MessageWithUser
 from database import DataCoin, User
+from handlers.map import save_user_map
 from helpers.handler_decorators import check_and_set_user
 from helpers.limiter import rate_limit
 from settngs import dp, bot
@@ -18,7 +19,7 @@ async def refresh_data(message: MessageWithUser):
 
     """Функция принудительного обновления"""
 
-    await bot.send_chat_action(chat_id=message.from_id, action="find_location")
+    await bot.send_chat_action(chat_id=message.from_id, action="upload_document")
 
     user = User.get(message.from_user.id)
     user_coin_id, session = authorize(user.email, user.password)
@@ -26,6 +27,9 @@ async def refresh_data(message: MessageWithUser):
     file_name = download(user_coin_id, session)
     total, total_count = file_opener(file_name)
     DataCoin(user.telegram_id, total, total_count).save()
+    print(datetime.now(), "| ", f"Скачиваем карты для {user.user_name}")
+    await message.answer("Я не завис, скачиваю карты")
+    save_user_map(user)
 
     await message.answer("База данных успешно обновлена")
 
