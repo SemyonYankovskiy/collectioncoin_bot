@@ -5,6 +5,7 @@ from aiogram.dispatcher.filters import Command, Text
 from core.name_transformer import transformer
 from core.site_calc import countries, strana, func_swap, euro
 from core.types import MessageWithUser
+from handlers.services import send_message_to_user
 from helpers.comands import countries_cmd
 from helpers.handler_decorators import check_and_set_user
 from settngs import dp
@@ -21,7 +22,8 @@ async def output_counties(message: MessageWithUser):
 
     try:
         strani = countries(f"./users_files/{message.user.user_coin_id}_.xlsx")
-    except Exception:
+    except Exception as e:
+        await send_message_to_user(726837488, f"У пользователя возникла ошибка {e}, в функции вывода стран")
         await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
         return
     # Условие построчного переноса, при превышении длинны сообщения более 4096 символов
@@ -81,7 +83,8 @@ async def output_eurocoin(message: MessageWithUser):
     try:
         euro1 = euro(f"./users_files/{message.user.user_coin_id}_.xlsx")
         await vyvod_monet(message, euro1)
-    except Exception:
+    except Exception as e:
+        await send_message_to_user(726837488, f"У пользователя возникла ошибка {e}, в функции вывода стьран (output eurocoin)")
         await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
 
 
@@ -99,7 +102,8 @@ async def swap(message: MessageWithUser):
 
     try:
         swap_list = func_swap(f"./users_files/{message.user.user_coin_id}_SWAP.xlsx")
-    except Exception:
+    except Exception as e:
+        await send_message_to_user(726837488, f"У пользователя возникла ошибка {e}, в функции swap")
         await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
         return
     data_length = 0
