@@ -2,6 +2,7 @@ import random
 import re
 from datetime import datetime, timedelta
 from typing import List, Optional
+from collections import defaultdict
 
 import matplotlib.pyplot as plt
 import openpyxl
@@ -455,14 +456,11 @@ def strana(file_name, text_in):
 
 
 def func_swap(file_name):
-    # Открываем файл Excel с именем data.xlsx
-    # Выбираем первый лист в файле
     wb = openpyxl.load_workbook(file_name)
     ws = wb.active
 
-    arr = []
+    country_data = defaultdict(list)
 
-    # Проходимся по строкам и суммируем значения в столбце G
     for row in ws.iter_rows(min_row=2, max_col=18):
         des2 = f"{row[2].value}г." if row[2].value else ""  # год
         desc4 = f"\n{row[4].value}" if row[4].value else ""  # Наименование
@@ -473,19 +471,20 @@ def func_swap(file_name):
         )  # монетный двор
         desc10 = f"\nКомментарий: {row[10].value}" if row[10].value else ""  # комментарий
 
-        arr.append(
+        country_data[row[0].value].append(
             [
-                transformer.get_country_code(row[0].value),  # Флаг
+                transformer.get_country_code(row[0].value),
                 row[1].value,  # Номинал
                 des2,  # ГОД
                 f" {row[6].value} ₽",  # Цена
-                desc4,  # Наименование
                 f"\nКол-во: {row[7].value}",  # Кол-во
                 desc3,  # монетный двор
+                desc4,  # Наименование
                 desc10,  # комментарий
             ]
         )
-    return arr
+
+    return country_data
 
 
 def file_opener(file_name):
@@ -554,6 +553,7 @@ def get_top_10_coin(file_name, mode):
         arr.append(
             [
                 transformer.get_country_code(row[1][0]),  # Флаг
+                f"{row[1][0]}\n",
                 row[1][2],  # Номинал
                 row[1][3],  # Год
                 desc5,  # Цена

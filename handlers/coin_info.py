@@ -106,19 +106,26 @@ async def swap(message: MessageWithUser):
         await send_message_to_user(726837488, f"У пользователя возникла ошибка {e}, в функции swap")
         await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
         return
-    data_length = 0
-    output = ""
 
-    for flag, nominal, year, cena, count, md, name, comment in swap_list:
-        part = f"{flag} {nominal} {year} {cena} {count} {md} {name} {comment}\n\n"
-        part_len = len(part)
-        data_length += part_len
-        if data_length > 4096:
-            await message.answer(output)  # Отправляем пользователю output.
-            output = part
-            data_length = part_len
+    output = ""
+    max_length = 4096
+
+    for country, coins in swap_list.items():
+        flag = transformer.get_country_code(country)
+        country_header = f"\n{flag} {country}\n--------------------------\n"
+        country_data = country_header
+
+        for coin in coins:
+            part = f"{flag} {coin[1]} {coin[2]} {coin[3]} {coin[4]} {coin[5]} {coin[6]} {coin[7]}\n\n"
+            country_data += part
+
+        if len(output) + len(country_data) > max_length:
+
+            await message.answer(output)  # Send the current accumulated output.
+            output = country_data  # Start new output with the current country's data.
         else:
-            output += part
+            output += country_data
+
     if not output:
         await message.answer("Список обмена пуст")
     else:
