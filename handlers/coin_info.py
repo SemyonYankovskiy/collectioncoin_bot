@@ -46,6 +46,7 @@ async def output_counties(message: MessageWithUser):
     await message.answer(output)
 
 
+@check_and_set_user
 async def vyvod_monet(message: MessageWithUser, input_list):
     data_length = 0
     output = ""
@@ -54,8 +55,27 @@ async def vyvod_monet(message: MessageWithUser, input_list):
     string_without_first_char = message.text[1:]
     text2 = transformer.get_country_rus_name(string_without_first_char)
 
-    for flag, nominal, year, cena, md, name, pokupka, kommentariy in input_list:
-        part = f"{flag} {nominal} {year} {cena} {md} {name} {pokupka} {kommentariy}\n\n"
+    for country_name, flag, nominal, year, cena, md, name_for_output, pokupka, kommentariy in input_list:
+        # Формирование строки с @pic как кодированного текста
+        name = name_for_output
+        if name_for_output != "":
+            name = f"\n{name_for_output}"
+        if md != "":
+            md = f"\n{md}"
+        if pokupka != "":
+            pokupka = f"\n{pokupka}"
+        if kommentariy != "":
+            kommentariy = f"\n{kommentariy}"
+
+        if message.user.show_pictures == True:
+            if name_for_output != "":
+                pic_line = f"@pic {country_name} {nominal} {name_for_output}"
+            else:
+                pic_line = f"@pic {country_name} {nominal} {year}"
+            part = f"{flag} {nominal} {year} {cena} {md} {name} {pokupka} {kommentariy}\n`{pic_line}`\n\n"
+        else:
+            part = f"{flag} {nominal} {year} {cena} {md} {name} {pokupka} {kommentariy}\n\n"
+
         part_len = len(part)
         data_length += part_len
 
@@ -64,7 +84,7 @@ async def vyvod_monet(message: MessageWithUser, input_list):
                 flag = "🇪🇺"
                 text2 = "Евросоюз"
             output_with_header = f"{flag}  {text2}\n----------------------------------------\n" + output
-            await message.answer(output_with_header)  # Отправляем пользователю output.
+            await send_message_to_user(message.from_user.id, output_with_header)  # Отправляем пользователю output.
             output = part
             data_length = part_len
         else:
@@ -73,7 +93,8 @@ async def vyvod_monet(message: MessageWithUser, input_list):
                 text2 = "Евросоюз"
             output += part
             output_with_header = f"{flag}  {text2}\n----------------------------------------\n" + output
-    await message.answer(output_with_header)
+
+    await send_message_to_user(message.from_user.id, output_with_header, parse_mode="MARKDOWN")
 
 
 @dp.message_handler(commands=["europe"])
@@ -84,7 +105,7 @@ async def output_eurocoin(message: MessageWithUser):
         euro1 = euro(f"./users_files/{message.user.user_coin_id}_.xlsx")
         await vyvod_monet(message, euro1)
     except Exception as e:
-        await send_message_to_user(726837488, f"У пользователя возникла ошибка {e}, в функции вывода стьран (output eurocoin)")
+        await send_message_to_user(726837488, f"У пользователя возникла ошибка {e}, в функции (output eurocoin)")
         await message.answer(f"Ой! Обновите базу данных вручную \n/refresh")
 
 

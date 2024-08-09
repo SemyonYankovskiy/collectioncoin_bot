@@ -373,6 +373,7 @@ def euro(file_name):
 
             euros.append(
                 [
+                    row[0].value,
                     f"🇪🇺 {transformer.get_country_code(row[0].value)}",  # Страна
                     row[2].value,  # номинал
                     des2,  # ГОД
@@ -414,33 +415,34 @@ def strana(file_name, text_in):
             desc2 = f"{row[3].value}г." if row[3].value else ""
             if row[0].value == "Аргентина":
                 desc3 = (
-                    f"\nРазновидность: {argentina.get(row[4].value)}"
+                    f"Разновидность: {argentina.get(row[4].value)}"
                     if row[4].value
                     else ""
                 )  # монетный двор
             elif row[0].value == "Российская империя":
                 desc3 = (
-                    f"\nРазновидность: {transformer.get_coin_difference(row[4].value)}"
+                    f"Разновидность: {transformer.get_coin_difference(row[4].value)}\n"
                     if row[4].value
                     else ""
                 ) + (
-                    f"\nПериод: {(row[1].value)}"
+                    f"Период: {(row[1].value)}"
                     if row[1].value
                     else ""
                 ) # монетный двор
             else:
                 desc3 = (
-                    f"\nРазновидность: {transformer.get_coin_difference(row[4].value)}"
+                    f"Разновидность: {transformer.get_coin_difference(row[4].value)}"
                     if row[4].value
                     else ""
                 )  # монетный двор
-            desc4 = f"\n{row[5].value}" if row[5].value else ""  # Наименование
-            des5 = f"\nМоя цена: {row[15].value} ₽" if row[15].value else ""  # Наименование
-            des6 = f"\nКомментарий: {str(row[18].value)}" if row[18].value else ""  # Комментарий
+            desc4 = f"{row[5].value}" if row[5].value else ""  # Наименование
+            des5 = f"Моя цена: {row[15].value} ₽" if row[15].value else ""  # Наименование
+            des6 = f"Комментарий: {str(row[18].value)}" if row[18].value else ""  # Комментарий
             cena = f" {row[8].value} ₽" if row[8].value else ""  # Цена
 
             arr.append(
                 [
+                    row[0].value,
                     transformer.get_country_code(row[0].value),
                     row[2].value,
                     desc2,  # ГОД

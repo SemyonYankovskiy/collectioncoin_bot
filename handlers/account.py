@@ -6,6 +6,7 @@ import emoji
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.exceptions import MessageToDeleteNotFound
 from bs4 import BeautifulSoup
 
 from core.site_calc import authorize, AuthFail, download, file_opener, parsing
@@ -16,36 +17,72 @@ from settngs import dp, bot
 
 
 def get_user_profile_keyboard():
-    keyboard = InlineKeyboardButton(
-        "Изменить цветовую схему для карты", callback_data=f"choose_color_map_scheme"
+    keyboard = InlineKeyboardMarkup()
+
+    # Первая кнопка для изменения цветовой схемы
+    button_color_scheme = InlineKeyboardButton(
+        "Изменить цветовую схему для карты",
+        callback_data="choose_color_map_scheme"
     )
 
-    return InlineKeyboardMarkup().add(keyboard)
+    # Вторая кнопка, при нажатии на которую будет отображаться уведомление
+    button_notify = InlineKeyboardButton(
+        "Показ изображений вкл|выкл",
+        callback_data="show_pictures"
+    )
+
+    # Добавляем кнопки в клавиатуру
+    keyboard.add(button_color_scheme)
+    keyboard.add(button_notify)
+
+    return keyboard
+
 
 
 @dp.message_handler(commands=["profile"])
 @check_and_set_user
 async def profile(message: MessageWithUser):
-    print(datetime.now(), "| ",  message.from_user.id, 'commands=["profile"]')
+    print(datetime.now(), "| ", message.from_user.id, 'commands=["profile"]')
 
     user = User.get(message.from_user.id)
     message_status = f"✉️" if user.new_messages == 0 else f"📩"
     swap_status = f"❕" if user.new_swap == 0 else f"❗️"
     last_refresh = user.last_refresh
 
-    user_coin_id, session = authorize(user.email, user.password)
-    parsing(session, user, user_coin_id)
+    # user_coin_id, session = authorize(user.email, user.password)
+    # parsing(session, user, user_coin_id)
 
     keyboard = get_user_profile_keyboard()
-
     await message.answer(
         f'<a href="https://ru.ucoin.net/uid{message.user.user_coin_id}?v=home">👤 Профиль</a>\n'
         f"{message_status} Новые сообщения {user.new_messages} \n{swap_status} Предложения обмена {user.new_swap}"
-        f"\n🕓 Последнее обновление: {last_refresh}",
+        f"\n🕓 Последнее обновление: {last_refresh}"
+        f"\n______________________________________________\n📨 Обновить: /whats_new",
         parse_mode="HTML",
         reply_markup=keyboard,
     )
 
+@dp.message_handler(commands=["whats_new"])
+@check_and_set_user
+async def whats_new(message: MessageWithUser):
+    print(datetime.now(), "| ", message.from_user.id, 'commands=["whats_new"]')
+
+    user = User.get(message.from_user.id)
+    user_coin_id, session = authorize(user.email, user.password)
+    parsing(session, user, user_coin_id)
+
+    # Удаляем предпоследнее сообщение
+    chat_id = message.chat.id
+    message_id = message.message_id
+
+    try:
+        # Удаляем сообщение с id на единицу меньше текущего
+        await bot.delete_message(chat_id, message_id - 1)
+        await bot.delete_message(chat_id, message_id)
+    except MessageToDeleteNotFound:
+        pass  # Сообщение уже удалено или не существует
+
+    await profile(message)
 
 # Создаем класс состояний для конечного автомата
 class Form(StatesGroup):

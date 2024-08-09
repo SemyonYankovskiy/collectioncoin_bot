@@ -114,6 +114,18 @@ def get_choose_color_map_scheme_keyboard():
     return InlineKeyboardMarkup(row_width=5).add(*keyboard)
 
 
+@dp.callback_query_handler(lambda c: c.data == "show_pictures")
+@check_and_set_user
+async def process_show_pictures(callback_query: CallbackQueryWithUser):
+    # Меняем значение show_pictures на противоположное
+    callback_query.user.show_pictures = not callback_query.user.show_pictures
+    callback_query.user.save()
+    print(callback_query.user.show_pictures)
+    # Формируем сообщение для уведомления
+    status = "включен" if callback_query.user.show_pictures == True else "выключен"
+    await callback_query.answer(f"Показ изображений {status}!", show_alert=True)
+
+
 @dp.callback_query_handler(lambda c: c.data == "choose_color_map_scheme")
 @check_and_set_user
 async def choose_color_map_scheme(callback_query: CallbackQueryWithUser):
@@ -130,5 +142,12 @@ async def set_color_map_scheme(callback_query: CallbackQueryWithUser):
     color_name = callback_query.data.split(":")[-1]
     callback_query.user.map_color_schema = color_name
     callback_query.user.save()
-    # await callback_query.answer("Готово, чекай карту!", show_alert=True)
-    await callback_query.message.answer("Сохранено! Изменения вступят в силу после обновления данных")
+
+    # Отправляем уведомление
+    await callback_query.answer("Сохранено! Изменения вступят в силу после обновления данных", show_alert=True)
+
+    # Удаляем последнее сообщение (картинку с клавиатурой)
+    await bot.delete_message(
+        chat_id=callback_query.message.chat.id,
+        message_id=callback_query.message.message_id
+    )

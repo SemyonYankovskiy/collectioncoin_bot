@@ -35,10 +35,10 @@ async def refresh_data(message: MessageWithUser):
 
 
 # Вспомогательная функция для безопасной отправки сообщения
-async def send_message_to_user(user_id: int, text: str, disable_notification: bool = False) -> bool:
+async def send_message_to_user(user_id: int, text: str, disable_notification: bool = False, parse_mode="MARKDOWN") -> bool:
     user = User.get(user_id)
     try:
-        await bot.send_message(user_id, text, disable_notification=disable_notification, parse_mode="MARKDOWN")
+        await bot.send_message(user_id, text, parse_mode, disable_notification=disable_notification, )
     except exceptions.BotBlocked:
         print(datetime.now(), "| ", f"Пользователь [{user.email}] заблокировал бота")
     except exceptions.ChatNotFound:
