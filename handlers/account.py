@@ -57,7 +57,7 @@ async def profile(message: MessageWithUser):
         f'<a href="https://ru.ucoin.net/uid{message.user.user_coin_id}?v=home">👤 Профиль</a>\n'
         f"{message_status} Новые сообщения {user.new_messages} \n{swap_status} Предложения обмена {user.new_swap}"
         f"\n🕓 Последнее обновление: {last_refresh}"
-        f"\n______________________________________________\n📨 Обновить: /whats_new",
+        f"\n_____________________________\n📨 Обновить: /whats_new",
         parse_mode="HTML",
         reply_markup=keyboard,
     )
