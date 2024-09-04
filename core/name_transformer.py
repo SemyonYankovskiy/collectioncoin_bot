@@ -2,11 +2,11 @@ import pandas as pd
 
 
 class Transformer:
-    ru_to_short_eng_file_path = "./config/RutoEng.xlsx"
-    ru_to_code_file_path = "./config/RutoCode.xlsx"
-    ru_to_valid_eng_file_path = "./config/RutoValidEng.xlsx"
-    eng_to_rus_map_file_path = "./config/EngmaptoRu.xlsx"
-    coin_difference_file_path = "./config/diff.xlsx"
+    ru_to_short_eng_file_path = "./config/RutoEng.xlsx"  # для ссылок-кнопок в боте
+    ru_to_code_file_path = "./config/RutoCode.xlsx"        # для флажков
+    ru_to_valid_eng_file_path = "./config/RutoValidEng.xlsx"   # для карты - английские слова которые она хавает
+    eng_to_rus_map_file_path = "./config/EngmaptoRu.xlsx"   # для красивого отображения русских названий на карте
+    coin_difference_file_path = "./config/diff.xlsx"        # монетные дворы и прочее
 
     def __init__(self):
         # Короткие названия стран на англ, для команд бота

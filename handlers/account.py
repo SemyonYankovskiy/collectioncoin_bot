@@ -10,7 +10,7 @@ from aiogram.utils.exceptions import MessageToDeleteNotFound
 from bs4 import BeautifulSoup
 
 from core.site_calc import authorize, AuthFail, download, file_opener, parsing
-from core.types import MessageWithUser
+from helpers.types import MessageWithUser
 from database import User, DataCoin
 from helpers.handler_decorators import check_and_set_user
 from settngs import dp, bot

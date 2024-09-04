@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters import Command, Text
 
 from core.name_transformer import transformer
 from core.site_calc import countries, strana, func_swap, euro
-from core.types import MessageWithUser
+from helpers.types import MessageWithUser
 from handlers.services import send_message_to_user
 from helpers.comands import countries_cmd
 from helpers.handler_decorators import check_and_set_user

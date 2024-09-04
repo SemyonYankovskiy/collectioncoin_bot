@@ -1,11 +1,10 @@
-import os
 from datetime import datetime
 
 from aiogram.dispatcher.filters import Text
 from aiogram.types import InputFile, InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.map import WorldMap
-from core.types import MessageWithUser, CallbackQueryWithUser
+from helpers.types import MessageWithUser, CallbackQueryWithUser
 from database import User
 from helpers.handler_decorators import check_and_set_user
 from settngs import dp, bot

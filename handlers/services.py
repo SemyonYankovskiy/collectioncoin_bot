@@ -3,7 +3,7 @@ from datetime import datetime
 from aiogram.utils import exceptions
 import emoji
 from core.site_calc import more_info, authorize, parsing, download, file_opener
-from core.types import MessageWithUser
+from helpers.types import MessageWithUser
 from database import DataCoin, User
 from handlers.map import save_user_map
 from helpers.handler_decorators import check_and_set_user
