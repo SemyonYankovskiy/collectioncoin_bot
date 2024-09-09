@@ -29,6 +29,7 @@ async def gather_graph_data():
                 user_coin_id, session = authorize(user.email, user.password)
             except RequestException as e:
                 print("Error", e)
+                await asyncio.sleep(random.randint(30, 60))
             else:
                 parsing(session, user, user_coin_id)
                 file_name = download(user_coin_id, session)
