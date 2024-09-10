@@ -6,7 +6,7 @@ openpyxl~=3.1.2
 matplotlib~=3.7.1
 pandas~=1.5.3
 beautifulsoup4~=4.12.2
-geopandas==0.14.2
+geopandas~=0.14.2
 
 plotly~=5.14.1
 DateTime~=5.1
