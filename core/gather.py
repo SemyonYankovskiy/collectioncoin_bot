@@ -37,8 +37,6 @@ async def gather_graph_data():
                 DataCoin(user.telegram_id, total, total_count).save()
                 print(datetime.now(), "| ", f"Скачиваем карты для {user.user_name}")
                 save_user_map(user)
-
-
                 await asyncio.sleep(random.randint(30, 60))
 
             check = DataCoin.check_graph_data(user.telegram_id)

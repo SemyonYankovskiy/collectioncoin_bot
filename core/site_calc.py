@@ -64,10 +64,7 @@ def authorize(username, password):
         "https://ru.ucoin.net",
         headers=headers,
     )
-    print(datetime.now(), "| ", "GET: ")
-    print("resp.status_code:", r.headers)
-    print("resp.status_code:", r.status_code)
-    print("resp.cookies:", r.cookies, r.cookies.keys(), r.cookies.values())
+
 
     # Авторизация на сайте
     resp = client.post(
@@ -76,10 +73,7 @@ def authorize(username, password):
         headers=headers,
     )
 
-    print(datetime.now(), "| ", "POST: ")
-    print("resp.status_code:", resp.headers)
-    print("resp.status_code:", resp.status_code)
-    print("resp.cookies:", resp.cookies, resp.cookies.keys(), resp.cookies.values())
+
 
 
     if resp.status_code != 302:
