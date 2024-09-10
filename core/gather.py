@@ -62,7 +62,7 @@ async def gather_graph_data():
 
 async def gather_manager():
     print(datetime.now(), "| ", "Start gather manager")
-    schedule.every().day.at("07:00").do(lambda: asyncio.create_task(gather_graph_data()))
+    schedule.every().day.at("04:00").do(lambda: asyncio.create_task(gather_graph_data()))
     while True:
         schedule.run_pending()
         await asyncio.sleep(1)
