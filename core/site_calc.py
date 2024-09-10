@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 from collections import defaultdict
 
+import httpx
 import matplotlib.pyplot as plt
 import openpyxl
 import pandas as pd
@@ -45,196 +46,45 @@ HEADERS = [
 def authorize(username, password):
     print(datetime.now(), "| ", f"authorize [{username}]")
 
-    with requests.Session() as session:
-        # Авторизуемся на сайте
-        resp = session.post(
-            "https://ru.ucoin.net/login",
-            data={"email": username, "passwd": password, "remember": 1},
-            headers={"user-agent": random.choice(HEADERS)},
-            allow_redirects=False,
-        )
-        print(datetime.now(), "| ", "Код ответа от сайта: ", resp.status_code)
+    headers = {
+        "User-Agent": random.choice(HEADERS),
+        # "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        # "Accept-Language": "en-US,en;q=0.5",
+        # "Accept-Encoding": "utf-8",
+        # "Connection": "keep-alive",
+        # "Upgrade-Insecure-Requests": "1",
+        # "TE": "trailers",  # Required for HTTP/2
+    }
 
-        if resp.status_code != 302:
-            raise RequestException(f"Неверные данные авторизации. Status code: {resp.status_code}")
-
-        # Получаем ID пользователя
-        user_coin_id = "".join(filter(str.isdigit, resp.headers.get("Location")))
-        print(datetime.now(), "| ", username, f"UserCoinId=[{user_coin_id}]", "Connected and authorized")
-        return user_coin_id, session
+    # Create an HTTP/2 client
+    client = httpx.Client(http2=True)
 
 
-def get_fig_width(data_length: int) -> int:
-    if data_length > 90:
-        return 20
-    return 15 * (data_length // 60 or 1)
-
-
-def get_date_annotation(date_value: str, data_length: int) -> str:
-    date_ = datetime.strptime(date_value, "%Y.%m.%d")
-
-    if data_length > 350:
-        date_str = date_.strftime("%b %Y")
-    elif data_length > 30 * 6:
-        date_str = date_.strftime("%d %b")
-    else:
-        date_str = date_.strftime("%d.%m")
-
-    return date_str
-
-
-def get_fig_marker(data_length: int) -> str:
-    if data_length < 61:
-        return "o"
-    return ""
-
-
-def get_graph(telegram_id, limit: Optional[int] = 30):
-    owne1r = User.get(telegram_id)
-
-    len_active = len(DataCoin.get_for_user(telegram_id, limit))
-
-    graph_coin_data: List[DataCoin] = DataCoin.get_for_user(telegram_id, limit)
-    graph_date = []
-    graph_sum = []
-    graph_coin_count = []
-
-    last_date = datetime.now().date()
-
-    for sublist in graph_coin_data[::1]:
-        while datetime.strptime(sublist.datetime, "%Y.%m.%d").date() != last_date:
-            graph_date.append(last_date.strftime("%Y.%m.%d"))
-            graph_sum.append(None)
-            graph_coin_count.append(None)
-            last_date -= timedelta(days=1)
-
-        graph_date.append(sublist.datetime)
-        graph_sum.append(sublist.totla_sum)
-        graph_coin_count.append(sublist.totla_count)
-        last_date -= timedelta(days=1)
-
-    if limit:
-        graph_date = graph_date[:limit]
-        graph_sum = graph_sum[:limit]
-        graph_coin_count = graph_coin_count[:limit]
-
-    data_length = len(graph_date)
-
-    step = data_length // 15 or 1
-
-    fig_height = 10
-    fig_width = get_fig_width(data_length)
-    fig_dpi = 100
-
-    plt.clf()
-    fig, ax1 = plt.subplots(figsize=(fig_width, fig_height), dpi=fig_dpi)
-
-    ax2 = ax1.twinx()
-
-    ax1.plot(
-        graph_date[::-1],
-        graph_sum[::-1],
-        marker=get_fig_marker(data_length),
-        color='#0698FE',
-        markersize=5,
-    )
-    ax2.plot(
-        graph_date[::-1],
-        graph_coin_count[::-1],
-        marker=get_fig_marker(data_length),
-        markersize=3,
-        color='#30BA8F',
-        linewidth=0.7
+    r = client.get(
+        "https://ru.ucoin.net",
+        headers=headers,
     )
 
-    filtered_sum = [x for x in graph_sum if x is not None]  # filtered_sum равно [10, 20, 40, 50]
-    maxim = max(filtered_sum)
-    mimin = min(filtered_sum)
-    average = sum(filtered_sum) / len(filtered_sum)
-    average = round(average, 2)
-    last = graph_sum[0]
-    date = datetime.now
-    date1 = date().strftime("%d.%m.%Y %H:%M")
 
-    filtered_count = [x for x in graph_coin_count if x is not None]
-    max_count = max(filtered_count)
-    min_count = min(filtered_count)
-    raznica = max_count-min_count
-    y_min = min_count - 2
-    y_max = min_count + raznica+2
-    ax2.set_ylim(y_min, y_max)
-
-    date_without_year = list(map(lambda value: get_date_annotation(value, data_length), graph_date))
-
-    ax2.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-    plt.xticks(graph_date[::step], date_without_year[::step])
-
-    plt.title("Стоимость коллекции, руб")
-
-    # Добавить текст на график
-    plt.text(0, 1.07, " {}".format(owne1r.user_name), transform=plt.gca().transAxes)
-    plt.text(0, 1.05, " {}".format(date1), transform=plt.gca().transAxes)
-
-    plt.text(-0.08, 1.02, "Стоимость", color="#0698FE",  transform=plt.gca().transAxes)
-    plt.text(1.02, 1.04, "Кол-во", color="#30BA8F", transform=plt.gca().transAxes)
-    plt.text(1.02, 1.02, "монет", color="#30BA8F", transform=plt.gca().transAxes)
-
-    plt.text(
-        0,
-        -0.1,
-        "[◉_◉] Минимум = {} р.".format(mimin),
-        color="red",
-        transform=plt.gca().transAxes
-    )
-    plt.text(
-        0.2,
-        -0.1,
-        "(◕‿◕) Максимум = {} р.".format(maxim),
-        color="green",
-        transform=plt.gca().transAxes,
-    )
-    plt.text(
-        0.4,
-        -0.1,
-        "(─‿‿─) Средняя = {} р.".format(average),
-        color="brown",
-        transform=plt.gca().transAxes,
-    )
-    plt.text(
-        0.8,
-        -0.1,
-        "(• ◡•) Последняя = {} р.".format(last),
-        color="blue",
-        transform=plt.gca().transAxes,
+    # Авторизация на сайте
+    resp = client.post(
+        "https://ru.ucoin.net/login",
+        data={"email": username, "passwd": password, "remember": 1},
+        headers=headers,
     )
 
-    #  Прежде чем рисовать вспомогательные линии
-    #  необходимо включить второстепенные деления
-    ax1.minorticks_on()
 
-    #  Определяем внешний вид линий основной сетки:
-    ax1.grid(which="major")
 
-    #  Определяем внешний вид линий вспомогательной
-    #  сетки:
-    ax1.grid(
-        which="minor",
-        linestyle=":",
-    )
 
-    path = f"./users_files/{owne1r.user_coin_id}_grafik.png"
-    plt.savefig(path)
+    if resp.status_code != 302:
+        raise httpx.RequestError(f"Неверные данные авторизации. Status code: {resp.status_code}")
 
-    return path, len_active
+    # Получаем ID пользователя из заголовка Location
+    user_coin_id = "".join(filter(str.isdigit, resp.headers.get("Location", "")))
+    print(datetime.now(), "| ", username, f"UserCoinId=[{user_coin_id}]", "Connected and authorized")
+    return user_coin_id, client
 
-#
-# def refresh(telegram_id):
-#     user = User.get(telegram_id)
-#     user_coin_id, session = authorize(user.email, user.password)
-#     parsing(session, user, user_coin_id)
-#     file_name = download(user_coin_id, session)
-#     total, total_count = file_opener(file_name)
-#     DataCoin(user.telegram_id, total, total_count).save()
+
 
 
 def parsing(session, user, user_coin_id):
@@ -298,6 +148,39 @@ def download(user_coin_id: str, session: requests.Session):
         f.write(response2.content)
 
     return file_name
+
+
+def file_opener(file_name):
+    # Открываем файл Excel с помощью openpyxl
+    wb = openpyxl.load_workbook(file_name)
+    ws = wb.active
+    row_count = ws.max_row-1
+    total = 0
+
+    # Проходимся по строкам и суммируем значения в столбце G
+    for row in ws.iter_rows(min_row=2, max_col=11):
+        if not row[8].value:
+            continue
+
+        if row[10].value != "Метка 13":
+            # проверка на число
+            if isinstance(row[8].value, (int, float)):
+                total += row[8].value
+            else:
+                pass
+
+    total_r = round(total, 2)
+    return total_r, row_count
+
+
+#
+# def refresh(telegram_id):
+#     user = User.get(telegram_id)
+#     user_coin_id, session = authorize(user.email, user.password)
+#     parsing(session, user, user_coin_id)
+#     file_name = download(user_coin_id, session)
+#     total, total_count = file_opener(file_name)
+#     DataCoin(user.telegram_id, total, total_count).save()
 
 
 def more_info(file_name):
@@ -489,29 +372,6 @@ def func_swap(file_name):
     return country_data
 
 
-def file_opener(file_name):
-    # Открываем файл Excel с помощью openpyxl
-    wb = openpyxl.load_workbook(file_name)
-    ws = wb.active
-    row_count = ws.max_row-1
-    total = 0
-
-    # Проходимся по строкам и суммируем значения в столбце G
-    for row in ws.iter_rows(min_row=2, max_col=11):
-        if not row[8].value:
-            continue
-
-        if row[10].value != "Метка 13":
-            # проверка на число
-            if isinstance(row[8].value, (int, float)):
-                total += row[8].value
-            else:
-                pass
-
-    total_r = round(total, 2)
-    return total_r, row_count
-
-
 def get_top_10_coin(file_name, mode):
     df = pd.read_excel(file_name)
     arr = []
@@ -566,3 +426,169 @@ def get_top_10_coin(file_name, mode):
             ]
         )
     return arr
+
+
+def get_fig_width(data_length: int) -> int:
+    if data_length > 90:
+        return 20
+    return 15 * (data_length // 60 or 1)
+
+
+def get_date_annotation(date_value: str, data_length: int) -> str:
+    date_ = datetime.strptime(date_value, "%Y.%m.%d")
+
+    if data_length > 350:
+        date_str = date_.strftime("%b %Y")
+    elif data_length > 30 * 6:
+        date_str = date_.strftime("%d %b")
+    else:
+        date_str = date_.strftime("%d.%m")
+
+    return date_str
+
+
+def get_fig_marker(data_length: int) -> str:
+    if data_length < 61:
+        return "o"
+    return ""
+
+
+def get_graph(telegram_id, limit: Optional[int] = 30):
+    owne1r = User.get(telegram_id)
+
+    len_active = len(DataCoin.get_for_user(telegram_id, limit))
+
+    graph_coin_data: List[DataCoin] = DataCoin.get_for_user(telegram_id, limit)
+    graph_date = []
+    graph_sum = []
+    graph_coin_count = []
+
+    last_date = datetime.now().date()
+
+    for sublist in graph_coin_data[::1]:
+        while datetime.strptime(sublist.datetime, "%Y.%m.%d").date() != last_date:
+            graph_date.append(last_date.strftime("%Y.%m.%d"))
+            graph_sum.append(None)
+            graph_coin_count.append(None)
+            last_date -= timedelta(days=1)
+
+        graph_date.append(sublist.datetime)
+        graph_sum.append(sublist.totla_sum)
+        graph_coin_count.append(sublist.totla_count)
+        last_date -= timedelta(days=1)
+
+    if limit:
+        graph_date = graph_date[:limit]
+        graph_sum = graph_sum[:limit]
+        graph_coin_count = graph_coin_count[:limit]
+
+    data_length = len(graph_date)
+
+    step = data_length // 15 or 1
+
+    fig_height = 10
+    fig_width = get_fig_width(data_length)
+    fig_dpi = 100
+
+    plt.clf()
+    fig, ax1 = plt.subplots(figsize=(fig_width, fig_height), dpi=fig_dpi)
+
+    ax2 = ax1.twinx()
+
+    ax1.plot(
+        graph_date[::-1],
+        graph_sum[::-1],
+        marker=get_fig_marker(data_length),
+        color='#0698FE',
+        markersize=5,
+    )
+    ax2.plot(
+        graph_date[::-1],
+        graph_coin_count[::-1],
+        marker=get_fig_marker(data_length),
+        markersize=3,
+        color='#30BA8F',
+        linewidth=0.7
+    )
+
+    filtered_sum = [x for x in graph_sum if x is not None]  # filtered_sum равно [10, 20, 40, 50]
+    maxim = max(filtered_sum)
+    mimin = min(filtered_sum)
+    average = sum(filtered_sum) / len(filtered_sum)
+    average = round(average, 2)
+    last = graph_sum[0]
+    date = datetime.now
+    date1 = date().strftime("%d.%m.%Y %H:%M")
+
+    filtered_count = [x for x in graph_coin_count if x is not None]
+    max_count = max(filtered_count)
+    min_count = min(filtered_count)
+    raznica = max_count-min_count
+    y_min = min_count - 2
+    y_max = min_count + raznica+2
+    ax2.set_ylim(y_min, y_max)
+
+    date_without_year = list(map(lambda value: get_date_annotation(value, data_length), graph_date))
+
+    ax2.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    plt.xticks(graph_date[::step], date_without_year[::step])
+
+    plt.title("Стоимость коллекции, руб")
+
+    # Добавить текст на график
+    plt.text(0, 1.07, " {}".format(owne1r.user_name), transform=plt.gca().transAxes)
+    plt.text(0, 1.05, " {}".format(date1), transform=plt.gca().transAxes)
+
+    plt.text(-0.08, 1.02, "Стоимость", color="#0698FE",  transform=plt.gca().transAxes)
+    plt.text(1.02, 1.04, "Кол-во", color="#30BA8F", transform=plt.gca().transAxes)
+    plt.text(1.02, 1.02, "монет", color="#30BA8F", transform=plt.gca().transAxes)
+
+    plt.text(
+        0,
+        -0.1,
+        "[◉_◉] Минимум = {} р.".format(mimin),
+        color="red",
+        transform=plt.gca().transAxes
+    )
+    plt.text(
+        0.2,
+        -0.1,
+        "(◕‿◕) Максимум = {} р.".format(maxim),
+        color="green",
+        transform=plt.gca().transAxes,
+    )
+    plt.text(
+        0.4,
+        -0.1,
+        "(─‿‿─) Средняя = {} р.".format(average),
+        color="brown",
+        transform=plt.gca().transAxes,
+    )
+    plt.text(
+        0.8,
+        -0.1,
+        "(• ◡•) Последняя = {} р.".format(last),
+        color="blue",
+        transform=plt.gca().transAxes,
+    )
+
+    #  Прежде чем рисовать вспомогательные линии
+    #  необходимо включить второстепенные деления
+    ax1.minorticks_on()
+
+    #  Определяем внешний вид линий основной сетки:
+    ax1.grid(which="major")
+
+    #  Определяем внешний вид линий вспомогательной
+    #  сетки:
+    ax1.grid(
+        which="minor",
+        linestyle=":",
+    )
+
+    path = f"./users_files/{owne1r.user_coin_id}_grafik.png"
+    plt.savefig(path)
+
+    return path, len_active
+
+

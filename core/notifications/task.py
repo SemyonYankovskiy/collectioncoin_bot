@@ -43,8 +43,8 @@ async def new_notifications_checker():
     now = datetime.now()
 
     # Установить время для сравнения
-    start_time = datetime(now.year, now.month, now.day, 10, 0)  # 10:00
-    end_time = datetime(now.year, now.month, now.day, 20, 0)  # 20:00
+    start_time = datetime(now.year, now.month, now.day, 7, 0)  # 10:00
+    end_time = datetime(now.year, now.month, now.day, 23, 0)  # 20:00
 
     users_list = User.get_all()
     for user in users_list:

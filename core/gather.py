@@ -29,6 +29,7 @@ async def gather_graph_data():
                 user_coin_id, session = authorize(user.email, user.password)
             except RequestException as e:
                 print("Error", e)
+                await asyncio.sleep(random.randint(30, 60))
             else:
                 parsing(session, user, user_coin_id)
                 file_name = download(user_coin_id, session)
@@ -36,8 +37,6 @@ async def gather_graph_data():
                 DataCoin(user.telegram_id, total, total_count).save()
                 print(datetime.now(), "| ", f"Скачиваем карты для {user.user_name}")
                 save_user_map(user)
-
-
                 await asyncio.sleep(random.randint(30, 60))
 
             check = DataCoin.check_graph_data(user.telegram_id)
@@ -61,7 +60,7 @@ async def gather_graph_data():
 
 async def gather_manager():
     print(datetime.now(), "| ", "Start gather manager")
-    schedule.every().day.at("07:00").do(lambda: asyncio.create_task(gather_graph_data()))
+    schedule.every().day.at("04:00").do(lambda: asyncio.create_task(gather_graph_data()))
     while True:
         schedule.run_pending()
         await asyncio.sleep(1)
