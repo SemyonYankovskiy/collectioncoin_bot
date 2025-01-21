@@ -22,9 +22,10 @@ async def refresh_data(message: MessageWithUser):
     await bot.send_chat_action(chat_id=message.from_id, action="upload_document")
 
     user = User.get(message.from_user.id)
-    user_coin_id, session = authorize(user.email, user.password)
-    parsing(session, user, user_coin_id)
-    file_name = download(user_coin_id, session)
+    # user_coin_id, session = authorize(user.email, user.password)
+    # parsing(session, user, user_coin_id)
+    # file_name = download(user_coin_id, session)
+    file_name = f"./users_files/32693_.xlsx"
     total, total_count = file_opener(file_name)
     DataCoin(user.telegram_id, total, total_count).save()
     print(datetime.now(), "| ", f"Скачиваем карты для {user.user_name}")
